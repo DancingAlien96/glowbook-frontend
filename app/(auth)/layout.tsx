@@ -1,0 +1,18 @@
+import Link from "next/link";
+import Logo from "../_components/shared/Logo";
+
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen bg-aurora-soft flex flex-col">
+      <header className="px-6 py-5">
+        <Link href="/" className="inline-flex items-center gap-2.5">
+          <Logo className="h-7 w-7" />
+          <span className="font-serif text-xl text-mauve-900 tracking-tight">Glowbook</span>
+        </Link>
+      </header>
+      <main className="flex-1 grid place-items-center px-4 pb-12">
+        <div className="w-full max-w-md">{children}</div>
+      </main>
+    </div>
+  );
+}
