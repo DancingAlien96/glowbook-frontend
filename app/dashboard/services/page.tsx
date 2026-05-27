@@ -17,7 +17,7 @@ const tones = [
 
 export default function ServicesPage() {
   const { user } = useAuth();
-  const currency = user?.ownedSalon?.currency ?? "USD";
+  const currency = user?.salon?.currency ?? "USD";
 
   const { data, loading, error, refetch } = useApi<{ services: Service[] }>("/services");
   const [cat, setCat] = useState("Todos");

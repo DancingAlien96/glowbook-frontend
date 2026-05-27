@@ -11,7 +11,7 @@ import type { Payment } from "../../_lib/types";
 
 export default function PaymentsPage() {
   const { user } = useAuth();
-  const currency = user?.ownedSalon?.currency ?? "USD";
+  const currency = user?.salon?.currency ?? "USD";
 
   const { data, loading, error, refetch } = useApi<{ payments: Payment[] }>("/payments");
   const [actingId, setActingId] = useState<string | null>(null);

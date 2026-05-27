@@ -4,28 +4,32 @@ import { useState } from "react";
 
 const faqs = [
   {
-    q: "¿Necesito tarjeta de crédito para empezar?",
-    a: "No. Puedes comenzar tu prueba gratuita de 14 días sin ingresar datos de pago. Solo te pediremos información de cobro si decides continuar.",
+    q: "¿Cómo cobran mis clientas el anticipo?",
+    a: "Por transferencia bancaria. Tú defines los datos de tu cuenta (banco, número, nombre, RUC) en los ajustes del salón. Tu clienta los ve al reservar, transfiere y sube el comprobante. Tú lo apruebas en un toque desde el panel y la cita queda confirmada.",
   },
   {
-    q: "¿Puedo cobrar el anticipo en cualquier moneda?",
-    a: "Sí. Glowbook acepta múltiples monedas y métodos: tarjetas internacionales vía Stripe, transferencias locales (con validación de comprobante) y wallets como Yape o Plin.",
+    q: "¿Y si la clienta sube un comprobante falso?",
+    a: "Tú apruebas cada comprobante manualmente antes de que la cita pase a confirmada. La imagen queda guardada en tu historial — si algo no cuadra, rechazas el pago con un motivo y la clienta es notificada.",
+  },
+  {
+    q: "¿Aceptan pagos con tarjeta de crédito?",
+    a: "Por ahora no. Trabajamos con transferencia bancaria y wallets locales tipo Yape o Plin (subiendo el comprobante). La integración con pasarela de tarjetas está en nuestro roadmap pero no tiene fecha confirmada — preferimos no prometer lo que aún no ofrecemos.",
   },
   {
     q: "¿Funciona para spas y centros de estética con varios profesionales?",
-    a: "Por supuesto. Puedes crear estilistas, asignar servicios específicos y manejar agendas independientes con vista unificada para la dueña.",
+    a: "Por supuesto. Crea cuentas para cada estilista — ellas inician sesión en su propio portal, ven solo sus citas y las marcan como confirmadas o completadas. Tú monitoreas todo desde tu panel.",
   },
   {
-    q: "¿Las clientas reciben recordatorios automáticos?",
-    a: "Sí. Enviamos confirmaciones inmediatas y recordatorios 24h y 2h antes de la cita por email. WhatsApp está en versión beta.",
+    q: "¿Las clientas reciben confirmaciones y recordatorios?",
+    a: "Tu clienta recibe confirmación inmediata al reservar y un email de aprobación cuando validas su comprobante. Recordatorios automáticos por email 24h y 2h antes de la cita. WhatsApp está en versión beta.",
   },
   {
     q: "¿Qué pasa si una clienta no asiste?",
-    a: "Como cobras anticipo, ya cubriste parte del costo. Además puedes configurar reglas de no-show y bloqueo automático tras 2 ausencias.",
+    a: "Como ya cobraste el anticipo por transferencia, parte del costo está cubierto. Puedes marcarla como 'No asistió' desde el panel y queda en su ficha para futuras decisiones de reserva.",
   },
   {
-    q: "¿El Plan Lifetime es real? ¿Sin trampas?",
-    a: "Real. Un pago único de $660 USD y tendrás Glowbook de por vida con todas las funciones futuras incluidas. Es nuestro programa de fundadoras.",
+    q: "¿Cómo se paga la suscripción de Glowbook?",
+    a: "Mientras integramos pasarela de pagos, la activación se hace por transferencia bancaria coordinada con nosotras. Escríbenos por WhatsApp o email y te enviamos los datos. El plan Lifetime ($660 USD único pago) está disponible bajo el mismo esquema.",
   },
 ];
 

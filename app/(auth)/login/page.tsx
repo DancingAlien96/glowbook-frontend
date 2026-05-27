@@ -5,12 +5,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../_lib/auth";
 import { ApiError } from "../../_lib/api";
+import { defaultRouteForRole } from "../../_components/auth/RequireAuth";
 
 export default function LoginPage() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") || "/dashboard";
-  const { login, status } = useAuth();
+  const next = params.get("next");
+  const { login, status, user } = useAuth();
 
   const [email, setEmail] = useState("isabella@maisonrose.app");
   const [password, setPassword] = useState("glowbook123");
@@ -18,8 +19,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (status === "authenticated") router.replace(next);
-  }, [status, next, router]);
+    if (status === "authenticated" && user) {
+      router.replace(next || defaultRouteForRole(user.role));
+    }
+  }, [status, user, next, router]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +30,7 @@ export default function LoginPage() {
     setError(null);
     try {
       await login(email, password);
-      router.replace(next);
+      // Redirect happens via the effect once `user` is populated.
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "No pudimos iniciar sesión.");
     } finally {
@@ -89,9 +92,27 @@ export default function LoginPage() {
         </Link>
       </div>
 
-      <div className="mt-8 pt-6 border-t border-line text-center">
-        <p className="text-[11px] uppercase tracking-wider text-mauve-400 mb-1">Demo</p>
-        <p className="text-xs text-mauve-600 font-mono">isabella@maisonrose.app · glowbook123</p>
+      <div className="mt-8 pt-6 border-t border-line">
+        <p className="text-[11px] uppercase tracking-wider text-mauve-400 mb-2 text-center">Cuentas demo · password glowbook123</p>
+        <div className="grid gap-1.5">
+          {[
+            { label: "Admin", email: "admin@glowbook.app" },
+            { label: "Dueña", email: "isabella@maisonrose.app" },
+            { label: "Estilista", email: "valentina@maisonrose.app" },
+            { label: "Estilista", email: "camila@maisonrose.app" },
+            { label: "Estilista", email: "sofia@maisonrose.app" },
+          ].map((d) => (
+            <button
+              key={d.email}
+              type="button"
+              onClick={() => { setEmail(d.email); setPassword("glowbook123"); }}
+              className="text-left rounded-xl bg-cream-soft hover:bg-cream-soft/80 px-3 py-2 flex items-center justify-between transition"
+            >
+              <span className="text-xs text-mauve-600 font-mono truncate">{d.email}</span>
+              <span className="chip chip-cream text-[10px]">{d.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

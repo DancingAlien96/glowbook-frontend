@@ -28,8 +28,8 @@ const features = [
         <path d="M3 10h18M7 15h4" />
       </svg>
     ),
-    title: "Pagos anticipados",
-    desc: "Cobra el anticipo o pago completo antes de la cita. Acepta transferencias, tarjetas y comprobantes.",
+    title: "Anticipo por transferencia",
+    desc: "Asegura cada cita con un anticipo bancario. Tu clienta sube el comprobante y tú lo apruebas en un toque desde el panel.",
     accent: "from-gold-300 to-gold-400",
   },
   {

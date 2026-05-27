@@ -63,8 +63,8 @@ export default function RegisterPage() {
     <div className="card-elevated p-8 anim-fade-up">
       <div className="text-center">
         <span className="chip chip-blush">Crea tu salón</span>
-        <h1 className="mt-4 font-serif text-3xl text-mauve-900">Empieza tu prueba</h1>
-        <p className="mt-2 text-sm text-mauve-600">14 días sin tarjeta. Tu salón listo en 2 minutos.</p>
+        <h1 className="mt-4 font-serif text-3xl text-mauve-900">Crea tu salón</h1>
+        <p className="mt-2 text-sm text-mauve-600">Tu cuenta lista en 2 minutos. Activación coordinada por transferencia.</p>
       </div>
 
       <form onSubmit={onSubmit} className="mt-7 space-y-4">

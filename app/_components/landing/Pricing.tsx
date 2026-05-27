@@ -40,8 +40,8 @@ export default function Pricing() {
             </div>
             <div className="text-xs text-mauve-400 mt-1">Cancela cuando quieras.</div>
 
-            <Link href="/dashboard" className="btn btn-outline w-full h-12 mt-7">
-              Empezar ahora
+            <Link href="/register" className="btn btn-outline w-full h-12 mt-7">
+              Crear mi salón
             </Link>
 
             <ul className="mt-7 space-y-3">
@@ -76,8 +76,8 @@ export default function Pricing() {
               </div>
               <div className="text-xs text-mauve-400 mt-1">≈ 2.75 años del plan mensual.</div>
 
-              <Link href="/dashboard" className="btn btn-gold w-full h-12 mt-7">
-                Obtener acceso de por vida
+              <Link href="/register" className="btn btn-gold w-full h-12 mt-7">
+                Quiero acceso de por vida
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
               </Link>
 
@@ -94,7 +94,7 @@ export default function Pricing() {
         </div>
 
         <p className="mt-8 text-center text-xs text-mauve-400">
-          Pagos seguros con Stripe · Facturación electrónica · Garantía 30 días
+          Activación por transferencia bancaria · Coordinamos contigo personalmente · Garantía 30 días
         </p>
       </div>
     </section>

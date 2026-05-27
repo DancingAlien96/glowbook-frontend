@@ -33,8 +33,8 @@ export default function Hero() {
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link href="/dashboard" className="btn btn-primary h-12 px-6">
-                Comenzar gratis 14 días
+              <Link href="/register" className="btn btn-primary h-12 px-6">
+                Crear mi salón
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
               </Link>
               <Link href="#mockups" className="btn btn-ghost h-12 px-6">

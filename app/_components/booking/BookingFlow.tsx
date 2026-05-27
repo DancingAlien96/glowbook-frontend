@@ -5,6 +5,8 @@ import Link from "next/link";
 import Logo from "../shared/Logo";
 import { api, ApiError } from "../../_lib/api";
 import { useApi } from "../../_lib/useFetch";
+import { useUploadThing } from "../../_lib/uploadthing";
+import { optimizeImage, formatBytes } from "../../_lib/imageOptimize";
 import { money, initials } from "../../_lib/format";
 import { LoadingBlock, ErrorBlock } from "../dashboard/States";
 
@@ -12,7 +14,10 @@ type PublicSalon = {
   id: string;
   name: string;
   slug: string;
+  tagline: string | null;
   description: string | null;
+  coverImageUrl: string | null;
+  brandColor: string;
   currency: string;
   depositMode: "NONE" | "PERCENTAGE" | "FULL";
   depositPercent: number;
@@ -87,11 +92,31 @@ function Flow({ salon }: { salon: PublicSalon }) {
   const [date, setDate] = useState<Date | null>(null);
   const [time, setTime] = useState<string | null>(null); // "HH:MM"
   const [client, setClient] = useState({ name: "", email: "", phone: "", notes: "" });
-  const [paymentMode, setPaymentMode] = useState<"transfer" | "card">("transfer");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [receiptInfo, setReceiptInfo] = useState<string | null>(null);
+  const [optimizingReceipt, setOptimizingReceipt] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [bookingResult, setBookingResult] = useState<{ id: string } | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handlePickReceipt = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = e.target.files?.[0];
+    if (!picked) {
+      setReceiptFile(null);
+      setReceiptInfo(null);
+      return;
+    }
+    setSubmitError(null);
+    setOptimizingReceipt(true);
+    const { file, originalBytes, optimized } = await optimizeImage(picked, { maxMB: 3, maxDim: 2000 });
+    setOptimizingReceipt(false);
+    setReceiptFile(file);
+    setReceiptInfo(
+      optimized
+        ? `Optimizada de ${formatBytes(originalBytes)} a ${formatBytes(file.size)} ✦`
+        : `${formatBytes(file.size)} listo`
+    );
+  };
 
   const service = useMemo(() => salon.services.find((s) => s.id === serviceId) ?? null, [salon.services, serviceId]);
 
@@ -163,8 +188,13 @@ function Flow({ salon }: { salon: PublicSalon }) {
     (step === 0 && !!serviceId) ||
     (step === 1 && !!date && !!time) ||
     (step === 2 && client.name.trim().length > 1 && /\S+@\S+\.\S+/.test(client.email)) ||
-    (step === 3 && (salon.depositMode === "NONE" || (paymentMode === "transfer" ? !!receiptFile : true))) ||
+    (step === 3 && (salon.depositMode === "NONE" || !!receiptFile)) ||
     step === 4;
+
+  // UploadThing — imperative uploader. We pass appointmentId once we have it.
+  const { startUpload, isUploading } = useUploadThing("receiptUploader", {
+    onUploadError: (e) => setSubmitError(e.message || "No pudimos subir el comprobante."),
+  });
 
   const handleNext = async () => {
     if (step < 3) {
@@ -200,13 +230,17 @@ function Flow({ salon }: { salon: PublicSalon }) {
           }
         );
 
-        if (paymentMode === "transfer" && receiptFile && salon.depositMode !== "NONE") {
-          const fd = new FormData();
-          fd.append("receipt", receiptFile);
+        if (receiptFile && salon.depositMode !== "NONE") {
+          // 1) Upload to UploadThing with the appointmentId as metadata.
+          const uploaded = await startUpload([receiptFile], { appointmentId: appointment.id });
+          const file = uploaded?.[0];
+          if (!file) throw new Error("La subida fue cancelada.");
+
+          // 2) Register the URL with our API so the dueña ve el comprobante.
           await api(`/public/payments/${appointment.id}/receipt`, {
             method: "POST",
             auth: false,
-            body: fd,
+            body: { url: file.ufsUrl, name: file.name },
           });
         }
 
@@ -220,21 +254,57 @@ function Flow({ salon }: { salon: PublicSalon }) {
     }
   };
 
+  // Expose the salon's brand color as a CSS variable so we can tint accents.
+  const brandVars = { "--brand": salon.brandColor } as React.CSSProperties;
+
   return (
     <FlowShell>
+      <div style={brandVars}>
       {/* Salon hero */}
-      <div className="text-center max-w-2xl mx-auto mb-10">
-        <div className="inline-flex items-center gap-3">
-          <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-blush-300 to-blush-500 grid place-items-center text-cream font-serif text-2xl">
-            {initials(salon.name)}
-          </div>
-          <div className="text-left">
-            <div className="text-[11px] uppercase tracking-wider text-mauve-400">Reservar en</div>
-            <h1 className="font-serif text-2xl text-mauve-900 leading-tight">{salon.name}</h1>
+      {salon.coverImageUrl ? (
+        <div className="relative max-w-5xl mx-auto mb-8 rounded-[2rem] overflow-hidden border border-line shadow-[var(--shadow-soft)]">
+          <div
+            className="aspect-[3/1] sm:aspect-[16/5] bg-mauve-900/10"
+            style={{ backgroundImage: `url(${salon.coverImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-mauve-900/85 via-mauve-900/30 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8 flex items-end gap-4">
+            <div
+              className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl grid place-items-center text-cream font-serif text-2xl ring-2 ring-cream/40 shrink-0"
+              style={{ backgroundColor: salon.brandColor }}
+            >
+              {initials(salon.name)}
+            </div>
+            <div className="text-cream min-w-0">
+              <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-cream/80">Reservar en</div>
+              <h1 className="font-serif text-2xl sm:text-4xl leading-tight">{salon.name}</h1>
+              {salon.tagline && (
+                <p className="text-cream/90 text-sm sm:text-base mt-1 max-w-xl text-pretty">{salon.tagline}</p>
+              )}
+            </div>
           </div>
         </div>
-        {salon.description && <p className="mt-4 text-mauve-600 text-pretty">{salon.description}</p>}
-      </div>
+      ) : (
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <div className="inline-flex items-center gap-3">
+            <div
+              className="h-14 w-14 rounded-2xl grid place-items-center text-cream font-serif text-2xl"
+              style={{ backgroundColor: salon.brandColor }}
+            >
+              {initials(salon.name)}
+            </div>
+            <div className="text-left">
+              <div className="text-[11px] uppercase tracking-wider text-mauve-400">Reservar en</div>
+              <h1 className="font-serif text-2xl text-mauve-900 leading-tight">{salon.name}</h1>
+              {salon.tagline && <p className="text-mauve-600 text-sm mt-0.5">{salon.tagline}</p>}
+            </div>
+          </div>
+          {salon.description && <p className="mt-4 text-mauve-600 text-pretty">{salon.description}</p>}
+        </div>
+      )}
+      {salon.coverImageUrl && salon.description && (
+        <p className="text-center max-w-2xl mx-auto mb-8 text-mauve-600 text-pretty">{salon.description}</p>
+      )}
 
       <ol className="mx-auto max-w-3xl mb-8 grid grid-cols-5 gap-1.5">
         {STEPS.map((s, i) => {
@@ -418,65 +488,52 @@ function Flow({ salon }: { salon: PublicSalon }) {
                   <p className="text-sm text-mauve-600 mt-1">
                     {salon.depositMode === "FULL"
                       ? "Pago completo por adelantado."
-                      : `Anticipo del ${salon.depositPercent}% para confirmar tu reserva.`}
+                      : `Anticipo del ${salon.depositPercent}% para confirmar tu reserva.`}{" "}
+                    El pago se realiza por <span className="font-medium text-mauve-900">transferencia bancaria</span>.
                   </p>
 
-                  <div className="mt-5 grid sm:grid-cols-2 gap-3">
-                    {([
-                      { id: "transfer" as const, t: "Transferencia / Yape", d: "Sube tu comprobante para validación." },
-                      { id: "card" as const, t: "Tarjeta (próximamente)", d: "Stripe se integrará en una próxima actualización.", disabled: true },
-                    ]).map((m) => {
-                      const sel = m.id === paymentMode;
-                      return (
-                        <button
-                          key={m.id}
-                          onClick={() => !m.disabled && setPaymentMode(m.id)}
-                          disabled={m.disabled}
-                          className={`text-left rounded-2xl border-2 p-4 transition ${sel ? "border-mauve-900 bg-cream-soft" : "border-line bg-ivory hover:border-line-strong"} ${m.disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="font-serif text-lg text-mauve-900">{m.t}</div>
-                            <span className={`h-5 w-5 rounded-full grid place-items-center border-2 ${sel ? "bg-mauve-900 border-mauve-900" : "border-line-strong"}`}>
-                              {sel && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
-                            </span>
-                          </div>
-                          <p className="text-xs text-mauve-600 mt-1">{m.d}</p>
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <div className="mt-5 space-y-4">
+                    {salon.bankDetails ? (
+                      <div className="rounded-2xl bg-cream-soft p-4 border border-line">
+                        <div className="text-xs uppercase tracking-wider text-mauve-400">Datos para transferir</div>
+                        <pre className="mt-2 text-sm text-mauve-900 font-mono whitespace-pre-wrap leading-relaxed">{salon.bankDetails}</pre>
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl bg-blush-100/40 p-4 border border-blush-300/30 text-sm text-mauve-700">
+                        El salón aún no ha publicado sus datos bancarios. Contáctalo directamente para coordinar el anticipo.
+                      </div>
+                    )}
 
-                  {paymentMode === "transfer" && (
-                    <div className="mt-5 space-y-4">
-                      {salon.bankDetails && (
-                        <div className="rounded-2xl bg-cream-soft p-4 border border-line">
-                          <div className="text-xs uppercase tracking-wider text-mauve-400">Datos para transferir</div>
-                          <pre className="mt-2 text-sm text-mauve-900 font-mono whitespace-pre-wrap leading-relaxed">{salon.bankDetails}</pre>
-                        </div>
-                      )}
-
-                      <label className="block">
-                        <div className="text-xs uppercase tracking-wider text-mauve-400 mb-2">Sube tu comprobante</div>
-                        <div className="rounded-2xl border-2 border-dashed border-line-strong bg-ivory hover:border-mauve-900/30 hover:bg-cream-soft transition cursor-pointer p-6 text-center">
-                          <input
-                            type="file"
-                            accept="image/*,application/pdf"
-                            className="hidden"
-                            onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
-                          />
-                          <div className="h-12 w-12 rounded-full bg-mauve-900/5 grid place-items-center mx-auto">
+                    <label className="block">
+                      <div className="text-xs uppercase tracking-wider text-mauve-400 mb-2">Sube tu comprobante</div>
+                      <div className="rounded-2xl border-2 border-dashed border-line-strong bg-ivory hover:border-mauve-900/30 hover:bg-cream-soft transition cursor-pointer p-6 text-center">
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          className="hidden"
+                          onChange={handlePickReceipt}
+                          disabled={optimizingReceipt}
+                        />
+                        <div className="h-12 w-12 rounded-full bg-mauve-900/5 grid place-items-center mx-auto">
+                          {optimizingReceipt ? (
+                            <span className="h-4 w-4 rounded-full border-2 border-mauve-900/30 border-t-mauve-900 animate-spin" />
+                          ) : (
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-                          </div>
-                          <div className="mt-3 text-sm font-medium text-mauve-900">
-                            {receiptFile ? "Comprobante listo ✓" : "Toca para subir tu captura"}
-                          </div>
-                          <div className="text-xs text-mauve-400 mt-1">
-                            {receiptFile?.name ?? "PNG, JPG, PDF · máx. 5MB"}
-                          </div>
+                          )}
                         </div>
-                      </label>
-                    </div>
-                  )}
+                        <div className="mt-3 text-sm font-medium text-mauve-900">
+                          {optimizingReceipt
+                            ? "Optimizando tu imagen…"
+                            : receiptFile
+                            ? "Comprobante listo ✓"
+                            : "Toca para subir tu captura"}
+                        </div>
+                        <div className="text-xs text-mauve-400 mt-1">
+                          {receiptInfo ?? receiptFile?.name ?? "Si pasa el límite la optimizamos por ti · PNG, JPG, PDF"}
+                        </div>
+                      </div>
+                    </label>
+                  </div>
                 </>
               )}
 
@@ -496,7 +553,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
               </div>
               <h2 className="mt-5 font-serif text-3xl text-mauve-900">¡Tu cita está casi lista!</h2>
               <p className="mt-2 text-mauve-600 max-w-md mx-auto">
-                {paymentMode === "transfer" && salon.depositMode !== "NONE"
+                {salon.depositMode !== "NONE"
                   ? `Recibimos tu comprobante. ${salon.name} lo validará y te enviaremos la confirmación.`
                   : `Te enviamos los detalles a ${client.email}.`}
               </p>
@@ -531,10 +588,16 @@ function Flow({ salon }: { salon: PublicSalon }) {
               </button>
               <button
                 onClick={handleNext}
-                disabled={!canNext || submitting}
+                disabled={!canNext || submitting || isUploading}
                 className="btn btn-primary h-11 px-6 disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {submitting ? "Enviando…" : step === 3 ? "Confirmar reserva" : "Continuar"}
+                {isUploading
+                  ? "Subiendo comprobante…"
+                  : submitting
+                  ? "Confirmando…"
+                  : step === 3
+                  ? "Confirmar reserva"
+                  : "Continuar"}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
               </button>
             </div>
@@ -574,6 +637,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
             </p>
           </div>
         </aside>
+      </div>
       </div>
     </FlowShell>
   );

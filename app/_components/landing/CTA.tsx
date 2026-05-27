@@ -23,8 +23,8 @@ export default function CTA() {
               ofrecer una experiencia premium a sus clientas.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/dashboard" className="btn btn-gold h-12 px-6">
-                Comenzar mi prueba gratuita
+              <Link href="/register" className="btn btn-gold h-12 px-6">
+                Crear mi salón
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
               </Link>
               <Link href="/book/maison-rose" className="btn h-12 px-6 bg-cream/10 text-cream border border-cream/15 hover:bg-cream/15">
@@ -32,8 +32,8 @@ export default function CTA() {
               </Link>
             </div>
             <div className="mt-6 flex flex-wrap gap-6 text-sm text-cream/60">
-              <span>✦ Prueba 14 días</span>
-              <span>✦ Sin tarjeta</span>
+              <span>✦ Activación por transferencia</span>
+              <span>✦ Soporte personalizado</span>
               <span>✦ Cancela cuando quieras</span>
             </div>
           </div>

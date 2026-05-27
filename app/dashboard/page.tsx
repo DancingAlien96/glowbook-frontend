@@ -11,7 +11,7 @@ import type { Appointment, Metrics } from "../_lib/types";
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const currency = user?.ownedSalon?.currency ?? "USD";
+  const currency = user?.salon?.currency ?? "USD";
 
   const metricsQ = useApi<{ metrics: Metrics }>("/salon/me/metrics");
 
