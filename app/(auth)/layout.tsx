@@ -6,8 +6,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen bg-aurora-soft flex flex-col">
       <header className="px-6 py-5">
         <Link href="/" className="inline-flex items-center gap-2.5">
-          <Logo className="h-7 w-7" />
-          <span className="font-serif text-xl text-mauve-900 tracking-tight">Glowbook</span>
+          <Logo className="h-10 w-auto" />
         </Link>
       </header>
       <main className="flex-1 grid place-items-center px-4 pb-12">

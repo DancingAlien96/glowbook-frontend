@@ -87,7 +87,7 @@ export default function RegisterPage() {
         <div>
           <label className="text-xs uppercase tracking-wider text-mauve-400">URL pública</label>
           <div className="mt-1.5 flex items-center rounded-2xl border border-line-strong bg-ivory overflow-hidden">
-            <span className="px-3 text-xs text-mauve-400 font-mono">glowbook.app/</span>
+            <span className="px-3 text-xs text-mauve-400 font-mono">ecodama.online/</span>
             <input
               required
               minLength={3}

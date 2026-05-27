@@ -34,9 +34,8 @@ export default function Sidebar() {
 
   return (
     <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 flex-col border-r border-line bg-ivory/70 backdrop-blur-xl">
-      <div className="h-16 px-6 flex items-center gap-2.5 border-b border-line">
-        <Logo className="h-7 w-7" />
-        <span className="font-serif text-xl text-mauve-900 tracking-tight">Glowbook</span>
+      <div className="h-16 px-6 flex items-center border-b border-line">
+        <Logo className="h-10 w-auto" />
       </div>
 
       <div className="px-3 py-4">
@@ -49,7 +48,7 @@ export default function Sidebar() {
               {salon?.name ?? "Tu salón"}
             </div>
             <div className="text-[11px] text-mauve-400 truncate">
-              {salon ? `glowbook.app/${salon.slug}` : "—"}
+              {salon ? `ecodama.online/${salon.slug}` : "—"}
             </div>
           </div>
         </div>

@@ -19,7 +19,7 @@ export default function CTA() {
               Empieza hoy. <em className="not-italic text-gold-shimmer">Brilla mañana.</em>
             </h2>
             <p className="mt-5 text-cream/70 text-lg leading-relaxed">
-              Únete a las +2,400 dueñas de salones que ya eligieron Glowbook para
+              Únete a las +2,400 dueñas de salones que ya eligieron Ecodama para
               ofrecer una experiencia premium a sus clientas.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">

@@ -35,7 +35,7 @@ function DashboardMockup() {
           <span className="h-2.5 w-2.5 rounded-full bg-gold-300" />
           <span className="h-2.5 w-2.5 rounded-full bg-lavender-200" />
         </div>
-        <div className="text-[11px] text-mauve-400 font-mono">glowbook.app/dashboard</div>
+        <div className="text-[11px] text-mauve-400 font-mono">ecodama.online/dashboard</div>
         <span />
       </div>
 

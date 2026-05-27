@@ -6,7 +6,7 @@ export default function Topbar() {
   return (
     <header className="sticky top-0 z-40 h-16 border-b border-line bg-cream/80 backdrop-blur-xl">
       <div className="h-full px-4 sm:px-8 flex items-center gap-4">
-        <Link href="/" className="lg:hidden font-serif text-xl text-mauve-900">Glowbook</Link>
+        <Link href="/" className="lg:hidden font-serif text-xl text-mauve-900">Ecodama</Link>
 
         <div className="flex-1 max-w-md hidden sm:block">
           <div className="relative">

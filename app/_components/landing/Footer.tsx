@@ -37,9 +37,8 @@ export default function Footer() {
       <div className="container-tight py-16">
         <div className="grid lg:grid-cols-[1.4fr_2fr] gap-12">
           <div>
-            <Link href="/" className="flex items-center gap-2.5">
-              <Logo className="h-8 w-8" />
-              <span className="font-serif text-2xl text-mauve-900 tracking-tight">Glowbook</span>
+            <Link href="/" className="flex items-center">
+              <Logo className="h-14 w-auto" />
             </Link>
             <p className="mt-4 text-mauve-600 max-w-sm text-pretty">
               La plataforma premium de reservas para salones de belleza, spas y
@@ -87,7 +86,7 @@ export default function Footer() {
         <div className="divider-gold mt-14" />
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-xs text-mauve-400">
-          <span>© {new Date().getFullYear()} Glowbook. Hecho con ✦ para salones premium.</span>
+          <span>© {new Date().getFullYear()} Ecodama. Hecho con ✦ para salones premium.</span>
           <div className="flex gap-4">
             <a href="#" className="hover:text-mauve-900 transition-colors">Instagram</a>
             <a href="#" className="hover:text-mauve-900 transition-colors">TikTok</a>

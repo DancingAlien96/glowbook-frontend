@@ -28,7 +28,7 @@ const faqs = [
     a: "Como ya cobraste el anticipo por transferencia, parte del costo está cubierto. Puedes marcarla como 'No asistió' desde el panel y queda en su ficha para futuras decisiones de reserva.",
   },
   {
-    q: "¿Cómo se paga la suscripción de Glowbook?",
+    q: "¿Cómo se paga la suscripción de Ecodama?",
     a: "Mientras integramos pasarela de pagos, la activación se hace por transferencia bancaria coordinada con nosotras. Escríbenos por WhatsApp o email y te enviamos los datos. El plan Lifetime ($660 USD único pago) está disponible bajo el mismo esquema.",
   },
 ];
@@ -76,7 +76,7 @@ export default function FAQ() {
 
         <p className="mt-10 text-center text-sm text-mauve-600">
           ¿Otra pregunta?{" "}
-          <a href="mailto:hola@glowbook.app" className="text-mauve-900 underline-offset-4 hover:underline">
+          <a href="mailto:hola@ecodama.online" className="text-mauve-900 underline-offset-4 hover:underline">
             Escríbenos
           </a>{" "}
           y te respondemos en menos de 24h.

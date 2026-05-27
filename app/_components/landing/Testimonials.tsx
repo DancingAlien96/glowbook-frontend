@@ -1,7 +1,7 @@
 const testimonials = [
   {
     quote:
-      "Glowbook transformó por completo cómo mis clientas reservan. La interfaz se siente como una experiencia spa: delicada, elegante y sin fricción.",
+      "Ecodama transformó por completo cómo mis clientas reservan. La interfaz se siente como una experiencia spa: delicada, elegante y sin fricción.",
     name: "Catalina Ríos",
     role: "Fundadora · Maison Rosé",
     avatar: "from-blush-300 to-blush-500",
@@ -22,7 +22,7 @@ const testimonials = [
   },
   {
     quote:
-      "Mis clientas me dicen ‘qué bonita tu página de reservas’. Eso no me lo decían antes. Glowbook se siente como una extensión de mi salón.",
+      "Mis clientas me dicen ‘qué bonita tu página de reservas’. Eso no me lo decían antes. Ecodama se siente como una extensión de mi salón.",
     name: "Andrea Mendoza",
     role: "Maquilladora profesional",
     avatar: "from-nude-200 to-blush-300",

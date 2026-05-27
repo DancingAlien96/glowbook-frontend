@@ -19,7 +19,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Glowbook — Reservas premium para salones de belleza",
+  title: "Ecodama — Reservas premium para salones de belleza",
   description:
     "El sistema de citas elegante y moderno para salones, spas, estilistas y profesionales de la belleza. Agenda inteligente, pagos anticipados y experiencia premium para tus clientas.",
   keywords: [
@@ -27,10 +27,10 @@ export const metadata: Metadata = {
     "agenda spa",
     "citas online estilistas",
     "software peluquería",
-    "Glowbook",
+    "Ecodama",
   ],
   openGraph: {
-    title: "Glowbook — Reservas premium para salones de belleza",
+    title: "Ecodama — Reservas premium para salones de belleza",
     description:
       "Agenda elegante, pagos anticipados y panel administrativo intuitivo para tu salón.",
     type: "website",

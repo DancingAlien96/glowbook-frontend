@@ -109,7 +109,7 @@ export default function BillingPage() {
         <div className="text-xs text-mauve-400">Plan & facturación</div>
         <h1 className="font-serif text-3xl sm:text-4xl text-mauve-900 leading-tight">Tu suscripción</h1>
         <p className="mt-2 text-mauve-600 max-w-xl text-sm">
-          Paga tu plan por transferencia bancaria y sube el comprobante. Glowbook lo revisa y activa tu próximo período.
+          Paga tu plan por transferencia bancaria y sube el comprobante. Ecodama lo revisa y activa tu próximo período.
         </p>
       </div>
 
@@ -155,7 +155,7 @@ export default function BillingPage() {
         <section className="card-elevated p-6">
           <h2 className="font-serif text-xl text-mauve-900">Pagar / renovar</h2>
           <p className="text-sm text-mauve-600 mt-1">
-            Transfiere a la cuenta de Glowbook y sube tu comprobante. Activamos tu próximo período en cuanto lo aprobemos
+            Transfiere a la cuenta de Ecodama y sube tu comprobante. Activamos tu próximo período en cuanto lo aprobemos
             (usualmente en menos de 24h).
           </p>
 
@@ -165,7 +165,7 @@ export default function BillingPage() {
               {platform.bankDetails ? (
                 <pre className="mt-2 text-sm text-mauve-900 font-mono whitespace-pre-wrap leading-relaxed">{platform.bankDetails}</pre>
               ) : (
-                <p className="mt-2 text-sm text-mauve-600">El equipo de Glowbook aún no publicó datos. Contáctanos.</p>
+                <p className="mt-2 text-sm text-mauve-600">El equipo de Ecodama aún no publicó datos. Contáctanos.</p>
               )}
               {(platform.contactEmail || platform.contactWhatsapp) && (
                 <div className="mt-3 pt-3 border-t border-line text-xs text-mauve-600 space-y-1">

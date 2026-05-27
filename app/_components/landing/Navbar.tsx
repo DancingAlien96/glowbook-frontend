@@ -37,11 +37,8 @@ export default function Navbar() {
               : "h-16 bg-transparent"
           }`}
         >
-          <Link href="/" className="flex items-center gap-2.5">
-            <Logo className="h-7 w-7" />
-            <span className="font-serif text-xl text-mauve-900 tracking-tight">
-              Glowbook
-            </span>
+          <Link href="/" className="flex items-center">
+            <Logo className="h-10 w-auto" />
           </Link>
 
           <ul className="hidden md:flex items-center gap-1">

@@ -68,7 +68,7 @@ export default function AdminSettingsPage() {
           onChange={(e) => setForm({ ...form, bankDetails: e.target.value })}
           className="input-soft mt-3 h-auto py-3 resize-none font-mono text-sm"
           placeholder="Banco Pichincha · Cta. Ahorros 2200-100-200
-Glowbook S.A.S. · RUC 0999999999001
+Ecodama S.A.S. · RUC 0999999999001
 Referencia: nombre de tu salón"
         />
       </section>
@@ -140,7 +140,7 @@ Referencia: nombre de tu salón"
               value={form.contactEmail ?? ""}
               onChange={(e) => setForm({ ...form, contactEmail: e.target.value })}
               className="input-soft mt-1.5"
-              placeholder="hola@glowbook.app"
+              placeholder="hola@ecodama.online"
             />
           </div>
           <div>

@@ -272,7 +272,7 @@ export default function SettingsPage() {
             <div>
               <label className="text-xs uppercase tracking-wider text-mauve-400">URL pública</label>
               <div className="mt-1.5 flex items-center rounded-2xl border border-line-strong bg-cream-soft overflow-hidden">
-                <span className="px-3 text-xs text-mauve-400 font-mono">glowbook.app/</span>
+                <span className="px-3 text-xs text-mauve-400 font-mono">ecodama.online/</span>
                 <span className="flex-1 px-2 py-3 text-sm text-mauve-900 font-mono">{salon.slug}</span>
               </div>
               <div className="mt-1 text-[11px] text-mauve-400">El slug no se puede cambiar después de creado.</div>

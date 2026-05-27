@@ -26,7 +26,7 @@ export default function Hero() {
             </h1>
 
             <p className="mt-6 max-w-xl text-lg text-mauve-600 leading-relaxed text-pretty">
-              Glowbook es el sistema de citas elegante, intuitivo y refinado para
+              Ecodama es el sistema de citas elegante, intuitivo y refinado para
               salones, spas y profesionales del cuidado personal. Reservas sin
               fricción, pagos anticipados y una experiencia que tus clientas
               recordarán.
@@ -50,7 +50,7 @@ export default function Hero() {
                     <span key={i} className={`h-7 w-7 rounded-full bg-gradient-to-br ${c} ring-2 ring-cream`} />
                   ))}
                 </div>
-                <span><strong className="text-mauve-900">+2,400</strong> salones confían en Glowbook</span>
+                <span><strong className="text-mauve-900">+2,400</strong> salones confían en Ecodama</span>
               </div>
               <div className="flex items-center gap-1.5">
                 {[...Array(5)].map((_, i) => (

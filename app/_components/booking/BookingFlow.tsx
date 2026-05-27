@@ -74,8 +74,7 @@ function FlowShell({ children }: { children: React.ReactNode }) {
       <header className="border-b border-line bg-cream/70 backdrop-blur-xl">
         <div className="container-tight h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <Logo className="h-7 w-7" />
-            <span className="font-serif text-xl text-mauve-900 tracking-tight">Glowbook</span>
+            <Logo className="h-10 w-auto" />
           </Link>
         </div>
       </header>

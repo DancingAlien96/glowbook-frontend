@@ -39,7 +39,7 @@ const steps = [
       <div className="space-y-3">
         <div className="rounded-xl bg-mauve-900 p-3 flex items-center gap-2 text-cream/80 text-[11px] font-mono">
           <span className="h-2 w-2 rounded-full bg-gold-400" />
-          glowbook.app/<span className="text-cream">tu-salon</span>
+          ecodama.online/<span className="text-cream">tu-salon</span>
         </div>
         <div className="grid grid-cols-3 gap-2">
           {["WhatsApp", "Instagram", "QR"].map((t) => (

@@ -19,7 +19,7 @@ export default function AdminOverviewPage() {
   return (
     <div className="space-y-6">
       <div>
-        <div className="text-xs text-mauve-400">Glowbook · platform</div>
+        <div className="text-xs text-mauve-400">Ecodama · platform</div>
         <h1 className="font-serif text-3xl sm:text-4xl text-mauve-900 leading-tight">Tu negocio en vivo</h1>
       </div>
 
@@ -69,7 +69,7 @@ export default function AdminOverviewPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-mauve-900 truncate">{s.name}</div>
-                  <div className="text-[11px] text-mauve-400 truncate font-mono">glowbook.app/{s.slug}</div>
+                  <div className="text-[11px] text-mauve-400 truncate font-mono">ecodama.online/{s.slug}</div>
                 </div>
                 <SubBadge status={s.subscription?.status ?? "TRIAL"} />
               </li>
