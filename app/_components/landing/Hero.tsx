@@ -92,8 +92,8 @@ function HeroVisual() {
         <div className="absolute inset-0 bg-gradient-to-t from-mauve-900/10 via-transparent to-transparent" />
       </div>
 
-      {/* Floating glass card: next appointment */}
-      <div className="absolute -left-4 sm:-left-8 bottom-6 w-60 glass rounded-2xl p-3.5 anim-float">
+      {/* Floating glass card: next appointment (desktop flourish — hidden on mobile) */}
+      <div className="hidden sm:block absolute -left-4 sm:-left-8 bottom-6 w-60 glass rounded-2xl p-3.5 anim-float">
         <div className="flex items-start justify-between">
           <span className="chip chip-blush text-[10px]">Próxima cita</span>
           <span className="chip status-confirmed text-[10px]">Confirmada</span>
