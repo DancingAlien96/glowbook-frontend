@@ -54,16 +54,19 @@ export default function Navbar() {
             ))}
           </ul>
 
-          {/* Auth CTAs — use .btn so visibility never depends on Tailwind
-              responsive display variants (they were unreliable in this setup). */}
           <div className="flex items-center gap-2">
-            <Link href="/login" className="btn btn-ghost h-10 px-4 text-sm">
-              Iniciar sesión
-            </Link>
-            <Link href="/register" className="btn btn-primary h-10 px-4 text-sm">
-              Comenzar
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-            </Link>
+            {/* Auth CTAs — desktop only; on mobile they live in the menu.
+                Wrapped in a hidden/lg:flex container so the .btn display
+                rule doesn't fight the responsive hide. */}
+            <div className="hidden lg:flex items-center gap-2">
+              <Link href="/login" className="btn btn-ghost h-10 px-4 text-sm">
+                Iniciar sesión
+              </Link>
+              <Link href="/register" className="btn btn-primary h-10 px-4 text-sm">
+                Comenzar
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              </Link>
+            </div>
 
             <button
               type="button"
