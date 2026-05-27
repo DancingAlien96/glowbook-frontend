@@ -41,7 +41,7 @@ export default function Navbar() {
             <Logo className={`w-auto transition-all duration-300 ${scrolled ? "h-12" : "h-16"}`} />
           </Link>
 
-          <ul className="hidden md:flex items-center gap-1">
+          <ul className="hidden lg:flex items-center gap-1">
             {links.map((l) => (
               <li key={l.href}>
                 <a
@@ -54,30 +54,32 @@ export default function Navbar() {
             ))}
           </ul>
 
-          <div className="hidden md:flex items-center gap-2.5">
-            <Link href="/login" className="text-sm text-mauve-600 hover:text-mauve-900 px-3.5 py-2 transition-colors">
+          {/* Auth CTAs — use .btn so visibility never depends on Tailwind
+              responsive display variants (they were unreliable in this setup). */}
+          <div className="flex items-center gap-2">
+            <Link href="/login" className="btn btn-ghost h-10 px-4 text-sm">
               Iniciar sesión
             </Link>
             <Link href="/register" className="btn btn-primary h-10 px-4 text-sm">
               Comenzar
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
             </Link>
-          </div>
 
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            className="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-full bg-mauve-900/5"
-            aria-label="Menú"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              {open ? <path d="M6 6l12 12M6 18L18 6" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
-            </svg>
-          </button>
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              className="lg:hidden inline-flex items-center justify-center h-10 w-10 rounded-full bg-mauve-900/5"
+              aria-label="Menú"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                {open ? <path d="M6 6l12 12M6 18L18 6" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+              </svg>
+            </button>
+          </div>
         </nav>
 
         {open && (
-          <div className="md:hidden mt-2 glass-strong rounded-2xl p-4 anim-fade-up">
+          <div className="lg:hidden mt-2 glass-strong rounded-2xl p-4 anim-fade-up">
             <ul className="flex flex-col gap-1">
               {links.map((l) => (
                 <li key={l.href}>

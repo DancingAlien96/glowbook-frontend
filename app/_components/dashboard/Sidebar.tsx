@@ -27,39 +27,47 @@ const nav = [
   },
 ];
 
-export default function Sidebar() {
+function SidebarContent({
+  onNavigate,
+  collapsed = false,
+  onToggleCollapse,
+}: {
+  onNavigate?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
+}) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const salon = user?.salon;
 
   return (
-    <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 flex-col border-r border-line bg-ivory/70 backdrop-blur-xl">
-      <div className="h-20 px-6 flex items-center border-b border-line">
-        <Logo className="h-14 w-auto" />
+    <>
+      <div className={`h-20 flex items-center border-b border-line shrink-0 ${collapsed ? "justify-center px-2" : "px-6"}`}>
+        <Logo className={collapsed ? "h-10 w-auto" : "h-14 w-auto"} />
       </div>
 
-      <div className="px-3 py-4">
-        <div className="card-surface p-3 flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blush-300 to-blush-500 grid place-items-center text-cream font-serif">
+      <div className={collapsed ? "px-2 py-4" : "px-3 py-4"}>
+        <div className={`card-surface flex items-center ${collapsed ? "p-2 justify-center" : "p-3 gap-3"}`}>
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blush-300 to-blush-500 grid place-items-center text-cream font-serif shrink-0">
             {salon ? initials(salon.name) : "—"}
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-sm font-medium text-mauve-900 truncate">
-              {salon?.name ?? "Tu salón"}
+          {!collapsed && (
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium text-mauve-900 truncate">{salon?.name ?? "Tu salón"}</div>
+              <div className="text-[11px] text-mauve-400 truncate">{salon ? `ecodama.online/${salon.slug}` : "—"}</div>
             </div>
-            <div className="text-[11px] text-mauve-400 truncate">
-              {salon ? `ecodama.online/${salon.slug}` : "—"}
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
-      <nav className="flex-1 px-3 overflow-y-auto pb-6">
+      <nav className={`flex-1 overflow-y-auto pb-6 ${collapsed ? "px-2" : "px-3"}`}>
         {nav.map((section) => (
           <div key={section.section} className="mt-3">
-            <div className="px-3 py-2 text-[10px] uppercase tracking-[0.2em] text-mauve-400 font-medium">
-              {section.section}
-            </div>
+            {!collapsed && (
+              <div className="px-3 py-2 text-[10px] uppercase tracking-[0.2em] text-mauve-400 font-medium">
+                {section.section}
+              </div>
+            )}
             <ul className="space-y-0.5">
               {section.items.map((item) => {
                 const active = pathname === item.href;
@@ -67,14 +75,18 @@ export default function Sidebar() {
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
+                      onClick={onNavigate}
+                      title={collapsed ? item.label : undefined}
+                      className={`flex items-center rounded-xl text-sm transition-all ${
+                        collapsed ? "justify-center h-11" : "gap-3 px-3 py-2.5"
+                      } ${
                         active
                           ? "bg-gradient-to-r from-mauve-900 to-mauve-800 text-cream shadow-[0_8px_20px_-8px_rgba(56,39,47,0.4)]"
                           : "text-mauve-700 hover:bg-mauve-900/5"
                       }`}
                     >
                       <span className={active ? "text-cream" : "text-mauve-600"}>{item.icon}</span>
-                      <span>{item.label}</span>
+                      {!collapsed && <span>{item.label}</span>}
                     </Link>
                   </li>
                 );
@@ -84,17 +96,78 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="px-3 pb-3">
+      <div className={`pb-3 ${collapsed ? "px-2" : "px-3"}`}>
         <button
           onClick={() => logout()}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-mauve-700 hover:bg-mauve-900/5 transition"
+          title={collapsed ? "Cerrar sesión" : undefined}
+          className={`w-full flex items-center rounded-xl text-sm text-mauve-700 hover:bg-mauve-900/5 transition ${
+            collapsed ? "justify-center h-11" : "gap-3 px-3 py-2.5"
+          }`}
         >
           <IconLogout />
-          <span className="flex-1 text-left">Cerrar sesión</span>
-          <span className="text-[10px] text-mauve-400 truncate">{user?.email}</span>
+          {!collapsed && (
+            <>
+              <span className="flex-1 text-left">Cerrar sesión</span>
+              <span className="text-[10px] text-mauve-400 truncate">{user?.email}</span>
+            </>
+          )}
         </button>
+
+        {/* Collapse toggle — desktop only (provided via onToggleCollapse) */}
+        {onToggleCollapse && (
+          <button
+            onClick={onToggleCollapse}
+            title={collapsed ? "Expandir menú" : "Colapsar menú"}
+            className={`mt-1 w-full flex items-center rounded-xl text-sm text-mauve-400 hover:text-mauve-700 hover:bg-mauve-900/5 transition ${
+              collapsed ? "justify-center h-11" : "gap-3 px-3 py-2.5"
+            }`}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${collapsed ? "rotate-180" : ""}`}>
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            {!collapsed && <span>Colapsar menú</span>}
+          </button>
+        )}
       </div>
-    </aside>
+    </>
+  );
+}
+
+export default function Sidebar({
+  open = false,
+  onClose,
+  collapsed = false,
+  onToggleCollapse,
+}: {
+  open?: boolean;
+  onClose?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
+}) {
+  return (
+    <>
+      {/* Desktop: fixed sidebar (collapsible) */}
+      <aside
+        className={`hidden lg:flex fixed inset-y-0 left-0 flex-col border-r border-line bg-ivory/70 backdrop-blur-xl transition-all duration-300 ${
+          collapsed ? "w-20" : "w-64"
+        }`}
+      >
+        <SidebarContent collapsed={collapsed} onToggleCollapse={onToggleCollapse} />
+      </aside>
+
+      {/* Mobile: slide-in drawer (always full width) */}
+      <div className={`lg:hidden fixed inset-0 z-50 ${open ? "" : "pointer-events-none"}`}>
+        <div
+          onClick={onClose}
+          className={`absolute inset-0 bg-mauve-900/40 backdrop-blur-sm transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0"}`}
+        />
+        <aside
+          className={`absolute inset-y-0 left-0 w-72 max-w-[85vw] flex flex-col bg-ivory border-r border-line shadow-2xl transition-transform duration-300 ${open ? "translate-x-0" : "-translate-x-full"}`}
+        >
+          <SidebarContent onNavigate={onClose} />
+        </aside>
+      </div>
+    </>
   );
 }
 

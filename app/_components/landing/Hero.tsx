@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Hero() {
@@ -12,7 +13,7 @@ export default function Hero() {
       <div className="pointer-events-none absolute top-32 -right-20 h-80 w-80 rounded-full bg-lavender-100/70 blur-3xl anim-drift" style={{ animationDelay: "-3s" }} />
 
       <div className="container-tight relative">
-        <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-16 items-center">
+        <div className="grid lg:grid-cols-[1.02fr_0.98fr] gap-12 lg:gap-16 items-center">
           {/* Left: copy */}
           <div className="anim-fade-up">
             <span className="chip chip-gold inline-flex">
@@ -61,9 +62,9 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Right: layered product mock */}
+          {/* Right: hero photo with floating booking card */}
           <div className="relative anim-fade-up delay-200">
-            <HeroMockup />
+            <HeroVisual />
           </div>
         </div>
       </div>
@@ -71,89 +72,56 @@ export default function Hero() {
   );
 }
 
-function HeroMockup() {
+function HeroVisual() {
   return (
     <div className="relative mx-auto max-w-md lg:max-w-none">
-      {/* Glow underlay */}
-      <div className="absolute -inset-8 bg-gradient-to-tr from-blush-200/60 via-cream to-lavender-100/60 blur-2xl rounded-[3rem]" />
+      {/* Soft glow behind the photo */}
+      <div className="absolute -inset-6 bg-gradient-to-tr from-blush-200/70 via-cream to-lavender-100/70 blur-2xl rounded-[3rem]" />
 
-      {/* Main card: booking confirmation */}
-      <div className="relative card-elevated p-6 sm:p-7">
+      {/* Photo frame */}
+      <div className="relative rounded-[2rem] overflow-hidden ring-1 ring-white/60 shadow-[var(--shadow-elevated)]">
+        <Image
+          src="/hero.png"
+          alt="Profesional de la belleza en su salón"
+          width={1200}
+          height={800}
+          priority
+          className="w-full h-auto object-cover"
+        />
+        {/* subtle warm overlay to blend with the palette */}
+        <div className="absolute inset-0 bg-gradient-to-t from-mauve-900/10 via-transparent to-transparent" />
+      </div>
+
+      {/* Floating glass card: next appointment */}
+      <div className="absolute -left-4 sm:-left-8 bottom-6 w-60 glass rounded-2xl p-3.5 anim-float">
         <div className="flex items-start justify-between">
-          <div>
-            <span className="chip chip-blush">Próxima cita</span>
-            <h3 className="mt-3 font-serif text-2xl text-mauve-900 leading-snug">
-              Manicure rusa <br/> + diseño nail art
-            </h3>
-          </div>
-          <span className="chip status-confirmed">Confirmada</span>
+          <span className="chip chip-blush text-[10px]">Próxima cita</span>
+          <span className="chip status-confirmed text-[10px]">Confirmada</span>
         </div>
-
-        <div className="mt-6 grid grid-cols-3 gap-3 text-sm">
-          <div className="rounded-xl bg-cream-soft p-3">
-            <div className="text-[11px] uppercase tracking-wider text-mauve-400">Fecha</div>
-            <div className="mt-1 font-medium text-mauve-900">Vie 29 May</div>
-          </div>
-          <div className="rounded-xl bg-cream-soft p-3">
-            <div className="text-[11px] uppercase tracking-wider text-mauve-400">Hora</div>
-            <div className="mt-1 font-medium text-mauve-900">3:30 PM</div>
-          </div>
-          <div className="rounded-xl bg-cream-soft p-3">
-            <div className="text-[11px] uppercase tracking-wider text-mauve-400">Duración</div>
-            <div className="mt-1 font-medium text-mauve-900">90 min</div>
-          </div>
+        <div className="mt-2 font-serif text-base text-mauve-900 leading-snug">
+          Manicure rusa + nail art
         </div>
-
-        <div className="mt-5 flex items-center justify-between rounded-2xl border border-line p-3.5">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blush-300 to-blush-500 grid place-items-center text-cream font-serif">V</div>
-            <div>
-              <div className="text-sm font-medium text-mauve-900">Valentina Rojas</div>
-              <div className="text-xs text-mauve-400">Estilista · Nail artist senior</div>
-            </div>
+        <div className="mt-2 flex items-center gap-2">
+          <span className="h-7 w-7 rounded-full bg-gradient-to-br from-blush-300 to-blush-500 grid place-items-center text-cream text-[11px] font-serif">V</span>
+          <div className="text-[11px] text-mauve-600 leading-tight">
+            Valentina · Vie 29 May<br />3:30 PM · 90 min
           </div>
-          <button className="text-xs text-mauve-600 underline-offset-4 hover:underline">Cambiar</button>
-        </div>
-
-        <div className="mt-5 flex items-center justify-between">
-          <div>
-            <div className="text-xs text-mauve-400">Anticipo (30%)</div>
-            <div className="font-serif text-2xl text-mauve-900">$18.<span className="text-mauve-400 text-lg">00</span></div>
-          </div>
-          <button className="btn btn-gold h-11 px-5 text-sm">
-            Pagar anticipo
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-          </button>
         </div>
       </div>
 
       {/* Floating mini card: payment received */}
-      <div className="absolute -left-8 -bottom-10 w-64 card-surface p-3.5 anim-float hidden sm:block">
-        <div className="flex items-center gap-3">
+      <div className="absolute -right-3 sm:-right-6 top-6 w-52 glass rounded-2xl p-3 anim-float hidden sm:block" style={{ animationDelay: "-2s" }}>
+        <div className="flex items-center gap-2.5">
           <div className="relative">
-            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-gold-300 to-gold-500 grid place-items-center">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#21161B" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-gold-300 to-gold-500 grid place-items-center">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#21161B" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
             <span className="absolute inset-0 rounded-full anim-pulse-ring" />
           </div>
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-mauve-400">Pago recibido</div>
+            <div className="text-[10px] uppercase tracking-wider text-mauve-400">Anticipo recibido</div>
             <div className="text-sm font-medium text-mauve-900">$18.00 · Catalina M.</div>
           </div>
-        </div>
-      </div>
-
-      {/* Floating mini card: today metric */}
-      <div className="absolute -right-6 -top-8 w-56 card-surface p-3.5 anim-float hidden sm:block" style={{ animationDelay: "-2s" }}>
-        <div className="text-[11px] uppercase tracking-wider text-mauve-400">Hoy</div>
-        <div className="mt-1 flex items-end gap-2">
-          <div className="font-serif text-2xl text-mauve-900">12</div>
-          <div className="text-xs text-mauve-600 mb-1">citas confirmadas</div>
-        </div>
-        <div className="mt-3 flex items-end gap-1 h-8">
-          {[4, 7, 5, 9, 6, 10, 12, 8].map((h, i) => (
-            <span key={i} className="flex-1 rounded-sm bg-gradient-to-t from-blush-200 to-blush-400" style={{ height: `${h * 8}%` }} />
-          ))}
         </div>
       </div>
     </div>

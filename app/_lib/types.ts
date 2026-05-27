@@ -64,6 +64,21 @@ export interface BusinessHour {
   closeMin: number;
 }
 
+/** A weekly schedule row (salon or per-stylist). */
+export interface WeekHour {
+  dayOfWeek: number;
+  openMin: number;
+  closeMin: number;
+}
+
+export interface BlockedSlot {
+  id: string;
+  stylistId: string | null;
+  startAt: string;
+  endAt: string;
+  reason: string | null;
+}
+
 export interface Service {
   id: string;
   name: string;

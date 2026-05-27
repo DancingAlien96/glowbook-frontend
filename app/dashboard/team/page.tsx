@@ -4,7 +4,9 @@ import { useState } from "react";
 import { api, ApiError } from "../../_lib/api";
 import { useApi } from "../../_lib/useFetch";
 import { LoadingBlock, ErrorBlock, EmptyBlock } from "../../_components/dashboard/States";
+import WeeklyHoursEditor from "../../_components/dashboard/WeeklyHoursEditor";
 import { initials, formatDate } from "../../_lib/format";
+import type { WeekHour } from "../../_lib/types";
 
 type Member = {
   id: string;
@@ -17,6 +19,7 @@ type Member = {
     role: string | null;
     active: boolean;
     services: { serviceId: string }[];
+    hours: WeekHour[];
   } | null;
 };
 
@@ -26,6 +29,7 @@ export default function TeamPage() {
   const { data, loading, error, refetch } = useApi<{ members: Member[] }>("/staff");
   const [showNew, setShowNew] = useState(false);
   const [resetFor, setResetFor] = useState<Member | null>(null);
+  const [hoursFor, setHoursFor] = useState<Member | null>(null);
 
   const members = data?.members ?? [];
 
@@ -103,10 +107,23 @@ export default function TeamPage() {
                   </span>
                 </div>
 
-                <div className="mt-3 grid grid-cols-3 gap-1.5">
+                {m.stylist && (
+                  <div className="mt-3 flex items-center justify-between rounded-xl bg-cream-soft/60 px-3 py-2">
+                    <span className="text-[11px] text-mauve-500">
+                      {m.stylist.hours.length > 0
+                        ? `Horario propio · ${m.stylist.hours.length} día${m.stylist.hours.length === 1 ? "" : "s"}`
+                        : "Hereda el horario del salón"}
+                    </span>
+                    <button onClick={() => setHoursFor(m)} className="text-[11px] font-medium text-mauve-900 underline-offset-4 hover:underline">
+                      🗓 Editar horario
+                    </button>
+                  </div>
+                )}
+
+                <div className="mt-3 flex flex-wrap gap-1.5">
                   <button
                     onClick={() => setResetFor(m)}
-                    className="btn btn-ghost h-9 text-[11px]"
+                    className="btn btn-ghost h-9 text-[11px] flex-1"
                     title="Restablecer contraseña"
                   >
                     🔑 Clave
@@ -114,7 +131,7 @@ export default function TeamPage() {
                   {m.stylist && (
                     <button
                       onClick={() => toggleActive(m)}
-                      className="btn btn-ghost h-9 text-[11px]"
+                      className="btn btn-ghost h-9 text-[11px] flex-1"
                       title={inactive ? "Reactivar" : "Pausar acceso"}
                     >
                       {inactive ? "▶ Activar" : "⏸ Pausar"}
@@ -122,7 +139,7 @@ export default function TeamPage() {
                   )}
                   <button
                     onClick={() => removeMember(m)}
-                    className="btn btn-ghost h-9 text-[11px] text-blush-500 border-blush-300/30 hover:bg-blush-100/40"
+                    className="btn btn-ghost h-9 text-[11px] flex-1 text-blush-500 border-blush-300/30 hover:bg-blush-100/40"
                   >
                     🗑 Eliminar
                   </button>
@@ -135,6 +152,51 @@ export default function TeamPage() {
 
       {showNew && <NewMemberModal onClose={() => setShowNew(false)} onCreated={refetch} />}
       {resetFor && <ResetPasswordModal member={resetFor} onClose={() => setResetFor(null)} />}
+      {hoursFor?.stylist && (
+        <StylistHoursModal member={hoursFor} onClose={() => setHoursFor(null)} onSaved={refetch} />
+      )}
+    </div>
+  );
+}
+
+function StylistHoursModal({
+  member,
+  onClose,
+  onSaved,
+}: {
+  member: Member;
+  onClose: () => void;
+  onSaved: () => Promise<void>;
+}) {
+  const stylist = member.stylist!;
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-0 sm:p-4 bg-mauve-900/40 backdrop-blur-sm" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className="card-elevated w-full sm:max-w-lg p-6 sm:p-7 rounded-b-none sm:rounded-3xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="font-serif text-2xl text-mauve-900">Horario de {member.name.split(" ")[0]}</h3>
+            <p className="text-sm text-mauve-600 mt-1">
+              Define los días y horas en que atiende. Si lo dejas todo cerrado, hereda el horario del salón.
+            </p>
+          </div>
+          <button onClick={onClose} className="h-9 w-9 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-700 hover:bg-mauve-900/10 shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div className="mt-5">
+          <WeeklyHoursEditor
+            hours={stylist.hours}
+            saveLabel="Guardar horario"
+            compact
+            onSave={async (hours) => {
+              await api(`/stylists/${stylist.id}/hours`, { method: "PUT", body: { hours } });
+              await onSaved();
+              onClose();
+            }}
+          />
+        </div>
+      </div>
     </div>
   );
 }

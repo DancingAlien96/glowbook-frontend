@@ -10,6 +10,17 @@ export function statusChip(s: AppointmentStatus | string): string {
   }
 }
 
+// Small solid dot color for compact calendar cards.
+export function statusDot(s: AppointmentStatus | string): string {
+  switch (s) {
+    case "CONFIRMED": return "bg-emerald-500";
+    case "COMPLETED": return "bg-lavender-400";
+    case "CANCELLED":
+    case "NO_SHOW":   return "bg-blush-500";
+    default:          return "bg-gold-400";
+  }
+}
+
 export function translateStatus(s: AppointmentStatus | string): string {
   return ({
     PENDING: "Pendiente",

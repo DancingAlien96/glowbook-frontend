@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
-import "@uploadthing/react/styles.css";
+// NOTE: We intentionally do NOT import "@uploadthing/react/styles.css".
+// It ships an unlayered, minified Tailwind-like reset that clobbers our own
+// responsive utilities (e.g. `hidden md:flex` stops working). We only use the
+// `useUploadThing` hook with our own file inputs, so the UploadThing component
+// styles are unnecessary.
 import "./globals.css";
 import Providers from "./providers";
 

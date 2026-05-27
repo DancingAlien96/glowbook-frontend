@@ -7,6 +7,7 @@ import { useApi } from "../../_lib/useFetch";
 import { useUploadThing } from "../../_lib/uploadthing";
 import { optimizeImage, formatBytes } from "../../_lib/imageOptimize";
 import { LoadingBlock, ErrorBlock } from "../../_components/dashboard/States";
+import BusinessHoursEditor from "../../_components/dashboard/BusinessHoursEditor";
 import { initials } from "../../_lib/format";
 import type { DepositMode, Salon } from "../../_lib/types";
 
@@ -296,6 +297,8 @@ export default function SettingsPage() {
           </div>
         </div>
       </section>
+
+      <BusinessHoursEditor businessHours={salon.businessHours} />
 
       <section className="card-surface p-6">
         <h2 className="font-serif text-xl text-mauve-900">Política de pagos</h2>
