@@ -55,10 +55,10 @@ export default function Navbar() {
           </ul>
 
           <div className="hidden md:flex items-center gap-2.5">
-            <Link href="/dashboard" className="text-sm text-mauve-600 hover:text-mauve-900 px-3.5 py-2 transition-colors">
+            <Link href="/login" className="text-sm text-mauve-600 hover:text-mauve-900 px-3.5 py-2 transition-colors">
               Iniciar sesión
             </Link>
-            <Link href="/dashboard" className="btn btn-primary h-10 px-4 text-sm">
+            <Link href="/register" className="btn btn-primary h-10 px-4 text-sm">
               Comenzar
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
             </Link>
@@ -92,8 +92,8 @@ export default function Navbar() {
               ))}
             </ul>
             <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-line">
-              <Link href="/dashboard" className="btn btn-ghost h-10 text-sm">Iniciar sesión</Link>
-              <Link href="/dashboard" className="btn btn-primary h-10 text-sm">Comenzar</Link>
+              <Link href="/login" className="btn btn-ghost h-10 text-sm">Iniciar sesión</Link>
+              <Link href="/register" className="btn btn-primary h-10 text-sm">Comenzar</Link>
             </div>
           </div>
         )}
