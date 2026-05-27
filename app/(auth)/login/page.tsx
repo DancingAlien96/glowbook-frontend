@@ -2,12 +2,21 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useAuth } from "../../_lib/auth";
 import { ApiError } from "../../_lib/api";
 import { defaultRouteForRole } from "../../_components/auth/RequireAuth";
 
 export default function LoginPage() {
+  // useSearchParams() must be inside a Suspense boundary for static export.
+  return (
+    <Suspense fallback={<div className="card-elevated p-8 h-72" />}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next");
