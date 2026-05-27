@@ -72,9 +72,9 @@ function FlowShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-aurora-soft">
       <header className="border-b border-line bg-cream/70 backdrop-blur-xl">
-        <div className="container-tight h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Logo className="h-10 w-auto" />
+        <div className="container-tight h-20 flex items-center justify-between">
+          <Link href="/" className="flex items-center">
+            <Logo className="h-14 w-auto" />
           </Link>
         </div>
       </header>

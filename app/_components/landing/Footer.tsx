@@ -38,7 +38,7 @@ export default function Footer() {
         <div className="grid lg:grid-cols-[1.4fr_2fr] gap-12">
           <div>
             <Link href="/" className="flex items-center">
-              <Logo className="h-14 w-auto" />
+              <Logo className="h-20 w-auto" />
             </Link>
             <p className="mt-4 text-mauve-600 max-w-sm text-pretty">
               La plataforma premium de reservas para salones de belleza, spas y

@@ -33,12 +33,12 @@ export default function Navbar() {
         <nav
           className={`flex items-center justify-between rounded-full px-4 sm:px-6 transition-all duration-300 ${
             scrolled
-              ? "glass-strong h-14 shadow-[0_10px_40px_-20px_rgba(56,39,47,0.25)]"
-              : "h-16 bg-transparent"
+              ? "glass-strong h-16 shadow-[0_10px_40px_-20px_rgba(56,39,47,0.25)]"
+              : "h-20 bg-transparent"
           }`}
         >
           <Link href="/" className="flex items-center">
-            <Logo className="h-10 w-auto" />
+            <Logo className={`w-auto transition-all duration-300 ${scrolled ? "h-12" : "h-16"}`} />
           </Link>
 
           <ul className="hidden md:flex items-center gap-1">

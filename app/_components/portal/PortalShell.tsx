@@ -20,9 +20,9 @@ export default function PortalShell({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-aurora-soft">
       {/* Top */}
       <header className="sticky top-0 z-40 border-b border-line bg-cream/80 backdrop-blur-xl">
-        <div className="container-tight h-16 flex items-center gap-4">
+        <div className="container-tight h-20 flex items-center gap-4">
           <Link href="/portal" className="flex items-center gap-2.5">
-            <Logo className="h-10 w-auto" />
+            <Logo className="h-14 w-auto" />
             <div className="leading-tight border-l border-line pl-3">
               <div className="text-[10px] uppercase tracking-wider text-mauve-400">Portal estilista</div>
             </div>
