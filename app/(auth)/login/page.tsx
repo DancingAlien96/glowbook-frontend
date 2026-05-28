@@ -105,7 +105,6 @@ function LoginForm() {
         <p className="text-[11px] uppercase tracking-wider text-mauve-400 mb-2 text-center">Cuentas demo · password glowbook123</p>
         <div className="grid gap-1.5">
           {[
-            { label: "Admin", email: "admin@ecodama.online" },
             { label: "Dueña", email: "isabella@maisonrose.app" },
             { label: "Estilista", email: "valentina@maisonrose.app" },
             { label: "Estilista", email: "camila@maisonrose.app" },
