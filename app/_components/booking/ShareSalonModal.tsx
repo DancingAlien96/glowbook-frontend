@@ -166,12 +166,12 @@ export default function ShareSalonModal({
           </div>
         </div>
 
-        {/* Action row — native share, WhatsApp, open in new tab */}
-        <div className="mt-4 grid grid-cols-3 gap-2">
+        {/* Action row — native share + WhatsApp shortcut */}
+        <div className="mt-4 grid grid-cols-2 gap-2">
           <button
             onClick={nativeShare}
             disabled={busy}
-            className="btn btn-primary h-11 text-xs disabled:opacity-60"
+            className="btn btn-primary h-11 text-sm disabled:opacity-60"
             title="Compartir"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>
@@ -181,21 +181,11 @@ export default function ShareSalonModal({
             href={whatsappHref}
             target="_blank"
             rel="noreferrer"
-            className="btn btn-ghost h-11 text-xs"
+            className="btn btn-ghost h-11 text-sm"
             title="Enviar por WhatsApp"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.2-.7.2s-.8 1-.9 1.2c-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.1-.2.1-.3 0-.5l-.7-1.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3.9 2.5c.1.2 1.7 2.6 4.1 3.6 2 .9 2 .6 2.4.6.4 0 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1z"/></svg>
             WhatsApp
-          </a>
-          <a
-            href={url}
-            target="_blank"
-            rel="noreferrer"
-            className="btn btn-ghost h-11 text-xs"
-            title="Abrir página pública"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h6v6M14 10l7-7M10 21H4a1 1 0 01-1-1v-6"/></svg>
-            Abrir
           </a>
         </div>
       </div>
