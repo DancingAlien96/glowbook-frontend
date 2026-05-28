@@ -6,7 +6,7 @@ import { useApi } from "../_lib/useFetch";
 import { useAuth } from "../_lib/auth";
 import { LoadingBlock, ErrorBlock } from "../_components/dashboard/States";
 import { formatTime, initials, money } from "../_lib/format";
-import { statusChip, translateStatus } from "../_lib/status";
+import { statusChip, statusDot, translateStatus } from "../_lib/status";
 import type { Appointment, Metrics } from "../_lib/types";
 
 export default function DashboardPage() {
@@ -95,24 +95,34 @@ export default function DashboardPage() {
                   <div className="text-sm text-mauve-500 py-6 text-center">Sin citas hoy. ¡Disfruta tu día!</div>
                 ) : (
                   <div className="divide-y divide-line">
-                    {upcoming.map((a) => (
-                      <div key={a.id} className="py-3 flex items-center gap-3">
-                        <div className="text-center w-14 shrink-0">
-                          <div className="font-serif text-lg text-mauve-900 leading-none">{formatTime(a.startAt)}</div>
-                        </div>
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-lavender-200 to-lavender-400 grid place-items-center text-mauve-900 text-sm font-medium shrink-0">
-                          {initials(a.client.name)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-mauve-900 truncate">{a.client.name}</div>
-                          <div className="text-xs text-mauve-400 truncate">
-                            {a.service.name}
-                            {a.stylist ? ` · con ${a.stylist.name}` : ""}
+                    {upcoming.map((a) => {
+                      // "04:30 a. m." en es-EC: split into clock + period so the
+                      // time block fits a compact column without overflowing.
+                      const [clock, ...rest] = formatTime(a.startAt).split(/\s+/);
+                      const period = rest.join(" ");
+                      return (
+                        <div key={a.id} className="py-3 flex items-center gap-3">
+                          <div className="text-center w-12 sm:w-14 shrink-0">
+                            <div className="font-serif text-base sm:text-lg text-mauve-900 leading-none tabular-nums">{clock}</div>
+                            {period && (
+                              <div className="text-[9px] text-mauve-400 leading-none mt-0.5 uppercase tracking-wider">{period}</div>
+                            )}
                           </div>
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-lavender-200 to-lavender-400 grid place-items-center text-mauve-900 text-sm font-medium shrink-0">
+                            {initials(a.client.name)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-mauve-900 truncate">{a.client.name}</div>
+                            <div className="text-xs text-mauve-400 truncate">
+                              {a.service.name}
+                              {a.stylist ? ` · con ${a.stylist.name}` : ""}
+                            </div>
+                          </div>
+                          <span className={`chip ${statusChip(a.status)} shrink-0 hidden sm:inline-flex`}>{translateStatus(a.status)}</span>
+                          <span className={`shrink-0 sm:hidden h-2 w-2 rounded-full ${statusDot(a.status)}`} title={translateStatus(a.status)} />
                         </div>
-                        <span className={`chip ${statusChip(a.status)}`}>{translateStatus(a.status)}</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>

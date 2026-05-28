@@ -86,7 +86,9 @@ export default function TeamPage() {
             const inactive = m.stylist && !m.stylist.active;
             return (
               <article key={m.id} className="card-surface p-5">
-                <div className="flex items-start gap-4">
+                {/* Header: avatar + identity + (toggle for stylists / role chip for owners).
+                    Toggle mirrors the one used in /dashboard/services for visual parity. */}
+                <div className="flex items-start gap-3">
                   <div className={`h-14 w-14 rounded-2xl bg-gradient-to-br ${tones[i % tones.length]} grid place-items-center text-cream font-serif text-lg shrink-0 ${inactive ? "grayscale opacity-60" : ""}`}>
                     {initials(m.name)}
                   </div>
@@ -95,54 +97,55 @@ export default function TeamPage() {
                     <div className="text-xs text-mauve-400 truncate font-mono">{m.email}</div>
                     {m.stylist?.role && <div className="text-xs text-mauve-600 mt-1 truncate">{m.stylist.role}</div>}
                   </div>
-                  <span className={`chip ${m.role === "STYLIST" ? "chip-blush" : "chip-gold"} text-[10px]`}>
-                    {m.role === "STYLIST" ? "Estilista" : m.role}
-                  </span>
-                </div>
-
-                <div className="mt-4 pt-4 border-t border-line flex items-center justify-between text-xs text-mauve-400">
-                  <span>Desde {formatDate(m.createdAt)}</span>
-                  <span className={`chip ${inactive ? "chip-cream" : "status-completed"} text-[10px]`}>
-                    {inactive ? "Pausada" : "Activa"}
-                  </span>
+                  {m.stylist ? (
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1" title={inactive ? "Activar acceso" : "Pausar acceso"}>
+                      <input
+                        type="checkbox"
+                        checked={!inactive}
+                        onChange={() => toggleActive(m)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-10 h-6 bg-mauve-900/10 peer-checked:bg-mauve-900 rounded-full transition-colors relative after:content-[''] after:absolute after:top-1 after:left-1 after:bg-cream after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4" />
+                    </label>
+                  ) : (
+                    <span className="chip chip-gold text-[10px] shrink-0">Dueña</span>
+                  )}
                 </div>
 
                 {m.stylist && (
-                  <div className="mt-3 flex items-center justify-between rounded-xl bg-cream-soft/60 px-3 py-2">
-                    <span className="text-[11px] text-mauve-500">
+                  <div className="mt-4 flex items-center justify-between rounded-xl bg-cream-soft/60 px-3 py-2 gap-2">
+                    <span className="text-[11px] text-mauve-500 min-w-0 truncate">
                       {m.stylist.hours.length > 0
                         ? `Horario propio · ${m.stylist.hours.length} día${m.stylist.hours.length === 1 ? "" : "s"}`
                         : "Hereda el horario del salón"}
                     </span>
-                    <button onClick={() => setHoursFor(m)} className="text-[11px] font-medium text-mauve-900 underline-offset-4 hover:underline">
-                      🗓 Editar horario
+                    <button onClick={() => setHoursFor(m)} className="text-[11px] font-medium text-mauve-900 underline-offset-4 hover:underline shrink-0">
+                      🗓 Editar
                     </button>
                   </div>
                 )}
 
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  <button
-                    onClick={() => setResetFor(m)}
-                    className="btn btn-ghost h-9 text-[11px] flex-1"
-                    title="Restablecer contraseña"
-                  >
-                    🔑 Clave
-                  </button>
-                  {m.stylist && (
+                <div className="mt-4 pt-4 border-t border-line flex items-center justify-between gap-2">
+                  <span className="text-[11px] text-mauve-400 truncate min-w-0">
+                    Desde {formatDate(m.createdAt)}
+                    {inactive && <span className="ml-2 text-blush-500">· Pausada</span>}
+                  </span>
+                  <div className="flex gap-1.5 shrink-0">
                     <button
-                      onClick={() => toggleActive(m)}
-                      className="btn btn-ghost h-9 text-[11px] flex-1"
-                      title={inactive ? "Reactivar" : "Pausar acceso"}
+                      onClick={() => setResetFor(m)}
+                      className="btn btn-ghost h-9 text-[11px] px-3"
+                      title="Restablecer contraseña"
                     >
-                      {inactive ? "▶ Activar" : "⏸ Pausar"}
+                      🔑 Clave
                     </button>
-                  )}
-                  <button
-                    onClick={() => removeMember(m)}
-                    className="btn btn-ghost h-9 text-[11px] flex-1 text-blush-500 border-blush-300/30 hover:bg-blush-100/40"
-                  >
-                    🗑 Eliminar
-                  </button>
+                    <button
+                      onClick={() => removeMember(m)}
+                      className="btn btn-ghost h-9 text-[11px] px-3 text-blush-500 border-blush-300/30 hover:bg-blush-100/40"
+                      title="Eliminar miembro"
+                    >
+                      🗑
+                    </button>
+                  </div>
                 </div>
               </article>
             );
@@ -246,11 +249,11 @@ function NewMemberModal({ onClose, onCreated }: { onClose: () => void; onCreated
         <div className="mt-5 space-y-4">
           <div>
             <label className="text-xs uppercase tracking-wider text-mauve-400">Nombre completo</label>
-            <input required minLength={2} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-soft mt-1.5" placeholder="Valentina Rojas" />
+            <input required minLength={2} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-soft mt-1.5" placeholder="Nombre completo" />
           </div>
           <div>
             <label className="text-xs uppercase tracking-wider text-mauve-400">Email</label>
-            <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="input-soft mt-1.5" placeholder="valentina@tusalon.com" />
+            <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="input-soft mt-1.5" placeholder="email@tusalon.com" />
           </div>
           <div>
             <label className="text-xs uppercase tracking-wider text-mauve-400">Especialidad (opcional)</label>

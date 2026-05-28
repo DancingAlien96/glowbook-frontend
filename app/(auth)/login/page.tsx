@@ -22,8 +22,8 @@ function LoginForm() {
   const next = params.get("next");
   const { login, status, user } = useAuth();
 
-  const [email, setEmail] = useState("isabella@maisonrose.app");
-  const [password, setPassword] = useState("glowbook123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -99,28 +99,6 @@ function LoginForm() {
         <Link href="/register" className="text-mauve-900 underline-offset-4 hover:underline font-medium">
           Crea tu cuenta
         </Link>
-      </div>
-
-      <div className="mt-8 pt-6 border-t border-line">
-        <p className="text-[11px] uppercase tracking-wider text-mauve-400 mb-2 text-center">Cuentas demo · password glowbook123</p>
-        <div className="grid gap-1.5">
-          {[
-            { label: "Dueña", email: "isabella@maisonrose.app" },
-            { label: "Estilista", email: "valentina@maisonrose.app" },
-            { label: "Estilista", email: "camila@maisonrose.app" },
-            { label: "Estilista", email: "sofia@maisonrose.app" },
-          ].map((d) => (
-            <button
-              key={d.email}
-              type="button"
-              onClick={() => { setEmail(d.email); setPassword("glowbook123"); }}
-              className="text-left rounded-xl bg-cream-soft hover:bg-cream-soft/80 px-3 py-2 flex items-center justify-between transition"
-            >
-              <span className="text-xs text-mauve-600 font-mono truncate">{d.email}</span>
-              <span className="chip chip-cream text-[10px]">{d.label}</span>
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );
