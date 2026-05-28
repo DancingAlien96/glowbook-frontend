@@ -30,6 +30,7 @@ export default function AdminSalonsPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<SubStatus | "">("");
   const [showNew, setShowNew] = useState(false);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const query = useMemo(() => {
     const p = new URLSearchParams();
@@ -110,7 +111,11 @@ export default function AdminSalonsPage() {
               {salons.map((s) => {
                 const sub = s.subscription;
                 return (
-                  <tr key={s.id} className="hover:bg-cream/40 transition-colors">
+                  <tr
+                    key={s.id}
+                    onClick={() => setOpenId(s.id)}
+                    className="hover:bg-cream/40 transition-colors cursor-pointer"
+                  >
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
                         <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-blush-300 to-blush-500 grid place-items-center text-cream font-serif text-sm">
@@ -158,6 +163,13 @@ export default function AdminSalonsPage() {
             await refetch();
             setShowNew(false);
           }}
+        />
+      )}
+
+      {openId && (
+        <SalonDetailModal
+          salonId={openId}
+          onClose={() => setOpenId(null)}
         />
       )}
     </div>
@@ -406,6 +418,217 @@ function Field({
         placeholder={placeholder}
         className="mt-1 w-full h-11 rounded-xl bg-cream border border-line px-3 text-sm text-mauve-900 placeholder:text-mauve-400/60 focus:outline-none focus:border-gold-400 transition"
       />
+    </div>
+  );
+}
+
+// ─── Salon detail modal ────────────────────────────────────────────────
+// Click a row → fetches the salon's full detail (members + sub + counts).
+// Each non-admin member gets a "Resetear contraseña" button; on click the
+// backend returns a fresh temp password that we reveal inline (once) so the
+// admin can copy it or send it to the owner via WhatsApp.
+
+type Member = {
+  id: string;
+  name: string;
+  email: string;
+  role: "OWNER" | "STYLIST" | "STAFF" | "ADMIN";
+  createdAt: string;
+  stylist: { id: string; active: boolean; role: string | null } | null;
+};
+
+type SalonDetail = {
+  id: string;
+  name: string;
+  slug: string;
+  tagline: string | null;
+  brandColor: string;
+  timezone: string;
+  currency: string;
+  bankDetails: string | null;
+  createdAt: string;
+  subscription: {
+    plan: "MONTHLY" | "LIFETIME";
+    status: SubStatus;
+    currentPeriodEnd: string | null;
+    trialEndsAt: string | null;
+  } | null;
+  members: Member[];
+  _count: { appointments: number; services: number; stylists: number; clients: number };
+};
+
+function SalonDetailModal({ salonId, onClose }: { salonId: string; onClose: () => void }) {
+  const { data, loading, error, refetch } = useApi<{ salon: SalonDetail }>(`/admin/salons/${salonId}`, [salonId]);
+  const salon = data?.salon;
+
+  // Map userId → freshly-issued temp password (only kept in memory during this
+  // modal lifetime; never sent back to the server again).
+  const [resetMap, setResetMap] = useState<Record<string, string>>({});
+  const [resetting, setResetting] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const resetPassword = async (m: Member) => {
+    if (!confirm(`¿Generar una nueva contraseña para ${m.name}? La actual dejará de funcionar.`)) return;
+    setResetting(m.id);
+    setErr(null);
+    try {
+      const { newPassword } = await api<{ newPassword: string }>(`/admin/users/${m.id}/reset-password`, {
+        method: "POST",
+      });
+      setResetMap((m2) => ({ ...m2, [m.id]: newPassword }));
+    } catch (e) {
+      setErr(e instanceof ApiError ? e.message : "No pudimos resetear la contraseña.");
+    } finally {
+      setResetting(null);
+    }
+  };
+
+  const copy = (text: string) => navigator.clipboard.writeText(text).catch(() => {});
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-3 sm:p-4 bg-mauve-900/40 backdrop-blur-sm" onClick={onClose}>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="card-elevated w-full sm:max-w-2xl p-6 sm:p-7 rounded-3xl max-h-[92vh] overflow-y-auto"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="text-[11px] uppercase tracking-wider text-mauve-400">Salón</div>
+            <h2 className="font-serif text-2xl text-mauve-900 leading-tight truncate">
+              {salon?.name ?? "Cargando…"}
+            </h2>
+            {salon && (
+              <p className="text-xs text-mauve-500 mt-1 font-mono truncate">/{salon.slug}</p>
+            )}
+          </div>
+          <button onClick={onClose} aria-label="Cerrar" className="h-9 w-9 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-700 hover:bg-mauve-900/10 shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        {loading && !salon ? (
+          <div className="mt-6"><LoadingBlock label="Cargando detalles" /></div>
+        ) : error ? (
+          <div className="mt-6"><ErrorBlock error={error} onRetry={refetch} /></div>
+        ) : !salon ? null : (
+          <>
+            {/* Subscription + counts strip */}
+            <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+              <Stat label="Plan" value={salon.subscription?.plan === "LIFETIME" ? "Lifetime ✦" : "Mensual"} />
+              <Stat
+                label="Estado"
+                value={STATUS_LABEL[salon.subscription?.status ?? "TRIAL"]}
+                tone={STATUS_BADGE[salon.subscription?.status ?? "TRIAL"]}
+              />
+              <Stat label="Citas" value={String(salon._count.appointments)} />
+              <Stat label="Clientas" value={String(salon._count.clients)} />
+            </div>
+
+            {/* Members + reset password */}
+            <div className="mt-5">
+              <div className="text-[11px] uppercase tracking-wider text-mauve-400 mb-2">
+                Miembros · {salon.members.length}
+              </div>
+              <div className="space-y-2">
+                {salon.members.map((m) => {
+                  const fresh = resetMap[m.id];
+                  return (
+                    <div key={m.id} className="rounded-xl border border-line bg-cream-soft/60 p-3">
+                      <div className="flex items-start gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-medium text-mauve-900 truncate">{m.name}</span>
+                            <span className={`chip text-[9px] ${m.role === "OWNER" ? "chip-gold" : m.role === "STYLIST" ? "chip-blush" : "chip-cream"}`}>
+                              {m.role === "OWNER" ? "Dueña" : m.role === "STYLIST" ? "Estilista" : m.role}
+                            </span>
+                            {m.stylist && !m.stylist.active && (
+                              <span className="chip status-cancelled text-[9px]">Pausada</span>
+                            )}
+                          </div>
+                          <div className="text-[11px] text-mauve-500 font-mono mt-0.5 truncate">{m.email}</div>
+                        </div>
+                        {m.role !== "ADMIN" && (
+                          <button
+                            type="button"
+                            onClick={() => resetPassword(m)}
+                            disabled={resetting === m.id}
+                            className="btn btn-ghost h-9 text-[11px] px-3 shrink-0 disabled:opacity-60"
+                            title="Generar nueva contraseña"
+                          >
+                            {resetting === m.id ? "…" : "🔑 Resetear"}
+                          </button>
+                        )}
+                      </div>
+
+                      {fresh && (
+                        <div className="mt-3 rounded-lg bg-gold-300/15 border border-gold-400/30 p-3">
+                          <div className="text-[10px] uppercase tracking-wider text-gold-600 font-medium mb-1">
+                            Contraseña temporal (se muestra una sola vez)
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <code className="flex-1 min-w-0 text-sm font-mono text-mauve-900 break-all bg-cream rounded-md px-2 py-1.5">
+                              {fresh}
+                            </code>
+                            <button
+                              type="button"
+                              onClick={() => copy(fresh)}
+                              className="btn btn-primary h-9 text-[11px] px-3 shrink-0"
+                              title="Copiar contraseña"
+                            >
+                              Copiar
+                            </button>
+                          </div>
+                          <a
+                            href={`https://wa.me/?text=${encodeURIComponent(
+                              `Hola ${m.name.split(" ")[0]}, tu acceso a Ecodama:\n\nEmail: ${m.email}\nContraseña: ${fresh}\n\nIngresa aquí: ${typeof window !== "undefined" ? window.location.origin : ""}/login\n\nPor favor cámbiala apenas entres (Configuración → Cambiar contraseña).`
+                            )}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-mauve-700 hover:text-mauve-900 underline-offset-2 hover:underline"
+                          >
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.2-.7.2s-.8 1-.9 1.2c-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.1-.2.1-.3 0-.5l-.7-1.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3.9 2.5c.1.2 1.7 2.6 4.1 3.6 2 .9 2 .6 2.4.6.4 0 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1z"/></svg>
+                            Enviar por WhatsApp
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Locale */}
+            <div className="mt-5 grid grid-cols-2 gap-2 sm:gap-3 text-xs">
+              <InfoRow label="Zona horaria" value={salon.timezone} />
+              <InfoRow label="Moneda" value={salon.currency} />
+            </div>
+
+            {err && <div className="mt-4 text-sm text-blush-500 bg-blush-100/60 border border-blush-300/30 rounded-xl px-3 py-2.5">{err}</div>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, value, tone }: { label: string; value: string; tone?: string }) {
+  return (
+    <div className="rounded-xl bg-cream-soft/70 p-3">
+      <div className="text-[10px] uppercase tracking-wider text-mauve-400">{label}</div>
+      {tone ? (
+        <span className={`chip ${tone} text-[10px] mt-1`}>{value}</span>
+      ) : (
+        <div className="text-sm font-medium text-mauve-900 mt-1 truncate">{value}</div>
+      )}
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl bg-cream-soft/40 px-3 py-2">
+      <div className="text-[10px] uppercase tracking-wider text-mauve-400">{label}</div>
+      <div className="text-xs font-mono text-mauve-900 mt-0.5 truncate">{value}</div>
     </div>
   );
 }
