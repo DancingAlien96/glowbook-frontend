@@ -6,7 +6,7 @@ import { useApi } from "../_lib/useFetch";
 import { useAuth } from "../_lib/auth";
 import { LoadingBlock, ErrorBlock } from "../_components/dashboard/States";
 import { formatTime, initials, money } from "../_lib/format";
-import { statusChip, statusDot, translateStatus } from "../_lib/status";
+import { statusDot, translateStatus } from "../_lib/status";
 import type { Appointment, Metrics } from "../_lib/types";
 
 export default function DashboardPage() {
@@ -41,7 +41,7 @@ export default function DashboardPage() {
   const maxBucket = m ? Math.max(1, ...m.weekRevenueBuckets) : 1;
 
   return (
-    <div className="space-y-6 max-w-[1400px]">
+    <div className="space-y-6 max-w-[1400px] min-w-0">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="text-xs text-mauve-400">{new Date().toLocaleDateString("es-EC", { weekday: "long", day: "numeric", month: "long" })}</div>
@@ -63,17 +63,19 @@ export default function DashboardPage() {
         <ErrorBlock error={metricsQ.error} onRetry={metricsQ.refetch} />
       ) : (
         <>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {kpis!.map((k) => (
-              <div key={k.label} className={`rounded-2xl p-5 bg-gradient-to-br ${k.tone}`}>
-                <div className="text-[11px] uppercase tracking-wider text-mauve-600 font-medium">{k.label}</div>
-                <div className="mt-2 font-serif text-3xl text-mauve-900">{k.val}</div>
+              // min-w-0 lets long values (eg. "$1,234,567.89") truncate instead
+              // of stretching the grid past the viewport.
+              <div key={k.label} className={`min-w-0 rounded-2xl p-4 sm:p-5 bg-gradient-to-br ${k.tone}`}>
+                <div className="text-[11px] uppercase tracking-wider text-mauve-600 font-medium truncate">{k.label}</div>
+                <div className="mt-2 font-serif text-2xl sm:text-3xl text-mauve-900 truncate" title={k.val}>{k.val}</div>
               </div>
             ))}
           </div>
 
-          <div className="grid lg:grid-cols-[1.6fr_1fr] gap-6">
-            <div className="card-surface p-6">
+          <div className="grid lg:grid-cols-[1.6fr_1fr] gap-6 min-w-0">
+            <div className="card-surface p-5 sm:p-6 min-w-0 overflow-hidden">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="font-serif text-xl text-mauve-900">Agenda de hoy</h2>
@@ -101,25 +103,26 @@ export default function DashboardPage() {
                       const [clock, ...rest] = formatTime(a.startAt).split(/\s+/);
                       const period = rest.join(" ");
                       return (
-                        <div key={a.id} className="py-3 flex items-center gap-3">
-                          <div className="text-center w-12 sm:w-14 shrink-0">
-                            <div className="font-serif text-base sm:text-lg text-mauve-900 leading-none tabular-nums">{clock}</div>
+                        <div key={a.id} className="py-3 flex items-center gap-3 min-w-0">
+                          {/* Status dot replaces the chip — instantly readable
+                              and reclaims ~110px on narrow viewports. */}
+                          <span className={`shrink-0 h-2 w-2 rounded-full ${statusDot(a.status)}`} title={translateStatus(a.status)} />
+                          <div className="text-center w-12 shrink-0">
+                            <div className="font-serif text-base text-mauve-900 leading-none tabular-nums">{clock}</div>
                             {period && (
                               <div className="text-[9px] text-mauve-400 leading-none mt-0.5 uppercase tracking-wider">{period}</div>
                             )}
                           </div>
-                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-lavender-200 to-lavender-400 grid place-items-center text-mauve-900 text-sm font-medium shrink-0">
+                          <div className="h-9 w-9 rounded-full bg-gradient-to-br from-lavender-200 to-lavender-400 grid place-items-center text-mauve-900 text-xs font-medium shrink-0">
                             {initials(a.client.name)}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-mauve-900 truncate">{a.client.name}</div>
                             <div className="text-xs text-mauve-400 truncate">
                               {a.service.name}
-                              {a.stylist ? ` · con ${a.stylist.name}` : ""}
+                              {a.stylist ? ` · ${a.stylist.name.split(" ")[0]}` : ""}
                             </div>
                           </div>
-                          <span className={`chip ${statusChip(a.status)} shrink-0 hidden sm:inline-flex`}>{translateStatus(a.status)}</span>
-                          <span className={`shrink-0 sm:hidden h-2 w-2 rounded-full ${statusDot(a.status)}`} title={translateStatus(a.status)} />
                         </div>
                       );
                     })}
@@ -128,12 +131,12 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="space-y-6">
-              <div className="card-surface p-6">
+            <div className="space-y-6 min-w-0">
+              <div className="card-surface p-5 sm:p-6 min-w-0 overflow-hidden">
                 <div className="flex items-center justify-between">
                   <h3 className="font-serif text-lg text-mauve-900">Ingresos · 7 días</h3>
                 </div>
-                <div className="mt-3 font-serif text-2xl text-mauve-900">{money(m!.weekRevenueCents, currency)}</div>
+                <div className="mt-3 font-serif text-2xl text-mauve-900 truncate" title={money(m!.weekRevenueCents, currency)}>{money(m!.weekRevenueCents, currency)}</div>
                 <div className="mt-5 h-32 flex items-end gap-2">
                   {m!.weekRevenueBuckets.map((v, i) => (
                     <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
