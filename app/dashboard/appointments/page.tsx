@@ -8,7 +8,7 @@ import { LoadingBlock, ErrorBlock } from "../../_components/dashboard/States";
 import BlocksManager from "../../_components/dashboard/BlocksManager";
 import { money, formatDate, formatTime, initials } from "../../_lib/format";
 import { statusChip, statusDot, translateStatus } from "../../_lib/status";
-import type { Appointment, AppointmentStatus, BlockedSlot, Stylist } from "../../_lib/types";
+import type { Appointment, AppointmentStatus, BlockedSlot, Service, Stylist } from "../../_lib/types";
 
 const stylistChipTones: Record<number, string> = {
   0: "bg-blush-200/70 text-mauve-900",
@@ -44,12 +44,14 @@ export default function AppointmentsPage() {
   const [stylistFilter, setStylistFilter] = useState<string>("");
   const [selected, setSelected] = useState<Appointment | null>(null);
   const [showBlocks, setShowBlocks] = useState(false);
+  const [showNew, setShowNew] = useState(false);
 
   // The visible grid is 6 weeks starting on the Monday on/before the 1st.
   const gridStart = useMemo(() => startOfWeek(monthAnchor), [monthAnchor]);
   const gridEnd = useMemo(() => new Date(gridStart.getTime() + 42 * 86_400_000), [gridStart]);
 
   const stylistsQ = useApi<{ stylists: Stylist[] }>("/stylists");
+  const servicesQ = useApi<{ services: Service[] }>("/services");
   const apptsQ = useApi<{ appointments: Appointment[] }>(
     `/appointments?from=${encodeURIComponent(gridStart.toISOString())}&to=${encodeURIComponent(gridEnd.toISOString())}${stylistFilter ? `&stylistId=${stylistFilter}` : ""}`,
     [gridStart.toISOString(), stylistFilter]
@@ -111,6 +113,10 @@ export default function AppointmentsPage() {
           <h1 className="font-serif text-3xl sm:text-4xl text-mauve-900 leading-tight">Agenda</h1>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={() => setShowNew(true)} className="btn btn-primary h-10 text-xs">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Nueva cita
+          </button>
           <button onClick={() => setShowBlocks(true)} className="btn btn-ghost h-10 text-xs">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
             Bloquear fechas
@@ -253,6 +259,18 @@ export default function AppointmentsPage() {
           onClose={() => setShowBlocks(false)}
           onChanged={async () => {
             await blocksQ.refetch();
+          }}
+        />
+      )}
+
+      {showNew && (
+        <NewAppointmentModal
+          services={(servicesQ.data?.services ?? []).filter((s) => s.active)}
+          stylists={stylists.filter((s) => s.active)}
+          onClose={() => setShowNew(false)}
+          onCreated={async () => {
+            await apptsQ.refetch();
+            setShowNew(false);
           }}
         />
       )}
@@ -402,6 +420,209 @@ function Detail({ label, value }: { label: string; value: string }) {
     <div className="rounded-xl bg-cream-soft/60 p-3">
       <div className="text-[10px] uppercase tracking-wider text-mauve-400">{label}</div>
       <div className="text-sm font-medium text-mauve-900 mt-0.5">{value}</div>
+    </div>
+  );
+}
+
+// ─── Quick-add appointment (walk-in / phone) ───────────────────────────────
+// Owner-side booking: skips the deposit flow (client pays in person) and
+// lands the appointment as CONFIRMED right away. Server still enforces
+// conflicts, business hours and stylist availability.
+function NewAppointmentModal({
+  services,
+  stylists,
+  onClose,
+  onCreated,
+}: {
+  services: Service[];
+  stylists: Stylist[];
+  onClose: () => void;
+  onCreated: () => Promise<void>;
+}) {
+  const today = new Date();
+  const defaultDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+  const [serviceId, setServiceId] = useState<string>("");
+  const [stylistId, setStylistId] = useState<string>("");
+  const [date, setDate] = useState<string>(defaultDate);
+  const [time, setTime] = useState<string>("10:00");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [notes, setNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const selectedService = services.find((s) => s.id === serviceId);
+
+  // If the chosen service is restricted to specific stylists, only show those.
+  const eligibleStylists = useMemo(() => {
+    if (!selectedService?.stylists?.length) return stylists;
+    const ids = new Set(selectedService.stylists.map((x) => x.stylistId));
+    return stylists.filter((s) => ids.has(s.id));
+  }, [selectedService, stylists]);
+
+  const canSubmit = serviceId && date && /^\d{2}:\d{2}$/.test(time) && name.trim().length >= 2 && !submitting;
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setSubmitting(true);
+    setErr(null);
+    try {
+      const [hh, mm] = time.split(":").map(Number);
+      const [y, m, d] = date.split("-").map(Number);
+      const start = new Date(y!, (m ?? 1) - 1, d!, hh ?? 0, mm ?? 0, 0, 0);
+      if (Number.isNaN(start.getTime())) throw new Error("Fecha u hora inválida.");
+
+      await api("/appointments", {
+        method: "POST",
+        body: {
+          serviceId,
+          stylistId: stylistId || null,
+          startAt: start.toISOString(),
+          notes: notes.trim() || null,
+          client: {
+            name: name.trim(),
+            phone: phone.trim() || null,
+            email: email.trim() || null,
+          },
+        },
+      });
+      await onCreated();
+    } catch (e) {
+      setErr(e instanceof ApiError ? e.message : e instanceof Error ? e.message : "No pudimos crear la cita.");
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-0 sm:p-4 bg-mauve-900/40 backdrop-blur-sm" onClick={onClose}>
+      <form
+        onSubmit={submit}
+        onClick={(e) => e.stopPropagation()}
+        className="card-elevated w-full sm:max-w-lg p-6 sm:p-7 rounded-b-none sm:rounded-3xl max-h-[90vh] overflow-y-auto"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-xs text-mauve-400">Agendar manualmente</div>
+            <h2 className="font-serif text-2xl text-mauve-900 leading-tight">Nueva cita</h2>
+            <p className="text-xs text-mauve-500 mt-1">Para reservas por teléfono o walk-in. Queda confirmada al instante.</p>
+          </div>
+          <button type="button" onClick={onClose} className="h-9 w-9 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-700 hover:bg-mauve-900/10 shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div className="mt-5 space-y-3.5">
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-mauve-400">Servicio *</label>
+            <select
+              required
+              value={serviceId}
+              onChange={(e) => setServiceId(e.target.value)}
+              className="mt-1 w-full h-11 rounded-xl border border-line bg-cream px-3 text-sm text-mauve-900"
+            >
+              <option value="">Selecciona un servicio</option>
+              {services.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name} · {s.durationMin} min
+                </option>
+              ))}
+            </select>
+            {services.length === 0 && (
+              <p className="text-[11px] text-blush-500 mt-1">No hay servicios activos. Crea uno en la sección Servicios.</p>
+            )}
+          </div>
+
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-mauve-400">Estilista</label>
+            <select
+              value={stylistId}
+              onChange={(e) => setStylistId(e.target.value)}
+              className="mt-1 w-full h-11 rounded-xl border border-line bg-cream px-3 text-sm text-mauve-900"
+            >
+              <option value="">Sin asignar</option>
+              {eligibleStylists.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-mauve-400">Fecha *</label>
+              <input
+                type="date"
+                required
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="mt-1 w-full h-11 rounded-xl border border-line bg-cream px-3 text-sm text-mauve-900"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-mauve-400">Hora *</label>
+              <input
+                type="time"
+                required
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="mt-1 w-full h-11 rounded-xl border border-line bg-cream px-3 text-sm text-mauve-900"
+              />
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-line">
+            <div className="text-[11px] uppercase tracking-wider text-mauve-400 mb-2">Clienta</div>
+            <div className="space-y-3">
+              <input
+                required
+                minLength={2}
+                placeholder="Nombre completo *"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full h-11 rounded-xl border border-line bg-cream px-3 text-sm text-mauve-900 placeholder:text-mauve-400"
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  type="tel"
+                  placeholder="Teléfono"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="h-11 rounded-xl border border-line bg-cream px-3 text-sm text-mauve-900 placeholder:text-mauve-400"
+                />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-11 rounded-xl border border-line bg-cream px-3 text-sm text-mauve-900 placeholder:text-mauve-400"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-mauve-400">Notas</label>
+            <textarea
+              rows={2}
+              placeholder="Detalles, preferencias…"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-line bg-cream px-3 py-2 text-sm text-mauve-900 placeholder:text-mauve-400 resize-none"
+            />
+          </div>
+        </div>
+
+        {err && <div className="mt-4 text-sm text-blush-500 bg-blush-100/60 border border-blush-300/30 rounded-xl px-3 py-2.5">{err}</div>}
+
+        <div className="mt-5 flex items-center justify-end gap-2 pt-4 border-t border-line">
+          <button type="button" onClick={onClose} className="btn btn-ghost h-11 px-5 text-sm">Cancelar</button>
+          <button type="submit" disabled={!canSubmit} className="btn btn-primary h-11 px-5 text-sm disabled:opacity-60">
+            {submitting ? "Guardando…" : "Crear cita"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

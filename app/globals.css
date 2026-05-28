@@ -1,39 +1,39 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* Brand palette — soft, feminine, premium */
+  /* Brand palette — bold boutique-luxury (richer accents, same warm base) */
   --color-cream: #FBF8F3;
   --color-cream-soft: #F6F1EA;
   --color-ivory: #FFFCF7;
 
-  --color-blush-50: #FDF6F2;
-  --color-blush-100: #F9EAE2;
-  --color-blush-200: #F2D3C5;
-  --color-blush-300: #E8B4A1;
-  --color-blush-400: #D89888;
-  --color-blush-500: #C57B6B;
+  --color-blush-50: #FDF1EB;
+  --color-blush-100: #FAD9CC;
+  --color-blush-200: #F4B9A2;
+  --color-blush-300: #E59078;   /* rosa coral fuerte */
+  --color-blush-400: #CE6850;   /* terracota intensa */
+  --color-blush-500: #A8442F;   /* cobre rojizo */
 
-  --color-nude-100: #F2E8DC;
-  --color-nude-200: #E5D3BE;
-  --color-nude-300: #D4B89A;
+  --color-nude-100: #F1E5D2;
+  --color-nude-200: #E2C9A6;
+  --color-nude-300: #C9A77A;
 
-  --color-lavender-50: #F4F0F7;
-  --color-lavender-100: #E8E0F0;
-  --color-lavender-200: #D2C2E0;
-  --color-lavender-400: #9F87B8;
+  --color-lavender-50: #F2EBF8;
+  --color-lavender-100: #E0D2EE;
+  --color-lavender-200: #C2ABDE;
+  --color-lavender-400: #7951A4;   /* violeta */
 
-  --color-gold-300: #DDC196;
-  --color-gold-400: #C9A876;
-  --color-gold-500: #B08D5C;
-  --color-gold-600: #8E6F44;
+  --color-gold-300: #DDB677;   /* miel clara */
+  --color-gold-400: #CB923D;   /* oro miel */
+  --color-gold-500: #9E6E22;   /* oro antiguo */
+  --color-gold-600: #7A5418;
 
-  --color-mauve-400: #8A6E78;
-  --color-mauve-600: #5C4751;
-  --color-mauve-800: #38272F;
-  --color-mauve-900: #21161B;
+  --color-mauve-400: #7E5F6B;
+  --color-mauve-600: #503842;
+  --color-mauve-800: #2A1820;
+  --color-mauve-900: #1F0F15;   /* casi negro brillo */
 
-  --color-line: rgba(56, 39, 47, 0.08);
-  --color-line-strong: rgba(56, 39, 47, 0.14);
+  --color-line: rgba(31, 15, 21, 0.10);
+  --color-line-strong: rgba(31, 15, 21, 0.18);
 
   --color-background: var(--color-cream);
   --color-foreground: var(--color-mauve-900);
@@ -42,10 +42,10 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, monospace;
 
-  --shadow-soft: 0 1px 2px rgba(56, 39, 47, 0.04), 0 8px 24px -12px rgba(56, 39, 47, 0.10);
-  --shadow-elevated: 0 1px 3px rgba(56, 39, 47, 0.05), 0 24px 60px -20px rgba(56, 39, 47, 0.18);
-  --shadow-glow-blush: 0 30px 80px -30px rgba(216, 152, 136, 0.55);
-  --shadow-glow-gold: 0 30px 80px -30px rgba(201, 168, 118, 0.45);
+  --shadow-soft: 0 1px 2px rgba(31, 15, 21, 0.06), 0 8px 24px -12px rgba(31, 15, 21, 0.14);
+  --shadow-elevated: 0 1px 3px rgba(31, 15, 21, 0.07), 0 24px 60px -20px rgba(31, 15, 21, 0.22);
+  --shadow-glow-blush: 0 30px 80px -30px rgba(206, 104, 80, 0.65);
+  --shadow-glow-gold: 0 30px 80px -30px rgba(203, 146, 61, 0.55);
 
   --radius-pill: 9999px;
 }
@@ -65,7 +65,7 @@
   }
 
   ::selection {
-    background: var(--color-blush-200);
+    background: var(--color-blush-300);
     color: var(--color-mauve-900);
   }
 
@@ -83,27 +83,27 @@
   .text-balance { text-wrap: balance; }
   .text-pretty { text-wrap: pretty; }
 
-  /* Premium ambient backgrounds */
+  /* Premium ambient backgrounds — Bold (blobs presentes, no tímidos) */
   .bg-aurora {
     background:
-      radial-gradient(60% 50% at 10% 0%, rgba(232, 180, 161, 0.55) 0%, transparent 60%),
-      radial-gradient(50% 40% at 100% 0%, rgba(210, 194, 224, 0.45) 0%, transparent 65%),
-      radial-gradient(60% 50% at 50% 100%, rgba(221, 193, 150, 0.30) 0%, transparent 70%),
+      radial-gradient(60% 50% at 10% 0%, rgba(229, 144, 120, 0.85) 0%, transparent 60%),
+      radial-gradient(50% 40% at 100% 0%, rgba(194, 171, 222, 0.72) 0%, transparent 65%),
+      radial-gradient(60% 50% at 50% 100%, rgba(221, 182, 119, 0.55) 0%, transparent 70%),
       linear-gradient(180deg, #FBF8F3 0%, #F6F1EA 100%);
   }
 
   .bg-aurora-soft {
     background:
-      radial-gradient(40% 35% at 0% 0%, rgba(232, 180, 161, 0.35) 0%, transparent 60%),
-      radial-gradient(40% 35% at 100% 100%, rgba(210, 194, 224, 0.30) 0%, transparent 65%),
+      radial-gradient(40% 35% at 0% 0%, rgba(229, 144, 120, 0.55) 0%, transparent 60%),
+      radial-gradient(40% 35% at 100% 100%, rgba(194, 171, 222, 0.50) 0%, transparent 65%),
       linear-gradient(180deg, #FFFCF7 0%, #FBF8F3 100%);
   }
 
   .bg-mesh-blush {
     background:
-      radial-gradient(circle at 20% 20%, rgba(248, 218, 207, 0.7), transparent 45%),
-      radial-gradient(circle at 80% 30%, rgba(232, 224, 240, 0.6), transparent 50%),
-      radial-gradient(circle at 50% 90%, rgba(244, 230, 210, 0.7), transparent 55%),
+      radial-gradient(circle at 20% 20%, rgba(244, 185, 162, 0.85), transparent 45%),
+      radial-gradient(circle at 80% 30%, rgba(224, 210, 238, 0.75), transparent 50%),
+      radial-gradient(circle at 50% 90%, rgba(243, 220, 188, 0.85), transparent 55%),
       #FFFCF7;
   }
 
@@ -130,12 +130,12 @@
   }
 
   .ring-soft {
-    box-shadow: 0 0 0 1px rgba(56, 39, 47, 0.06), var(--shadow-soft);
+    box-shadow: 0 0 0 1px rgba(31, 15, 21, 0.10), var(--shadow-soft);
   }
 
-  /* Gold accent gradient text */
+  /* Gold accent gradient text — dorado dramático */
   .text-gold-shimmer {
-    background: linear-gradient(120deg, #B08D5C 0%, #DDC196 35%, #B08D5C 70%, #DDC196 100%);
+    background: linear-gradient(120deg, #9E6E22 0%, #E8C57E 35%, #9E6E22 70%, #E8C57E 100%);
     background-size: 200% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -144,7 +144,7 @@
   }
 
   .text-rose-shimmer {
-    background: linear-gradient(120deg, #C57B6B 0%, #E8B4A1 50%, #C57B6B 100%);
+    background: linear-gradient(120deg, #A8442F 0%, #E59078 50%, #A8442F 100%);
     background-size: 200% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -153,7 +153,7 @@
 
   .divider-gold {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(201, 168, 118, 0.6), transparent);
+    background: linear-gradient(90deg, transparent, rgba(203, 146, 61, 0.75), transparent);
   }
 
   /* Buttons */
@@ -175,24 +175,24 @@
   .btn:active { transform: translateY(0); }
 
   .btn-primary {
-    background: linear-gradient(135deg, #38272F 0%, #5C4751 100%);
+    background: linear-gradient(135deg, #1F0F15 0%, #3A2129 100%);
     color: #FBF8F3;
-    box-shadow: 0 10px 30px -12px rgba(56, 39, 47, 0.6);
+    box-shadow: 0 10px 30px -12px rgba(31, 15, 21, 0.75);
   }
   .btn-primary:hover {
-    box-shadow: 0 14px 40px -12px rgba(56, 39, 47, 0.75);
+    box-shadow: 0 14px 40px -12px rgba(31, 15, 21, 0.9);
   }
 
   .btn-gold {
-    background: linear-gradient(135deg, #C9A876 0%, #B08D5C 100%);
-    color: #21161B;
-    box-shadow: 0 12px 32px -12px rgba(201, 168, 118, 0.7);
+    background: linear-gradient(135deg, #DDB677 0%, #9E6E22 100%);
+    color: #1F0F15;
+    box-shadow: 0 12px 32px -12px rgba(203, 146, 61, 0.85);
   }
 
   .btn-blush {
-    background: linear-gradient(135deg, #E8B4A1 0%, #D89888 100%);
-    color: #21161B;
-    box-shadow: 0 12px 32px -12px rgba(232, 180, 161, 0.7);
+    background: linear-gradient(135deg, #E59078 0%, #CE6850 100%);
+    color: #FBF8F3;
+    box-shadow: 0 12px 32px -12px rgba(206, 104, 80, 0.80);
   }
 
   .btn-ghost {
@@ -240,17 +240,17 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }
-  .chip-blush { background: rgba(232, 180, 161, 0.25); color: #8B4636; }
-  .chip-gold { background: rgba(201, 168, 118, 0.20); color: #7A5A2F; }
-  .chip-lavender { background: rgba(210, 194, 224, 0.40); color: #5A4172; }
-  .chip-sage { background: rgba(186, 197, 175, 0.40); color: #4F5E45; }
-  .chip-cream { background: rgba(56, 39, 47, 0.06); color: var(--color-mauve-800); }
+  .chip-blush { background: rgba(229, 144, 120, 0.42); color: #7A2E1B; }
+  .chip-gold { background: rgba(203, 146, 61, 0.36); color: #5A3E0F; }
+  .chip-lavender { background: rgba(194, 171, 222, 0.62); color: #3B1E60; }
+  .chip-sage { background: rgba(155, 174, 146, 0.58); color: #3A4A32; }
+  .chip-cream { background: rgba(31, 15, 21, 0.10); color: var(--color-mauve-800); }
 
-  /* Status pills */
-  .status-pending { background: rgba(221, 193, 150, 0.30); color: #7A5A2F; }
-  .status-confirmed { background: rgba(186, 217, 192, 0.50); color: #2F5C42; }
-  .status-completed { background: rgba(210, 194, 224, 0.50); color: #4A3568; }
-  .status-cancelled { background: rgba(216, 152, 136, 0.25); color: #8B3F2C; }
+  /* Status pills — visibles, no susurros */
+  .status-pending { background: rgba(203, 146, 61, 0.42); color: #5A3E0F; }
+  .status-confirmed { background: rgba(132, 184, 142, 0.62); color: #1E4A30; }
+  .status-completed { background: rgba(194, 171, 222, 0.68); color: #3A2358; }
+  .status-cancelled { background: rgba(206, 104, 80, 0.42); color: #6F2515; }
 
   /* Subtle scroll arrow + animations */
   @keyframes shimmer {
@@ -274,8 +274,8 @@
     100% { opacity: 1; }
   }
   @keyframes pulse-ring {
-    0%   { box-shadow: 0 0 0 0 rgba(201, 168, 118, 0.4); }
-    100% { box-shadow: 0 0 0 18px rgba(201, 168, 118, 0); }
+    0%   { box-shadow: 0 0 0 0 rgba(203, 146, 61, 0.55); }
+    100% { box-shadow: 0 0 0 18px rgba(203, 146, 61, 0); }
   }
   @keyframes marquee {
     0%   { transform: translateX(0); }
@@ -302,7 +302,7 @@
 
   /* Premium decorative dot pattern */
   .pattern-dots {
-    background-image: radial-gradient(rgba(56, 39, 47, 0.08) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(31, 15, 21, 0.12) 1px, transparent 1px);
     background-size: 16px 16px;
   }
 
@@ -324,8 +324,8 @@
   }
   .input-soft:focus {
     outline: none;
-    border-color: rgba(201, 168, 118, 0.7);
+    border-color: rgba(203, 146, 61, 0.85);
     background: #FFFCF7;
-    box-shadow: 0 0 0 4px rgba(201, 168, 118, 0.15);
+    box-shadow: 0 0 0 4px rgba(203, 146, 61, 0.22);
   }
 }

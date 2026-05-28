@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import BillingBanner from "./BillingBanner";
+import { registerServiceWorker } from "../../_lib/pwa";
 
 const COLLAPSE_KEY = "gb.sidebarCollapsed";
 
@@ -14,6 +15,12 @@ export default function DashboardChrome({ children }: { children: React.ReactNod
   // Remember the collapsed preference across visits.
   useEffect(() => {
     setCollapsed(localStorage.getItem(COLLAPSE_KEY) === "1");
+  }, []);
+
+  // Register the SW once the owner enters the dashboard — enables PWA install
+  // and push delivery. Safe to call on every mount (registration is idempotent).
+  useEffect(() => {
+    registerServiceWorker();
   }, []);
 
   const toggleCollapse = () => {

@@ -33,12 +33,26 @@ export const metadata: Metadata = {
     "software peluquería",
     "Ecodama",
   ],
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Ecodama",
+    statusBarStyle: "black-translucent",
+  },
+  icons: {
+    icon: "/ecodamalogo.png",
+    apple: "/ecodamalogo.png",
+  },
   openGraph: {
     title: "Ecodama — Reservas premium para salones de belleza",
     description:
       "Agenda elegante, pagos anticipados y panel administrativo intuitivo para tu salón.",
     type: "website",
   },
+};
+
+export const viewport = {
+  themeColor: "#1F0F15",
 };
 
 export default function RootLayout({

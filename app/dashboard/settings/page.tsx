@@ -8,17 +8,20 @@ import { useUploadThing } from "../../_lib/uploadthing";
 import { optimizeImage, formatBytes } from "../../_lib/imageOptimize";
 import { LoadingBlock, ErrorBlock } from "../../_components/dashboard/States";
 import BusinessHoursEditor from "../../_components/dashboard/BusinessHoursEditor";
+import AppSettings from "../../_components/dashboard/AppSettings";
 import { initials } from "../../_lib/format";
 import type { DepositMode, Salon } from "../../_lib/types";
 
 const COLOR_SWATCHES = [
-  { name: "Rosa nude", hex: "#D89888" },
-  { name: "Blush", hex: "#E8B4A1" },
-  { name: "Lavanda", hex: "#9F87B8" },
-  { name: "Champagne", hex: "#C9A876" },
-  { name: "Sage", hex: "#9BAE92" },
-  { name: "Mauve", hex: "#8A6E78" },
-  { name: "Carbón", hex: "#38272F" },
+  { name: "Coral", hex: "#E59078" },
+  { name: "Terracota", hex: "#CE6850" },
+  { name: "Cobre", hex: "#A8442F" },
+  { name: "Violeta", hex: "#7951A4" },
+  { name: "Oro miel", hex: "#CB923D" },
+  { name: "Oro antiguo", hex: "#9E6E22" },
+  { name: "Sage", hex: "#7E9774" },
+  { name: "Mauve", hex: "#503842" },
+  { name: "Carbón", hex: "#1F0F15" },
 ];
 
 const DEPOSIT_OPTIONS: Array<{ id: DepositMode; title: string; desc: string }> = [
@@ -252,7 +255,7 @@ export default function SettingsPage() {
                 onChange={(e) => update("brandColor", e.target.value.toUpperCase())}
                 maxLength={9}
                 className="w-20 bg-transparent text-xs font-mono text-mauve-900 outline-none"
-                placeholder="#D89888"
+                placeholder="#CE6850"
               />
             </div>
           </div>
@@ -299,6 +302,8 @@ export default function SettingsPage() {
       </section>
 
       <BusinessHoursEditor businessHours={salon.businessHours} />
+
+      <AppSettings />
 
       <section className="card-surface p-6">
         <h2 className="font-serif text-xl text-mauve-900">Política de pagos</h2>
