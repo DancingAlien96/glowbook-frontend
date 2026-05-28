@@ -5,6 +5,7 @@ import { api, ApiError } from "../../_lib/api";
 import { useApi } from "../../_lib/useFetch";
 import { useAuth } from "../../_lib/auth";
 import { LoadingBlock, ErrorBlock } from "../../_components/dashboard/States";
+import ChangePasswordCard from "../../_components/auth/ChangePasswordCard";
 import { initials } from "../../_lib/format";
 
 type Profile = {
@@ -21,8 +22,6 @@ export default function PortalProfilePage() {
   const { data, loading, error, refetch } = useApi<{ stylist: Profile }>("/me/profile");
 
   const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -34,22 +33,15 @@ export default function PortalProfilePage() {
   const onSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);
-    if (password && password !== confirm) {
-      setErr("Las contraseñas no coinciden");
-      return;
-    }
     setSaving(true);
     try {
       await api("/me/profile", {
         method: "PATCH",
         body: {
           name: name && name !== data?.stylist.name ? name : undefined,
-          password: password || undefined,
         },
       });
       setSavedAt(Date.now());
-      setPassword("");
-      setConfirm("");
       await Promise.all([refetch(), refresh()]);
     } catch (e) {
       setErr(e instanceof ApiError ? e.message : "Error al guardar");
@@ -65,7 +57,8 @@ export default function PortalProfilePage() {
   const p = data.stylist;
 
   return (
-    <form onSubmit={onSave} className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-2xl">
+    <form onSubmit={onSave} className="space-y-6">
       <div>
         <div className="text-xs text-mauve-400">Cuenta</div>
         <h1 className="font-serif text-3xl text-mauve-900 leading-tight">Mi perfil</h1>
@@ -98,34 +91,6 @@ export default function PortalProfilePage() {
       </section>
 
       <section className="card-surface p-6">
-        <h2 className="font-serif text-xl text-mauve-900">Cambiar contraseña</h2>
-        <p className="text-sm text-mauve-600 mt-1">Déjala vacía si no quieres cambiarla.</p>
-        <div className="mt-4 grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="text-xs uppercase tracking-wider text-mauve-400">Nueva contraseña</label>
-            <input
-              type="password"
-              minLength={8}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-soft mt-1.5"
-              placeholder="Mínimo 8 caracteres"
-            />
-          </div>
-          <div>
-            <label className="text-xs uppercase tracking-wider text-mauve-400">Confirma</label>
-            <input
-              type="password"
-              minLength={8}
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              className="input-soft mt-1.5"
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="card-surface p-6">
         <h2 className="font-serif text-xl text-mauve-900">Servicios que ofreces</h2>
         <p className="text-sm text-mauve-600 mt-1">
           La dueña define qué servicios puedes atender. Estos son los tuyos:
@@ -153,5 +118,8 @@ export default function PortalProfilePage() {
         </button>
       </div>
     </form>
+
+    <ChangePasswordCard />
+    </div>
   );
 }

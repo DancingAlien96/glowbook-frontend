@@ -9,6 +9,7 @@ import { optimizeImage, formatBytes } from "../../_lib/imageOptimize";
 import { LoadingBlock, ErrorBlock } from "../../_components/dashboard/States";
 import BusinessHoursEditor from "../../_components/dashboard/BusinessHoursEditor";
 import AppSettings from "../../_components/dashboard/AppSettings";
+import ChangePasswordCard from "../../_components/auth/ChangePasswordCard";
 import { initials } from "../../_lib/format";
 import type { DepositMode, Salon } from "../../_lib/types";
 
@@ -304,6 +305,8 @@ export default function SettingsPage() {
       <BusinessHoursEditor businessHours={salon.businessHours} />
 
       <AppSettings />
+
+      <ChangePasswordCard />
 
       <section className="card-surface p-6">
         <h2 className="font-serif text-xl text-mauve-900">Política de pagos</h2>

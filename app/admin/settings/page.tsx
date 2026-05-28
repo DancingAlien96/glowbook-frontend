@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api, ApiError } from "../../_lib/api";
 import { useApi } from "../../_lib/useFetch";
 import { LoadingBlock, ErrorBlock } from "../../_components/dashboard/States";
+import ChangePasswordCard from "../../_components/auth/ChangePasswordCard";
 import type { PlatformSettings } from "../../_lib/types";
 
 export default function AdminSettingsPage() {
@@ -48,7 +49,8 @@ export default function AdminSettingsPage() {
   if (!data) return null;
 
   return (
-    <form onSubmit={onSave} className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-3xl">
+    <form onSubmit={onSave} className="space-y-6">
       <div>
         <div className="text-xs text-mauve-400">Plataforma</div>
         <h1 className="font-serif text-3xl text-mauve-900 leading-tight">Configuración</h1>
@@ -164,5 +166,8 @@ Referencia: nombre de tu salón"
         </button>
       </div>
     </form>
+
+    <ChangePasswordCard />
+    </div>
   );
 }
