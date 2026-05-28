@@ -11,6 +11,7 @@ import BusinessHoursEditor from "../../_components/dashboard/BusinessHoursEditor
 import AppSettings from "../../_components/dashboard/AppSettings";
 import ChangePasswordCard from "../../_components/auth/ChangePasswordCard";
 import { initials } from "../../_lib/format";
+import { withCurrency, withTimezone } from "../../_lib/locales";
 import type { DepositMode, Salon } from "../../_lib/types";
 
 const COLOR_SWATCHES = [
@@ -286,15 +287,17 @@ export default function SettingsPage() {
               <div>
                 <label className="text-xs uppercase tracking-wider text-mauve-400">Zona horaria</label>
                 <select className="input-soft mt-1.5" value={form.timezone ?? salon.timezone} onChange={(e) => update("timezone", e.target.value)}>
-                  {["America/Guayaquil", "America/Lima", "America/Bogota", "America/Mexico_City", "America/Buenos_Aires"].map((tz) => (
-                    <option key={tz}>{tz}</option>
+                  {withTimezone(form.timezone ?? salon.timezone).map((o) => (
+                    <option key={o.tz} value={o.tz}>{o.label}</option>
                   ))}
                 </select>
               </div>
               <div>
                 <label className="text-xs uppercase tracking-wider text-mauve-400">Moneda</label>
                 <select className="input-soft mt-1.5" value={form.currency ?? salon.currency} onChange={(e) => update("currency", e.target.value)}>
-                  {["USD", "PEN", "COP", "MXN", "ARS"].map((c) => <option key={c}>{c}</option>)}
+                  {withCurrency(form.currency ?? salon.currency).map((o) => (
+                    <option key={o.code} value={o.code}>{o.label}</option>
+                  ))}
                 </select>
               </div>
             </div>
