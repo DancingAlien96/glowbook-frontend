@@ -94,35 +94,39 @@ function AdminLoginForm() {
 
   return (
     <div className="min-h-screen grid place-items-center bg-[#0E0710] px-6 py-10 relative overflow-hidden">
-      {/* Faint mauve glow — no salon-pastel palette here */}
-      <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-96 w-[42rem] rounded-full bg-mauve-800/30 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 left-1/2 -translate-x-1/2 h-64 w-[36rem] rounded-full bg-gold-500/10 blur-3xl pointer-events-none" />
+      {/* Glows más presentes — fondo sigue negro pero con vida */}
+      <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-96 w-[42rem] rounded-full bg-mauve-800/50 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 left-1/2 -translate-x-1/2 h-64 w-[36rem] rounded-full bg-gold-500/20 blur-3xl pointer-events-none" />
+      <div className="absolute top-1/3 -left-20 h-72 w-72 rounded-full bg-blush-500/15 blur-3xl pointer-events-none" />
 
       <div className="relative w-full max-w-sm">
-        <div className="text-center mb-6">
-          <div className="text-[10px] uppercase tracking-[0.4em] text-gold-400/80">Ecodama · Plataforma</div>
-          <h1 className="mt-3 font-serif text-3xl text-cream">Acceso interno</h1>
-          <p className="mt-2 text-xs text-mauve-400">Panel reservado al equipo de Ecodama.</p>
+        <div className="text-center mb-7">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/15 border border-gold-400/30 text-gold-300 text-[10px] uppercase tracking-[0.35em] font-medium">
+            <span className="h-1 w-1 rounded-full bg-gold-300" />
+            Ecodama · Plataforma
+          </div>
+          <h1 className="mt-4 font-serif text-3xl text-cream">Acceso interno</h1>
+          <p className="mt-2 text-sm text-cream/75">Panel reservado al equipo de Ecodama.</p>
         </div>
 
         <form
           onSubmit={onSubmit}
-          className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md p-6 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.7)]"
+          className="rounded-2xl border border-white/15 bg-white/[0.06] backdrop-blur-md p-6 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)]"
         >
           <div>
-            <label className="text-[10px] uppercase tracking-wider text-mauve-400">Email</label>
+            <label className="text-[11px] uppercase tracking-wider text-cream/90 font-medium">Email</label>
             <input
               type="email"
               required
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1.5 w-full h-11 rounded-xl bg-black/30 border border-white/10 px-3 text-sm text-cream placeholder:text-mauve-400/50 focus:outline-none focus:border-gold-400/60 focus:bg-black/40 transition"
+              className="mt-1.5 w-full h-11 rounded-xl bg-black/40 border border-white/20 px-3 text-sm text-cream placeholder:text-cream/35 focus:outline-none focus:border-gold-400 focus:bg-black/50 focus:ring-2 focus:ring-gold-400/20 transition"
               placeholder="tu@email.com"
             />
           </div>
-          <div className="mt-3.5">
-            <label className="text-[10px] uppercase tracking-wider text-mauve-400">Contraseña</label>
+          <div className="mt-4">
+            <label className="text-[11px] uppercase tracking-wider text-cream/90 font-medium">Contraseña</label>
             <input
               type="password"
               required
@@ -130,12 +134,12 @@ function AdminLoginForm() {
               minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1.5 w-full h-11 rounded-xl bg-black/30 border border-white/10 px-3 text-sm text-cream placeholder:text-mauve-400/50 focus:outline-none focus:border-gold-400/60 focus:bg-black/40 transition"
+              className="mt-1.5 w-full h-11 rounded-xl bg-black/40 border border-white/20 px-3 text-sm text-cream placeholder:text-cream/35 focus:outline-none focus:border-gold-400 focus:bg-black/50 focus:ring-2 focus:ring-gold-400/20 transition"
             />
           </div>
 
           {error && (
-            <div className="mt-3.5 text-xs text-blush-300 bg-blush-500/10 border border-blush-400/20 rounded-lg px-3 py-2">
+            <div className="mt-4 text-xs text-blush-200 bg-blush-500/20 border border-blush-400/40 rounded-lg px-3 py-2.5">
               {error}
             </div>
           )}
@@ -143,13 +147,13 @@ function AdminLoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-5 w-full h-11 rounded-xl bg-gradient-to-r from-gold-500 to-gold-400 text-mauve-900 font-medium text-sm hover:brightness-105 transition disabled:opacity-60"
+            className="mt-5 w-full h-11 rounded-xl bg-gradient-to-r from-gold-500 to-gold-400 text-mauve-900 font-semibold text-sm hover:brightness-110 hover:shadow-[0_8px_24px_-8px_rgba(203,146,61,0.6)] transition disabled:opacity-60"
           >
             {loading ? "Verificando…" : "Entrar al panel"}
           </button>
         </form>
 
-        <p className="mt-5 text-center text-[10px] text-mauve-400/60 tracking-wider">
+        <p className="mt-6 text-center text-[11px] text-cream/60 tracking-[0.2em] uppercase">
           Ecodama · Acceso registrado
         </p>
       </div>
