@@ -71,10 +71,10 @@ export default function BlocksManager({
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-0 sm:p-4 bg-mauve-900/40 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-3 sm:p-4 bg-mauve-900/40 backdrop-blur-sm" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="card-elevated w-full sm:max-w-md p-6 sm:p-7 rounded-b-none sm:rounded-3xl max-h-[90vh] overflow-y-auto"
+        className="card-elevated w-full sm:max-w-md p-6 sm:p-7 rounded-3xl max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-start justify-between gap-4">
           <div>

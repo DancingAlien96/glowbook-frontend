@@ -347,10 +347,10 @@ function ApptModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-0 sm:p-4 bg-mauve-900/40 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-3 sm:p-4 bg-mauve-900/40 backdrop-blur-sm" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="card-elevated w-full sm:max-w-lg p-6 sm:p-7 rounded-b-none sm:rounded-3xl max-h-[90vh] overflow-y-auto"
+        className="card-elevated w-full sm:max-w-lg p-6 sm:p-7 rounded-3xl max-h-[90vh] overflow-y-auto"
       >
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
@@ -525,11 +525,11 @@ function NewAppointmentModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-0 sm:p-4 bg-mauve-900/40 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-3 sm:p-4 bg-mauve-900/40 backdrop-blur-sm" onClick={onClose}>
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="card-elevated w-full sm:max-w-lg p-6 sm:p-7 rounded-b-none sm:rounded-3xl max-h-[90vh] overflow-y-auto"
+        className="card-elevated w-full sm:max-w-lg p-6 sm:p-7 rounded-3xl max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -683,12 +683,12 @@ function DayAgendaSheet({
 
   return (
     <div
-      className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-0 sm:p-4 bg-mauve-900/40 backdrop-blur-sm"
+      className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-3 sm:p-4 bg-mauve-900/40 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="card-elevated w-full sm:max-w-lg p-5 sm:p-6 rounded-b-none sm:rounded-3xl max-h-[85vh] overflow-y-auto"
+        className="card-elevated w-full sm:max-w-lg p-5 sm:p-6 rounded-3xl max-h-[85vh] overflow-y-auto"
       >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
