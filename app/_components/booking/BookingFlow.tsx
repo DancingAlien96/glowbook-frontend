@@ -267,7 +267,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
       {salon.coverImageUrl ? (
         <div className="relative max-w-5xl mx-auto mb-8 rounded-[2rem] overflow-hidden border border-line shadow-[var(--shadow-soft)]">
           <div
-            className="aspect-[3/1] sm:aspect-[16/5] bg-mauve-900/10"
+            className="aspect-[4/3] sm:aspect-[16/7] lg:aspect-[21/8] bg-mauve-900/10"
             style={{ backgroundImage: `url(${salon.coverImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-mauve-900/85 via-mauve-900/30 to-transparent" />

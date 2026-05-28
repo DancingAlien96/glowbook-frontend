@@ -5,7 +5,6 @@
 // clipboard, and a downloadable PNG.
 
 import { useEffect, useState } from "react";
-import QRCode from "qrcode";
 
 export default function ShareSalonModal({
   url,
@@ -21,20 +20,26 @@ export default function ShareSalonModal({
   const [busy, setBusy] = useState(false);
 
   // Generate the QR once when the modal opens (or url changes).
+  // - Dynamic import keeps the ~50KB qrcode lib out of the booking-page
+  //   bundle; it only loads the first time the user opens this modal.
+  // - Width 320 displays at 256 and still prints fine at 96dpi; rendering
+  //   is ~3× faster than the previous 512 on low-end phones.
   useEffect(() => {
     let cancelled = false;
-    QRCode.toDataURL(url, {
-      width: 512,
-      margin: 2,
-      color: { dark: "#1F0F15", light: "#FBF8F3" }, // mauve-900 on cream
-      errorCorrectionLevel: "M",
-    })
-      .then((data) => {
+    (async () => {
+      try {
+        const { default: QRCode } = await import("qrcode");
+        const data = await QRCode.toDataURL(url, {
+          width: 320,
+          margin: 2,
+          color: { dark: "#1F0F15", light: "#FBF8F3" }, // mauve-900 on cream
+          errorCorrectionLevel: "M",
+        });
         if (!cancelled) setQrDataUrl(data);
-      })
-      .catch(() => {
+      } catch {
         /* if QR generation fails, the rest of the share options still work */
-      });
+      }
+    })();
     return () => {
       cancelled = true;
     };
@@ -110,13 +115,18 @@ export default function ShareSalonModal({
             <img
               src={qrDataUrl}
               alt={`Código QR de ${salonName}`}
-              className="h-56 w-56 sm:h-64 sm:w-64"
+              className="h-56 w-56 sm:h-64 sm:w-64 anim-fade-in"
               width={256}
               height={256}
             />
           ) : (
-            <div className="h-56 w-56 sm:h-64 sm:w-64 grid place-items-center text-xs text-mauve-400">
-              Generando…
+            // Pulsing skeleton + spinner — clear "loading" affordance while
+            // the qrcode lib finishes downloading + encoding on slow phones.
+            <div className="h-56 w-56 sm:h-64 sm:w-64 rounded-xl bg-mauve-900/[0.05] animate-pulse grid place-items-center">
+              <div className="flex flex-col items-center gap-2 text-mauve-500">
+                <span className="h-7 w-7 rounded-full border-2 border-mauve-900/15 border-t-mauve-900 animate-spin" />
+                <span className="text-[11px] uppercase tracking-wider">Generando QR</span>
+              </div>
             </div>
           )}
           {qrDataUrl && (
