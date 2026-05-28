@@ -94,8 +94,8 @@ export default function AdminSalonsPage() {
       ) : salons.length === 0 ? (
         <EmptyBlock title="Sin resultados" description="Ningún salón coincide con el filtro." />
       ) : (
-        <div className="card-surface p-0 overflow-hidden">
-          <table className="w-full">
+        <div className="card-surface p-0 overflow-x-auto">
+          <table className="w-full min-w-[640px]">
             <thead className="bg-cream-soft text-[11px] uppercase tracking-wider text-mauve-400">
               <tr>
                 <th className="text-left px-5 py-3 font-medium">Salón</th>

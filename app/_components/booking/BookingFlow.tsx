@@ -276,7 +276,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
             </div>
             <div className="text-cream min-w-0">
               <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-cream/80">Reservar en</div>
-              <h1 className="font-serif text-2xl sm:text-4xl leading-tight">{salon.name}</h1>
+              <h1 className="font-serif text-2xl sm:text-4xl leading-tight break-words">{salon.name}</h1>
               {salon.tagline && (
                 <p className="text-cream/90 text-sm sm:text-base mt-1 max-w-xl text-pretty">{salon.tagline}</p>
               )}
@@ -294,7 +294,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
             </div>
             <div className="text-left">
               <div className="text-[11px] uppercase tracking-wider text-mauve-400">Reservar en</div>
-              <h1 className="font-serif text-2xl text-mauve-900 leading-tight">{salon.name}</h1>
+              <h1 className="font-serif text-2xl text-mauve-900 leading-tight break-words">{salon.name}</h1>
               {salon.tagline && <p className="text-mauve-600 text-sm mt-0.5">{salon.tagline}</p>}
             </div>
           </div>
@@ -312,11 +312,17 @@ function Flow({ salon }: { salon: PublicSalon }) {
           return (
             <li key={s} className="flex flex-col items-center gap-1.5">
               <div className={`h-1.5 w-full rounded-full transition-all ${done ? "bg-mauve-900" : active ? "bg-gradient-to-r from-mauve-900 to-mauve-800/30" : "bg-mauve-900/10"}`} />
-              <span className={`text-[10px] sm:text-xs ${active ? "text-mauve-900 font-medium" : "text-mauve-400"}`}>{s}</span>
+              {/* Hide step labels on small screens — they don't fit in 5 columns
+                  on a 360px viewport. Active step gets a centered label below
+                  the whole stepper instead. */}
+              <span className={`hidden sm:inline text-xs ${active ? "text-mauve-900 font-medium" : "text-mauve-400"}`}>{s}</span>
             </li>
           );
         })}
       </ol>
+      <div className="sm:hidden -mt-6 mb-8 text-center text-xs text-mauve-900 font-medium">
+        Paso {step + 1} de {STEPS.length} · {STEPS[step]}
+      </div>
 
       <div className="grid lg:grid-cols-[1fr_360px] gap-6 max-w-5xl mx-auto">
         <div className="card-elevated p-6 sm:p-8 min-h-[500px]">
@@ -395,7 +401,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
                         className={`text-center rounded-2xl border-2 p-3 transition ${sel ? "border-mauve-900 bg-cream-soft" : "border-line bg-ivory hover:border-line-strong"}`}
                       >
                         <div className={`h-12 w-12 mx-auto rounded-full bg-gradient-to-br ${STYLIST_TONES[i % STYLIST_TONES.length]} grid place-items-center text-cream font-serif`}>{s.name[0]}</div>
-                        <div className="mt-2 text-xs font-medium text-mauve-900 leading-tight">{s.name.split(" ")[0]}</div>
+                        <div className="mt-2 text-xs font-medium text-mauve-900 leading-tight truncate">{s.name.split(" ")[0]}</div>
                         {s.role && <div className="text-[10px] text-mauve-400 mt-0.5 line-clamp-1">{s.role}</div>}
                       </button>
                     );
@@ -495,7 +501,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
                     {salon.bankDetails ? (
                       <div className="rounded-2xl bg-cream-soft p-4 border border-line">
                         <div className="text-xs uppercase tracking-wider text-mauve-400">Datos para transferir</div>
-                        <pre className="mt-2 text-sm text-mauve-900 font-mono whitespace-pre-wrap leading-relaxed">{salon.bankDetails}</pre>
+                        <pre className="mt-2 text-sm text-mauve-900 font-mono whitespace-pre-wrap break-words leading-relaxed">{salon.bankDetails}</pre>
                       </div>
                     ) : (
                       <div className="rounded-2xl bg-blush-100/40 p-4 border border-blush-300/30 text-sm text-mauve-700">

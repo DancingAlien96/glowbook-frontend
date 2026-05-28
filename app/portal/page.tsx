@@ -72,7 +72,7 @@ export default function PortalTodayPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {[
           { label: "Hoy", val: stats?.todayAppointments ?? 0, tone: "from-blush-100 to-blush-200" },
           { label: "Confirmadas (7d)", val: stats?.weekConfirmed ?? 0, tone: "from-lavender-100 to-lavender-200" },
@@ -80,7 +80,7 @@ export default function PortalTodayPage() {
         ].map((s) => (
           <div key={s.label} className={`rounded-2xl p-4 bg-gradient-to-br ${s.tone}`}>
             <div className="text-[10px] uppercase tracking-wider text-mauve-600 font-medium">{s.label}</div>
-            <div className="mt-1 font-serif text-2xl text-mauve-900">{s.val}</div>
+            <div className="mt-1 font-serif text-xl sm:text-2xl text-mauve-900">{s.val}</div>
           </div>
         ))}
       </div>

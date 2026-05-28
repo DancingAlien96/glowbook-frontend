@@ -49,11 +49,11 @@ export default function Footer() {
               <label className="text-xs uppercase tracking-wider text-mauve-400">
                 Recibe novedades y consejos
               </label>
-              <div className="mt-2 flex gap-2">
+              <div className="mt-2 flex flex-col sm:flex-row gap-2">
                 <input
                   type="email"
                   placeholder="tu@email.com"
-                  className="input-soft"
+                  className="input-soft min-w-0 flex-1"
                 />
                 <button className="btn btn-primary h-[2.875rem] px-5 shrink-0">
                   Suscribirme

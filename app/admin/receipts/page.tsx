@@ -150,7 +150,7 @@ export default function AdminReceiptsPage() {
                 )}
 
                 {p.status === "PENDING_REVIEW" ? (
-                  <div className="mt-4 grid grid-cols-2 gap-2">
+                  <div className="mt-4 flex flex-col sm:grid sm:grid-cols-[auto_1fr] gap-2">
                     <button
                       disabled={acting}
                       onClick={() => reject(p.id)}
@@ -161,7 +161,7 @@ export default function AdminReceiptsPage() {
                     <button
                       disabled={acting}
                       onClick={() => approve(p.id)}
-                      className="btn btn-primary h-10 text-xs disabled:opacity-60"
+                      className="btn btn-primary h-10 text-xs px-4 disabled:opacity-60 whitespace-nowrap"
                     >
                       Aprobar y extender plan
                     </button>

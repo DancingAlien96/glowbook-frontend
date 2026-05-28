@@ -163,7 +163,7 @@ export default function BillingPage() {
             <div className="rounded-2xl bg-cream-soft p-4 border border-line">
               <div className="text-xs uppercase tracking-wider text-mauve-400">Datos para transferir</div>
               {platform.bankDetails ? (
-                <pre className="mt-2 text-sm text-mauve-900 font-mono whitespace-pre-wrap leading-relaxed">{platform.bankDetails}</pre>
+                <pre className="mt-2 text-sm text-mauve-900 font-mono whitespace-pre-wrap break-words leading-relaxed">{platform.bankDetails}</pre>
               ) : (
                 <p className="mt-2 text-sm text-mauve-600">El equipo de Ecodama aún no publicó datos. Contáctanos.</p>
               )}
@@ -275,7 +275,8 @@ export default function BillingPage() {
         {payments.length === 0 ? (
           <div className="p-10 text-center text-sm text-mauve-500">Sin pagos aún</div>
         ) : (
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[520px]">
             <thead className="bg-cream-soft text-[11px] uppercase tracking-wider text-mauve-400">
               <tr>
                 <th className="text-left px-5 py-3 font-medium">Fecha</th>
@@ -302,6 +303,7 @@ export default function BillingPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </section>
     </div>

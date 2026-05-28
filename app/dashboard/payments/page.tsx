@@ -66,7 +66,7 @@ export default function PaymentsPage() {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: "Aprobado", val: money(monthRevenue, currency), tone: "from-blush-100 to-blush-200" },
           { label: "Por revisar", val: String(pending.length), tone: "from-gold-300/40 to-gold-300/60" },
@@ -158,7 +158,8 @@ export default function PaymentsPage() {
         {history.length === 0 ? (
           <div className="p-10 text-center text-sm text-mauve-500">Sin historial aún</div>
         ) : (
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[560px]">
             <thead className="bg-cream-soft text-[11px] uppercase tracking-wider text-mauve-400">
               <tr>
                 <th className="text-left px-5 py-3 font-medium">Clienta</th>
@@ -182,6 +183,7 @@ export default function PaymentsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </section>
     </div>

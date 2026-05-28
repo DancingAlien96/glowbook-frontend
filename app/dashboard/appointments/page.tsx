@@ -116,28 +116,34 @@ export default function AppointmentsPage() {
           <div className="text-xs text-mauve-400">Agenda mensual</div>
           <h1 className="font-serif text-3xl sm:text-4xl text-mauve-900 leading-tight">Agenda</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setShowNew(true)} className="btn btn-primary h-10 text-xs">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            Nueva cita
-          </button>
-          <button onClick={() => setShowBlocks(true)} className="btn btn-ghost h-10 text-xs">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-            Bloquear fechas
-          </button>
-          <button onClick={() => goMonth(-1)} aria-label="Mes anterior" className="h-10 w-10 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-700 hover:bg-mauve-900/10">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-          <div className="h-10 px-4 rounded-full bg-mauve-900/5 flex flex-col items-center justify-center min-w-[150px] leading-none">
-            <span className="text-sm font-medium text-mauve-900 capitalize">{monthLabel}</span>
-            <span className="text-[10px] text-mauve-400 mt-0.5">{isCurrentMonth ? "Este mes" : "Mes"}</span>
+        {/* Two sub-clusters that wrap independently on mobile:
+            actions (Nueva cita / Bloquear) and month nav (← label →). */}
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button onClick={() => setShowNew(true)} className="btn btn-primary h-10 text-xs">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              Nueva cita
+            </button>
+            <button onClick={() => setShowBlocks(true)} className="btn btn-ghost h-10 text-xs">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              Bloquear fechas
+            </button>
           </div>
-          <button onClick={() => goMonth(1)} aria-label="Mes siguiente" className="h-10 w-10 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-700 hover:bg-mauve-900/10">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-          {!isCurrentMonth && (
-            <button onClick={() => setMonthAnchor(startOfMonth(new Date()))} className="btn btn-ghost h-10 text-xs">Hoy</button>
-          )}
+          <div className="flex items-center gap-2 ml-auto sm:ml-0">
+            <button onClick={() => goMonth(-1)} aria-label="Mes anterior" className="h-10 w-10 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-700 hover:bg-mauve-900/10 shrink-0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div className="h-10 px-3 sm:px-4 rounded-full bg-mauve-900/5 flex flex-col items-center justify-center min-w-0 sm:min-w-[150px] leading-none">
+              <span className="text-sm font-medium text-mauve-900 capitalize whitespace-nowrap">{monthLabel}</span>
+              <span className="text-[10px] text-mauve-400 mt-0.5">{isCurrentMonth ? "Este mes" : "Mes"}</span>
+            </div>
+            <button onClick={() => goMonth(1)} aria-label="Mes siguiente" className="h-10 w-10 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-700 hover:bg-mauve-900/10 shrink-0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            {!isCurrentMonth && (
+              <button onClick={() => setMonthAnchor(startOfMonth(new Date()))} className="btn btn-ghost h-10 text-xs">Hoy</button>
+            )}
+          </div>
         </div>
       </div>
 

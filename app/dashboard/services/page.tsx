@@ -174,8 +174,8 @@ function NewServiceModal({ onClose, onCreated }: { onClose: () => void; onCreate
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center p-4 bg-mauve-900/40 backdrop-blur-sm">
-      <form onSubmit={onSubmit} className="card-elevated p-7 w-full max-w-md">
+    <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-0 sm:p-4 bg-mauve-900/40 backdrop-blur-sm">
+      <form onSubmit={onSubmit} className="card-elevated p-6 sm:p-7 w-full max-w-md rounded-b-none sm:rounded-3xl max-h-[90vh] overflow-y-auto">
         <h3 className="font-serif text-2xl text-mauve-900">Nuevo servicio</h3>
         <div className="mt-5 space-y-4">
           <div>

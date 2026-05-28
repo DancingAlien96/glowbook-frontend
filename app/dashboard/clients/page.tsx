@@ -47,7 +47,7 @@ export default function ClientsPage() {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: "Total clientas", val: String(total) },
           { label: "VIP (página)", val: String(vipCount) },
@@ -92,7 +92,8 @@ export default function ClientsPage() {
         ) : clients.length === 0 ? (
           <EmptyBlock title="Sin clientas aún" description="Las clientas que reserven aparecerán aquí automáticamente." />
         ) : (
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[480px]">
             <thead className="bg-cream-soft text-[11px] uppercase tracking-wider text-mauve-400">
               <tr>
                 <th className="text-left px-5 py-3 font-medium">Clienta</th>
@@ -126,6 +127,7 @@ export default function ClientsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

@@ -236,8 +236,8 @@ function NewMemberModal({ onClose, onCreated }: { onClose: () => void; onCreated
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center p-4 bg-mauve-900/40 backdrop-blur-sm">
-      <form onSubmit={onSubmit} className="card-elevated p-7 w-full max-w-md">
+    <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-0 sm:p-4 bg-mauve-900/40 backdrop-blur-sm">
+      <form onSubmit={onSubmit} className="card-elevated p-6 sm:p-7 w-full max-w-md rounded-b-none sm:rounded-3xl max-h-[90vh] overflow-y-auto">
         <h3 className="font-serif text-2xl text-mauve-900">Nueva estilista</h3>
         <p className="text-sm text-mauve-600 mt-1">
           Le creas la cuenta — ella inicia sesión y puede cambiar su contraseña.
@@ -308,8 +308,8 @@ function ResetPasswordModal({ member, onClose }: { member: Member; onClose: () =
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center p-4 bg-mauve-900/40 backdrop-blur-sm">
-      <form onSubmit={onSubmit} className="card-elevated p-7 w-full max-w-sm">
+    <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-0 sm:p-4 bg-mauve-900/40 backdrop-blur-sm">
+      <form onSubmit={onSubmit} className="card-elevated p-6 sm:p-7 w-full max-w-sm rounded-b-none sm:rounded-3xl max-h-[90vh] overflow-y-auto">
         <h3 className="font-serif text-2xl text-mauve-900">Restablecer contraseña</h3>
         <p className="text-sm text-mauve-600 mt-1">para {member.name}</p>
 
