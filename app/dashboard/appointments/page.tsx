@@ -45,6 +45,10 @@ export default function AppointmentsPage() {
   const [selected, setSelected] = useState<Appointment | null>(null);
   const [showBlocks, setShowBlocks] = useState(false);
   const [showNew, setShowNew] = useState(false);
+  // Google-Calendar-style: tapping any day opens a sheet listing every
+  // appointment + block for that date. Solves the "too many to fit in a
+  // tiny mobile cell" problem and removes the broken "+N más" jump.
+  const [dayOpen, setDayOpen] = useState<Date | null>(null);
 
   // The visible grid is 6 weeks starting on the Monday on/before the 1st.
   const gridStart = useMemo(() => startOfWeek(monthAnchor), [monthAnchor]);
@@ -194,7 +198,14 @@ export default function AppointmentsPage() {
                   {block && (
                     <div className="absolute inset-0 pattern-dots opacity-[0.5] pointer-events-none" />
                   )}
-                  <div className="flex items-center justify-between px-1 relative">
+                  {/* Header — clicking the day number/area opens the day sheet
+                      with everything for that date (Google Calendar style). */}
+                  <button
+                    type="button"
+                    onClick={() => setDayOpen(date)}
+                    className="w-full flex items-center justify-between px-1 relative rounded-md hover:bg-mauve-900/[0.04] transition"
+                    aria-label={`Ver citas del ${date.getDate()}`}
+                  >
                     <span
                       className={`text-xs font-medium grid place-items-center h-6 w-6 rounded-full ${
                         isToday ? "bg-mauve-900 text-cream" : inMonth ? "text-mauve-900" : "text-mauve-400/50"
@@ -209,7 +220,7 @@ export default function AppointmentsPage() {
                     ) : dayAppts.length > 0 ? (
                       <span className="text-[9px] text-mauve-400">{dayAppts.length}</span>
                     ) : null}
-                  </div>
+                  </button>
 
                   <div className="mt-1 space-y-1">
                     {shown.map((a) => (
@@ -226,8 +237,8 @@ export default function AppointmentsPage() {
                     ))}
                     {extra > 0 && (
                       <button
-                        onClick={() => setSelected(dayAppts[3]!)}
-                        className="w-full text-left text-[10px] text-mauve-500 px-1.5 hover:text-mauve-900"
+                        onClick={() => setDayOpen(date)}
+                        className="w-full text-left text-[10px] text-mauve-500 px-1.5 hover:text-mauve-900 font-medium"
                       >
                         +{extra} más
                       </button>
@@ -272,6 +283,17 @@ export default function AppointmentsPage() {
             await apptsQ.refetch();
             setShowNew(false);
           }}
+        />
+      )}
+
+      {dayOpen && (
+        <DayAgendaSheet
+          date={dayOpen}
+          appointments={byDay.get(dayKey(dayOpen)) ?? []}
+          block={blockByDay.get(dayKey(dayOpen)) ?? null}
+          toneByStylist={toneByStylist}
+          onClose={() => setDayOpen(null)}
+          onPick={(a) => { setDayOpen(null); setSelected(a); }}
         />
       )}
     </div>
@@ -624,5 +646,137 @@ function NewAppointmentModal({
         </div>
       </form>
     </div>
+  );
+}
+
+// ─── Day agenda sheet (Google-Calendar-style) ────────────────────────────
+// Bottom sheet on mobile / centered modal on desktop. Lists every
+// appointment + block notice for a single day. Each row is tappable —
+// closes the sheet and opens the existing ApptModal with full detail.
+function DayAgendaSheet({
+  date,
+  appointments,
+  block,
+  toneByStylist,
+  onClose,
+  onPick,
+}: {
+  date: Date;
+  appointments: Appointment[];
+  block: BlockedSlot | null;
+  toneByStylist: Record<string, string>;
+  onClose: () => void;
+  onPick: (a: Appointment) => void;
+}) {
+  const heading = date.toLocaleDateString("es-EC", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+  });
+  // Active vs cancelled — cancelled go to the bottom, dimmed.
+  const active = appointments.filter((a) => a.status !== "CANCELLED");
+  const cancelled = appointments.filter((a) => a.status === "CANCELLED");
+
+  return (
+    <div
+      className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-0 sm:p-4 bg-mauve-900/40 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="card-elevated w-full sm:max-w-lg p-5 sm:p-6 rounded-b-none sm:rounded-3xl max-h-[85vh] overflow-y-auto"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="text-[11px] uppercase tracking-wider text-mauve-400">Agenda del día</div>
+            <h2 className="font-serif text-xl sm:text-2xl text-mauve-900 leading-tight capitalize truncate">
+              {heading}
+            </h2>
+            <p className="text-xs text-mauve-500 mt-1">
+              {appointments.length === 0
+                ? "Sin citas"
+                : `${appointments.length} cita${appointments.length === 1 ? "" : "s"}${cancelled.length ? ` · ${cancelled.length} cancelada${cancelled.length === 1 ? "" : "s"}` : ""}`}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="h-9 w-9 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-700 hover:bg-mauve-900/10 shrink-0"
+            aria-label="Cerrar"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        {block && (
+          <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-mauve-900/5 border border-line p-3">
+            <span className="mt-0.5 text-mauve-600">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </span>
+            <div className="min-w-0">
+              <div className="text-xs font-medium text-mauve-900">Día bloqueado</div>
+              {block.reason && <div className="text-xs text-mauve-500 mt-0.5">{block.reason}</div>}
+            </div>
+          </div>
+        )}
+
+        {appointments.length === 0 ? (
+          <div className="mt-6 mb-2 text-center text-sm text-mauve-500">
+            No hay citas {block ? "(día bloqueado)" : "este día"}.
+          </div>
+        ) : (
+          <div className="mt-4 space-y-2">
+            {active.map((a) => (
+              <AppointmentRow key={a.id} appt={a} tone={toneByStylist[a.stylist?.id ?? ""]} onClick={() => onPick(a)} />
+            ))}
+            {cancelled.length > 0 && (
+              <>
+                <div className="pt-3 text-[10px] uppercase tracking-wider text-mauve-400">Canceladas</div>
+                {cancelled.map((a) => (
+                  <AppointmentRow key={a.id} appt={a} tone={toneByStylist[a.stylist?.id ?? ""]} onClick={() => onPick(a)} dim />
+                ))}
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AppointmentRow({
+  appt,
+  tone,
+  onClick,
+  dim,
+}: {
+  appt: Appointment;
+  tone?: string;
+  onClick: () => void;
+  dim?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full text-left rounded-xl border border-line bg-cream hover:bg-cream-soft transition flex items-stretch gap-3 p-3 ${dim ? "opacity-60" : ""}`}
+    >
+      <div className="flex flex-col items-center justify-center w-14 shrink-0 border-r border-line pr-3">
+        <div className="text-sm font-medium text-mauve-900 tabular-nums">{formatTime(appt.startAt)}</div>
+        <div className="text-[10px] text-mauve-400 tabular-nums mt-0.5">{appt.durationMin} min</div>
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className={`shrink-0 h-2 w-2 rounded-full ${statusDot(appt.status)}`} />
+          <span className="text-sm font-medium text-mauve-900 truncate">{appt.client.name}</span>
+        </div>
+        <div className="text-xs text-mauve-600 mt-0.5 truncate">{appt.service.name}</div>
+        <div className="mt-1 flex items-center gap-2 flex-wrap">
+          {appt.stylist && (
+            <span className={`text-[10px] px-1.5 py-0.5 rounded ${tone ?? "bg-mauve-900/5 text-mauve-700"}`}>
+              {appt.stylist.name.split(" ")[0]}
+            </span>
+          )}
+          <span className={`chip ${statusChip(appt.status)} text-[9px]`}>{translateStatus(appt.status)}</span>
+        </div>
+      </div>
+      <svg className="text-mauve-400 self-center shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
   );
 }
