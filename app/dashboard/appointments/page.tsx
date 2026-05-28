@@ -147,24 +147,28 @@ export default function AppointmentsPage() {
         </div>
       </div>
 
-      <div className="card-surface p-4 flex flex-wrap items-center gap-3">
-        <span className="text-xs text-mauve-400 uppercase tracking-wider">Estilistas</span>
-        <button
-          onClick={() => setStylistFilter("")}
-          className={`chip ${!stylistFilter ? "bg-mauve-900 text-cream" : "chip-cream"} transition`}
-        >
-          Todas
-        </button>
-        {stylists.map((s, i) => (
+      {/* Stylist filter — only useful when there's actually a team to filter by.
+          Solo owners get a cleaner header without the empty "Todas" chip. */}
+      {stylists.length > 0 && (
+        <div className="card-surface p-4 flex flex-wrap items-center gap-3">
+          <span className="text-xs text-mauve-400 uppercase tracking-wider">Estilistas</span>
           <button
-            key={s.id}
-            onClick={() => setStylistFilter(s.id)}
-            className={`chip ${stylistFilter === s.id ? "bg-mauve-900 text-cream" : i % 3 === 0 ? "chip-blush" : i % 3 === 1 ? "chip-lavender" : "chip-gold"} transition`}
+            onClick={() => setStylistFilter("")}
+            className={`chip ${!stylistFilter ? "bg-mauve-900 text-cream" : "chip-cream"} transition`}
           >
-            {s.name.split(" ")[0]}
+            Todas
           </button>
-        ))}
-      </div>
+          {stylists.map((s, i) => (
+            <button
+              key={s.id}
+              onClick={() => setStylistFilter(s.id)}
+              className={`chip ${stylistFilter === s.id ? "bg-mauve-900 text-cream" : i % 3 === 0 ? "chip-blush" : i % 3 === 1 ? "chip-lavender" : "chip-gold"} transition`}
+            >
+              {s.name.split(" ")[0]}
+            </button>
+          ))}
+        </div>
+      )}
 
       {apptsQ.loading && !apptsQ.data ? (
         <LoadingBlock label="Cargando agenda" />

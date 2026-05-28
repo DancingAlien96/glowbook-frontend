@@ -405,36 +405,44 @@ function Flow({ salon }: { salon: PublicSalon }) {
           {/* Step 1: stylist + date + time */}
           {step === 1 && (
             <>
-              <h2 className="font-serif text-2xl text-mauve-900">Estilista, fecha y hora</h2>
-              <p className="text-sm text-mauve-600 mt-1">Elige a quién te atiende y cuándo.</p>
+              <h2 className="font-serif text-2xl text-mauve-900">
+                {salon.stylists.length > 0 ? "Estilista, fecha y hora" : "Fecha y hora"}
+              </h2>
+              <p className="text-sm text-mauve-600 mt-1">
+                {salon.stylists.length > 0 ? "Elige a quién te atiende y cuándo." : "Elige cuándo prefieres tu cita."}
+              </p>
 
-              <div className="mt-5">
-                <div className="text-xs uppercase tracking-wider text-mauve-400 mb-2">Estilista</div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  <button
-                    onClick={() => setStylistId("")}
-                    className={`text-center rounded-2xl border-2 p-3 transition ${!stylistId ? "border-mauve-900 bg-cream-soft" : "border-line bg-ivory hover:border-line-strong"}`}
-                  >
-                    <div className="h-12 w-12 mx-auto rounded-full bg-gradient-to-br from-mauve-800 to-mauve-900 grid place-items-center text-cream font-serif">★</div>
-                    <div className="mt-2 text-xs font-medium text-mauve-900 leading-tight">Cualquiera</div>
-                    <div className="text-[10px] text-mauve-400 mt-0.5">Te asignamos</div>
-                  </button>
-                  {salon.stylists.map((s, i) => {
-                    const sel = s.id === stylistId;
-                    return (
-                      <button
-                        key={s.id}
-                        onClick={() => setStylistId(s.id)}
-                        className={`text-center rounded-2xl border-2 p-3 transition ${sel ? "border-mauve-900 bg-cream-soft" : "border-line bg-ivory hover:border-line-strong"}`}
-                      >
-                        <div className={`h-12 w-12 mx-auto rounded-full bg-gradient-to-br ${STYLIST_TONES[i % STYLIST_TONES.length]} grid place-items-center text-cream font-serif`}>{s.name[0]}</div>
-                        <div className="mt-2 text-xs font-medium text-mauve-900 leading-tight truncate">{s.name.split(" ")[0]}</div>
-                        {s.role && <div className="text-[10px] text-mauve-400 mt-0.5 line-clamp-1">{s.role}</div>}
-                      </button>
-                    );
-                  })}
+              {/* Stylist picker — hidden for solo salons (no equipo aún),
+                  the "Cualquiera" card alone reads as a strange empty choice. */}
+              {salon.stylists.length > 0 && (
+                <div className="mt-5">
+                  <div className="text-xs uppercase tracking-wider text-mauve-400 mb-2">Estilista</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <button
+                      onClick={() => setStylistId("")}
+                      className={`text-center rounded-2xl border-2 p-3 transition ${!stylistId ? "border-mauve-900 bg-cream-soft" : "border-line bg-ivory hover:border-line-strong"}`}
+                    >
+                      <div className="h-12 w-12 mx-auto rounded-full bg-gradient-to-br from-mauve-800 to-mauve-900 grid place-items-center text-cream font-serif">★</div>
+                      <div className="mt-2 text-xs font-medium text-mauve-900 leading-tight">Cualquiera</div>
+                      <div className="text-[10px] text-mauve-400 mt-0.5">Te asignamos</div>
+                    </button>
+                    {salon.stylists.map((s, i) => {
+                      const sel = s.id === stylistId;
+                      return (
+                        <button
+                          key={s.id}
+                          onClick={() => setStylistId(s.id)}
+                          className={`text-center rounded-2xl border-2 p-3 transition ${sel ? "border-mauve-900 bg-cream-soft" : "border-line bg-ivory hover:border-line-strong"}`}
+                        >
+                          <div className={`h-12 w-12 mx-auto rounded-full bg-gradient-to-br ${STYLIST_TONES[i % STYLIST_TONES.length]} grid place-items-center text-cream font-serif`}>{s.name[0]}</div>
+                          <div className="mt-2 text-xs font-medium text-mauve-900 leading-tight truncate">{s.name.split(" ")[0]}</div>
+                          {s.role && <div className="text-[10px] text-mauve-400 mt-0.5 line-clamp-1">{s.role}</div>}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="mt-6 grid sm:grid-cols-[1.2fr_1fr] gap-5">
                 <DatePicker selected={date} onChange={setDate} />
@@ -641,7 +649,9 @@ function Flow({ salon }: { salon: PublicSalon }) {
           <div className="text-xs uppercase tracking-wider text-mauve-400">Tu reserva</div>
           <div className="mt-3 space-y-3 text-sm">
             <Row label="Servicio" value={service?.name ?? "—"} />
-            <Row label="Estilista" value={stylist?.name ?? "Cualquiera disponible"} />
+            {salon.stylists.length > 0 && (
+              <Row label="Estilista" value={stylist?.name ?? "Cualquiera disponible"} />
+            )}
             <Row label="Fecha" value={date ? date.toLocaleDateString("es-EC", { weekday: "short", day: "numeric", month: "short" }) : "—"} />
             <Row label="Hora" value={time ?? "—"} />
             <Row label="Duración" value={service ? `${service.durationMin} min` : "—"} />
