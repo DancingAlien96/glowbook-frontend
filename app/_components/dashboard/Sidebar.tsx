@@ -97,6 +97,13 @@ function SidebarContent({
       </nav>
 
       <div className={`pb-3 ${collapsed ? "px-2" : "px-3"}`}>
+        {/* Email as a separate row so the logout label can never wrap.
+            Hidden when the sidebar is in collapsed (icon-only) mode. */}
+        {!collapsed && user?.email && (
+          <div className="px-3 pb-1.5 text-[10px] text-mauve-400 truncate" title={user.email}>
+            {user.email}
+          </div>
+        )}
         <button
           onClick={() => logout()}
           title={collapsed ? "Cerrar sesión" : undefined}
@@ -105,12 +112,7 @@ function SidebarContent({
           }`}
         >
           <IconLogout />
-          {!collapsed && (
-            <>
-              <span className="flex-1 text-left">Cerrar sesión</span>
-              <span className="text-[10px] text-mauve-400 truncate">{user?.email}</span>
-            </>
-          )}
+          {!collapsed && <span className="whitespace-nowrap">Cerrar sesión</span>}
         </button>
 
         {/* Collapse toggle — desktop only (provided via onToggleCollapse) */}
