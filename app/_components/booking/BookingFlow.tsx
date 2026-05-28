@@ -9,6 +9,7 @@ import { useUploadThing } from "../../_lib/uploadthing";
 import { optimizeImage, formatBytes } from "../../_lib/imageOptimize";
 import { money, initials } from "../../_lib/format";
 import { LoadingBlock, ErrorBlock } from "../dashboard/States";
+import ShareSalonModal from "./ShareSalonModal";
 
 type PublicSalon = {
   id: string;
@@ -92,6 +93,9 @@ function Flow({ salon }: { salon: PublicSalon }) {
   const [time, setTime] = useState<string | null>(null); // "HH:MM"
   const [client, setClient] = useState({ name: "", email: "", phone: "", notes: "" });
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  // Share sheet trigger — small button overlaid on the salon hero so visitors
+  // can pass the page to a friend without copying the URL by hand.
+  const [shareOpen, setShareOpen] = useState(false);
   const [receiptInfo, setReceiptInfo] = useState<string | null>(null);
   const [optimizingReceipt, setOptimizingReceipt] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -267,6 +271,18 @@ function Flow({ salon }: { salon: PublicSalon }) {
             style={{ backgroundImage: `url(${salon.coverImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-mauve-900/85 via-mauve-900/30 to-transparent" />
+
+          {/* Floating share button — top-right of the hero */}
+          <button
+            type="button"
+            onClick={() => setShareOpen(true)}
+            aria-label="Compartir este salón"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 h-10 px-3 sm:px-4 rounded-full bg-cream/90 backdrop-blur text-mauve-900 text-xs font-medium inline-flex items-center gap-1.5 hover:bg-cream transition shadow-[var(--shadow-soft)]"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>
+            Compartir
+          </button>
+
           <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8 flex items-end gap-4">
             <div
               className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl grid place-items-center text-cream font-serif text-2xl ring-2 ring-cream/40 shrink-0"
@@ -284,7 +300,18 @@ function Flow({ salon }: { salon: PublicSalon }) {
           </div>
         </div>
       ) : (
-        <div className="text-center max-w-2xl mx-auto mb-10">
+        <div className="text-center max-w-2xl mx-auto mb-10 relative">
+          {/* Share button — top-right corner, same affordance as the cover hero */}
+          <button
+            type="button"
+            onClick={() => setShareOpen(true)}
+            aria-label="Compartir este salón"
+            className="absolute top-0 right-0 h-9 px-3 rounded-full bg-mauve-900/5 text-mauve-700 hover:bg-mauve-900/10 text-xs font-medium inline-flex items-center gap-1.5 transition"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>
+            Compartir
+          </button>
+
           <div className="inline-flex items-center gap-3">
             <div
               className="h-14 w-14 rounded-2xl grid place-items-center text-cream font-serif text-2xl"
@@ -644,6 +671,14 @@ function Flow({ salon }: { salon: PublicSalon }) {
         </aside>
       </div>
       </div>
+
+      {shareOpen && (
+        <ShareSalonModal
+          url={typeof window !== "undefined" ? `${window.location.origin}/book/${salon.slug}` : ""}
+          salonName={salon.name}
+          onClose={() => setShareOpen(false)}
+        />
+      )}
     </FlowShell>
   );
 }
