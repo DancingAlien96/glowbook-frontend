@@ -230,9 +230,14 @@ export default function AppointmentsPage() {
 
                   <div className="mt-1 space-y-1">
                     {shown.map((a) => (
+                      // Consistent UX: tapping any appointment inside a day cell
+                      // opens the day agenda sheet (same as tapping the day number
+                      // or "+N más"). The user then picks the specific item from
+                      // there. Removes the surprise of "sometimes I see one,
+                      // sometimes I see all".
                       <button
                         key={a.id}
-                        onClick={() => setSelected(a)}
+                        onClick={() => setDayOpen(date)}
                         className={`w-full text-left rounded-md px-1.5 py-1 flex items-center gap-1 ${toneByStylist[a.stylist?.id ?? ""] ?? "bg-mauve-900/5 text-mauve-900"} hover:brightness-95 transition ${a.status === "CANCELLED" ? "opacity-50 line-through" : ""}`}
                         title={`${formatTime(a.startAt)} · ${a.client.name} · ${a.service.name} · ${translateStatus(a.status)}`}
                       >
@@ -255,18 +260,6 @@ export default function AppointmentsPage() {
             })}
           </div>
         </div>
-      )}
-
-      {selected && (
-        <ApptModal
-          appt={selected}
-          currency={currency}
-          onClose={() => setSelected(null)}
-          onChanged={async () => {
-            await apptsQ.refetch();
-            setSelected(null);
-          }}
-        />
       )}
 
       {showBlocks && (
@@ -292,6 +285,9 @@ export default function AppointmentsPage() {
         />
       )}
 
+      {/* Day sheet first, detail modal last → detail stacks on top of the
+          sheet when opened from it, and closing the detail naturally reveals
+          the still-open list (no return-to-calendar surprise). */}
       {dayOpen && (
         <DayAgendaSheet
           date={dayOpen}
@@ -299,7 +295,20 @@ export default function AppointmentsPage() {
           block={blockByDay.get(dayKey(dayOpen)) ?? null}
           toneByStylist={toneByStylist}
           onClose={() => setDayOpen(null)}
-          onPick={(a) => { setDayOpen(null); setSelected(a); }}
+          onPick={(a) => setSelected(a)}
+        />
+      )}
+
+      {selected && (
+        <ApptModal
+          appt={selected}
+          currency={currency}
+          fromDay={!!dayOpen}
+          onClose={() => setSelected(null)}
+          onChanged={async () => {
+            await apptsQ.refetch();
+            setSelected(null);
+          }}
         />
       )}
     </div>
@@ -309,11 +318,15 @@ export default function AppointmentsPage() {
 function ApptModal({
   appt,
   currency,
+  fromDay,
   onClose,
   onChanged,
 }: {
   appt: Appointment;
   currency: string;
+  /** True when the modal was opened from the day agenda sheet. Used to label
+   *  the close button as "Volver" so the user knows where they're going. */
+  fromDay?: boolean;
   onClose: () => void;
   onChanged: () => Promise<void>;
 }) {
@@ -346,12 +359,26 @@ function ApptModal({
     actions.push({ status: "CANCELLED", label: "Cancelar", variant: "btn-ghost" });
   }
 
+  // Render with a higher z-index than the day sheet (z-50) so we stack on top
+  // when opened from it; closing reveals the sheet still alive underneath.
   return (
-    <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-3 sm:p-4 bg-mauve-900/40 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] grid place-items-end sm:place-items-center p-3 sm:p-4 bg-mauve-900/40 backdrop-blur-sm" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
         className="card-elevated w-full sm:max-w-lg p-6 sm:p-7 rounded-3xl max-h-[90vh] overflow-y-auto"
       >
+        {/* "Volver al día" pill when opened from the day agenda sheet — makes it
+            obvious that closing returns to the list, not to the calendar. */}
+        {fromDay && (
+          <button
+            onClick={onClose}
+            className="mb-3 inline-flex items-center gap-1.5 text-xs text-mauve-600 hover:text-mauve-900 transition"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+            Volver al día
+          </button>
+        )}
+
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
@@ -363,7 +390,7 @@ function ApptModal({
               <span className={`chip ${statusChip(appt.status)} text-[10px] mt-1`}>{translateStatus(appt.status)}</span>
             </div>
           </div>
-          <button onClick={onClose} className="h-9 w-9 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-700 hover:bg-mauve-900/10 shrink-0">
+          <button onClick={onClose} className="h-9 w-9 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-700 hover:bg-mauve-900/10 shrink-0" aria-label={fromDay ? "Volver al día" : "Cerrar"}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </div>
