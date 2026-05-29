@@ -177,6 +177,22 @@ export default function AppSettings() {
             />
           </button>
         </div>
+
+        {/* Samsung / Xiaomi battery-optimization warning. Their custom Android
+            skins (One UI, MIUI) kill PWA service workers aggressively when the
+            app is in the background, so push only fires while the app is open.
+            Standard Android (Pixel, motorola, etc) doesn't have this problem. */}
+        {pushOn && (
+          <div className="mt-3 rounded-xl bg-gold-300/10 border border-gold-400/25 p-3">
+            <div className="flex items-start gap-2">
+              <svg className="mt-0.5 text-gold-600 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              <div className="min-w-0 text-[11px] leading-relaxed text-mauve-700">
+                <strong className="text-mauve-900">¿Solo te llegan cuando tienes la app abierta?</strong>
+                {" "}En Samsung, Xiaomi y Huawei tienes que desactivar la "optimización de batería" para Ecodama: Ajustes → Apps → Ecodama → Batería → <strong>Sin restricción</strong>. Es un detalle del fabricante, no del sistema.
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {msg && (
