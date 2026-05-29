@@ -309,6 +309,38 @@
     }
   }
 
+  /* Touch devices (phones + tablets — including older Samsungs with weak
+     Mali/Adreno GPUs) get a stripped-down compositor: backdrop-filter and
+     stacked radial gradients are the two effects that produce the
+     horizontal "scan-line" tearing reported on older hardware. We replace
+     them with solid / two-stop fills that look near-identical on these
+     screens but don't blow the GPU's repaint budget. Desktop browsers
+     (hover: hover, pointer: fine) keep the full premium aesthetic. */
+  @media (hover: none) and (pointer: coarse) {
+    .glass,
+    .glass-strong,
+    .glass-dark {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      background: rgba(255, 252, 247, 0.92) !important;
+    }
+    .glass-dark {
+      background: rgba(33, 22, 27, 0.88) !important;
+    }
+    .bg-aurora {
+      background: linear-gradient(180deg, #FBF8F3 0%, #F6F1EA 100%) !important;
+    }
+    .bg-aurora-soft,
+    .bg-mesh-blush {
+      background: #FFFCF7 !important;
+    }
+    /* Floating blurred blobs become invisible on touch — their only job was
+       a soft halo and they're the #1 source of scan-line artifacts. */
+    .anim-drift {
+      display: none !important;
+    }
+  }
+
   .delay-100 { animation-delay: 0.1s; }
   .delay-200 { animation-delay: 0.2s; }
   .delay-300 { animation-delay: 0.3s; }
