@@ -167,9 +167,12 @@ export default function AppSettings() {
             aria-pressed={pushOn}
             aria-label={pushOn ? "Desactivar notificaciones" : "Activar notificaciones"}
           >
+            {/* Pure white + shadow-md so the knob is clearly visible against
+                both the mauve-900 active state and the cream-soft card; left-1
+                anchor gives symmetric 4px margins in both ends. */}
             <span
-              className={`absolute top-1 h-5 w-5 rounded-full bg-cream shadow transition-transform ${
-                pushOn ? "translate-x-6" : "translate-x-1"
+              className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-white shadow-md transition-transform ${
+                pushOn ? "translate-x-5" : "translate-x-0"
               }`}
             />
           </button>
