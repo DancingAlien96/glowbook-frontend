@@ -4,10 +4,10 @@ export default function CTA() {
   return (
     <section className="section">
       <div className="container-tight">
-        <div className="relative overflow-hidden rounded-[2.5rem] p-10 sm:p-16 bg-gradient-to-br from-mauve-900 via-mauve-800 to-mauve-900 text-cream">
-          {/* Decorative glow */}
-          <div className="absolute -top-24 -left-20 h-72 w-72 rounded-full bg-blush-400/30 blur-3xl" />
-          <div className="absolute -bottom-24 -right-20 h-80 w-80 rounded-full bg-gold-400/25 blur-3xl" />
+        <div className="relative overflow-hidden rounded-[2.5rem] p-10 sm:p-16 bg-gradient-to-br from-mauve-900 via-mauve-800 to-mauve-900 text-cream isolate">
+          {/* Decorative glow — blur-2xl avoids GPU tearing on older Android tablets */}
+          <div className="absolute -top-24 -left-20 h-72 w-72 rounded-full bg-blush-400/30 blur-2xl" />
+          <div className="absolute -bottom-24 -right-20 h-80 w-80 rounded-full bg-gold-400/25 blur-2xl" />
           <div className="absolute inset-0 pattern-dots opacity-30" />
 
           <div className="relative max-w-2xl">

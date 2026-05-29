@@ -282,12 +282,32 @@
     100% { transform: translateX(-50%); }
   }
 
-  .anim-float { animation: float-y 6s ease-in-out infinite; }
-  .anim-drift { animation: drift 9s ease-in-out infinite; }
+  /* will-change hints + GPU-promoting translateZ on the animated decorative
+     blobs. Without this, older Adreno/Mali GPUs (cheap Samsungs, Pi tablets)
+     drop frames when a large blurred element is also being transformed,
+     leaving horizontal "scan line" artifacts of un-repainted pixels. */
+  .anim-float { animation: float-y 6s ease-in-out infinite; will-change: transform; transform: translateZ(0); }
+  .anim-drift { animation: drift 9s ease-in-out infinite; will-change: transform; transform: translateZ(0); }
   .anim-fade-up { animation: fade-up 0.8s ease both; }
   .anim-fade-in { animation: fade-in 0.8s ease both; }
   .anim-pulse-ring { animation: pulse-ring 2.4s ease-out infinite; }
-  .anim-marquee { animation: marquee 40s linear infinite; }
+  .anim-marquee { animation: marquee 40s linear infinite; will-change: transform; }
+
+  /* Respect OS-level "reduce motion" — also kills the heavy blurred-blob
+     animations on devices that would otherwise tear. */
+  @media (prefers-reduced-motion: reduce) {
+    .anim-float,
+    .anim-drift,
+    .anim-pulse-ring,
+    .anim-marquee,
+    .text-gold-shimmer {
+      animation: none !important;
+    }
+    .anim-fade-up,
+    .anim-fade-in {
+      animation-duration: 0.01ms !important;
+    }
+  }
 
   .delay-100 { animation-delay: 0.1s; }
   .delay-200 { animation-delay: 0.2s; }

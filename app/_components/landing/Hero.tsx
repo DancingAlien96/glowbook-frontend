@@ -3,14 +3,16 @@ import Link from "next/link";
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden pt-28 pb-20 sm:pt-32 sm:pb-28">
+    <section className="relative overflow-hidden pt-28 pb-20 sm:pt-32 sm:pb-28 isolate">
       {/* Ambient background */}
       <div className="absolute inset-0 bg-aurora -z-10" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/40 to-transparent -z-10" />
 
-      {/* Floating decorative blobs */}
-      <div className="pointer-events-none absolute -top-20 -left-24 h-72 w-72 rounded-full bg-blush-200/60 blur-3xl anim-drift" />
-      <div className="pointer-events-none absolute top-32 -right-20 h-80 w-80 rounded-full bg-lavender-100/70 blur-3xl anim-drift" style={{ animationDelay: "-3s" }} />
+      {/* Floating decorative blobs — blur-2xl (40px) instead of 3xl (64px):
+          identical aesthetic, ~40% less GPU work, and combined with isolate
+          on the section it stops the scan-line artifact on old Adreno GPUs. */}
+      <div className="pointer-events-none absolute -top-20 -left-24 h-72 w-72 rounded-full bg-blush-200/60 blur-2xl anim-drift" />
+      <div className="pointer-events-none absolute top-32 -right-20 h-80 w-80 rounded-full bg-lavender-100/70 blur-2xl anim-drift" style={{ animationDelay: "-3s" }} />
 
       <div className="container-tight relative">
         <div className="grid lg:grid-cols-[1.02fr_0.98fr] gap-12 lg:gap-16 items-center">

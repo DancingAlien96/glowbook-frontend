@@ -57,8 +57,8 @@ export default function Pricing() {
           {/* Lifetime — RECOMMENDED */}
           <div className="relative">
             <div className="absolute -inset-1 bg-gradient-to-br from-gold-300 via-blush-300 to-lavender-200 rounded-[1.6rem] blur-md opacity-70" />
-            <div className="relative card-elevated p-8 border-gold-400/30 bg-gradient-to-br from-ivory via-cream to-cream-soft overflow-hidden">
-              <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-gold-300/30 blur-3xl" />
+            <div className="relative card-elevated p-8 border-gold-400/30 bg-gradient-to-br from-ivory via-cream to-cream-soft overflow-hidden isolate">
+              <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-gold-300/30 blur-2xl" />
 
               <div className="flex items-center justify-between">
                 <span className="chip chip-gold inline-flex">
