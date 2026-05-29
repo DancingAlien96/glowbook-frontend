@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../_lib/auth";
 import { ApiError } from "../../_lib/api";
 import AdminShell from "./AdminShell";
+import PasswordInput from "../auth/PasswordInput";
 
 export default function AdminGate({ children }: { children: React.ReactNode }) {
   const { status, user, logout } = useAuth();
@@ -127,13 +128,13 @@ function AdminLoginForm() {
           </div>
           <div className="mt-4">
             <label className="text-[11px] uppercase tracking-wider text-cream/90 font-medium">Contraseña</label>
-            <input
-              type="password"
+            <PasswordInput
               required
               autoComplete="current-password"
               minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              tone="dark"
               className="mt-1.5 w-full h-11 rounded-xl bg-black/40 border border-white/20 px-3 text-sm text-cream placeholder:text-cream/35 focus:outline-none focus:border-gold-400 focus:bg-black/50 focus:ring-2 focus:ring-gold-400/20 transition"
             />
           </div>

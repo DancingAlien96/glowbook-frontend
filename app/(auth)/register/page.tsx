@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../_lib/auth";
 import { ApiError } from "../../_lib/api";
+import PasswordInput from "../../_components/auth/PasswordInput";
 
 const slugify = (s: string) =>
   s
@@ -78,7 +79,7 @@ export default function RegisterPage() {
         </div>
         <div>
           <label className="text-xs uppercase tracking-wider text-mauve-400">Contraseña</label>
-          <input type="password" required minLength={8} value={form.password} onChange={update("password")} className="input-soft mt-1.5" placeholder="Mínimo 8 caracteres" />
+          <PasswordInput required minLength={8} value={form.password} onChange={update("password")} autoComplete="new-password" className="input-soft mt-1.5" placeholder="Mínimo 8 caracteres" />
         </div>
         <div className="pt-2 border-t border-line">
           <label className="text-xs uppercase tracking-wider text-mauve-400">Nombre del salón</label>

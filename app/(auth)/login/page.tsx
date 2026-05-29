@@ -6,6 +6,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useAuth } from "../../_lib/auth";
 import { ApiError } from "../../_lib/api";
 import { defaultRouteForRole } from "../../_components/auth/RequireAuth";
+import PasswordInput from "../../_components/auth/PasswordInput";
 
 export default function LoginPage() {
   // useSearchParams() must be inside a Suspense boundary for static export.
@@ -69,12 +70,12 @@ function LoginForm() {
         </div>
         <div>
           <label className="text-xs uppercase tracking-wider text-mauve-400">Contraseña</label>
-          <input
-            type="password"
+          <PasswordInput
             required
             minLength={6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
             className="input-soft mt-1.5"
           />
         </div>

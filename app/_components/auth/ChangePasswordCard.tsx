@@ -7,6 +7,7 @@
 
 import { useMemo, useState } from "react";
 import { api, ApiError } from "../../_lib/api";
+import PasswordInput from "./PasswordInput";
 
 type Tone = "light" | "dark";
 
@@ -126,18 +127,33 @@ function Field({
   tone: Tone;
 }) {
   const t = tone === "dark" ? styles.dark : styles.light;
+  // Password fields get the show/hide eye toggle; everything else stays
+  // as a plain input.
+  const isPassword = type === "password";
   return (
     <div>
       <label className={t.label}>{label}</label>
-      <input
-        type={type}
-        required
-        autoComplete={autoComplete}
-        minLength={minLength}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`${t.input} mt-1.5`}
-      />
+      {isPassword ? (
+        <PasswordInput
+          required
+          autoComplete={autoComplete}
+          minLength={minLength}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          tone={tone}
+          className={`${t.input} mt-1.5`}
+        />
+      ) : (
+        <input
+          type={type}
+          required
+          autoComplete={autoComplete}
+          minLength={minLength}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={`${t.input} mt-1.5`}
+        />
+      )}
       {error ? (
         <p className="mt-1 text-[11px] text-blush-500">{error}</p>
       ) : hint ? (
