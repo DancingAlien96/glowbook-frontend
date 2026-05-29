@@ -29,6 +29,20 @@ export function resetOnboarded() {
   window.localStorage.removeItem(STORAGE_KEY);
 }
 
+// Mobile-specific drawer choreography. The sidebar lives behind the hamburger
+// button on small screens (< lg = 1024px), so steps that point at sidebar
+// items must open the drawer first. Steps that point at the topbar need it
+// closed so it doesn't sit on top of the topbar overlay. DashboardChrome
+// listens for these events and toggles its drawerOpen state accordingly.
+const onMobile = () =>
+  typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches;
+const openDrawer = () => {
+  if (onMobile()) window.dispatchEvent(new Event("tour:open-drawer"));
+};
+const closeDrawer = () => {
+  if (onMobile()) window.dispatchEvent(new Event("tour:close-drawer"));
+};
+
 /** Start the tour right away, regardless of the stored flag. */
 export function startOnboarding(firstName?: string) {
   if (typeof window === "undefined") return;
@@ -36,6 +50,17 @@ export function startOnboarding(firstName?: string) {
   // Wait one frame so any pending route transition / sidebar render has
   // settled — otherwise driver.js may not find the highlighted element.
   requestAnimationFrame(() => {
+    // Re-position the popover after the mobile drawer's 300ms slide-in so
+    // it lands on the now-visible sidebar item instead of an off-screen one.
+    const onSidebarStep = () => {
+      openDrawer();
+      if (onMobile()) setTimeout(() => tour.refresh(), 380);
+    };
+    const onTopbarStep = () => {
+      closeDrawer();
+      if (onMobile()) setTimeout(() => tour.refresh(), 380);
+    };
+
     const tour = driver({
       showProgress: true,
       progressText: "{{current}} de {{total}}",
@@ -43,14 +68,19 @@ export function startOnboarding(firstName?: string) {
       prevBtnText: "← Atrás",
       doneBtnText: "¡Listo!",
       animate: true,
-      // Open mobile drawer steps are still readable because the popover
-      // shifts to the side automatically when the target is hidden.
       allowClose: true,
       overlayOpacity: 0.55,
       stagePadding: 6,
       stageRadius: 12,
       smoothScroll: true,
-      onDestroyed: markOnboarded,
+      onDestroyed: () => {
+        // Make sure we don't leave the drawer open after closing the tour.
+        closeDrawer();
+        markOnboarded();
+      },
+      // Steps ordered so all sidebar-targeted items run consecutively, with
+      // the topbar step at the end. This keeps the mobile drawer transitions
+      // to just two: open at step 2, close at step 6.
       steps: [
         {
           popover: {
@@ -61,6 +91,7 @@ export function startOnboarding(firstName?: string) {
         },
         {
           element: '[data-tour="settings"]',
+          onHighlightStarted: onSidebarStep,
           popover: {
             title: "1 · Personaliza tu salón",
             description:
@@ -71,6 +102,7 @@ export function startOnboarding(firstName?: string) {
         },
         {
           element: '[data-tour="services"]',
+          onHighlightStarted: onSidebarStep,
           popover: {
             title: "2 · Crea tus servicios",
             description:
@@ -81,6 +113,7 @@ export function startOnboarding(firstName?: string) {
         },
         {
           element: '[data-tour="team"]',
+          onHighlightStarted: onSidebarStep,
           popover: {
             title: "3 · Invita a tu equipo",
             description:
@@ -90,23 +123,25 @@ export function startOnboarding(firstName?: string) {
           },
         },
         {
-          element: '[data-tour="public-page"]',
-          popover: {
-            title: "4 · Tu página pública",
-            description:
-              "Este botón abre la página que verán tus clientas. Cuando estés lista, comparte el link o el QR desde ahí.",
-            side: "bottom",
-            align: "end",
-          },
-        },
-        {
           element: '[data-tour="appointments"]',
+          onHighlightStarted: onSidebarStep,
           popover: {
-            title: "5 · Tu agenda",
+            title: "4 · Tu agenda",
             description:
               "Las reservas llegan acá automáticamente. Toca cualquier día para ver las citas, o crea una manualmente con <strong>Nueva cita</strong>.",
             side: "right",
             align: "start",
+          },
+        },
+        {
+          element: '[data-tour="public-page"]',
+          onHighlightStarted: onTopbarStep,
+          popover: {
+            title: "5 · Tu página pública",
+            description:
+              "Este botón abre la página que verán tus clientas. Cuando estés lista, comparte el link o el QR desde ahí.",
+            side: "bottom",
+            align: "end",
           },
         },
         {
