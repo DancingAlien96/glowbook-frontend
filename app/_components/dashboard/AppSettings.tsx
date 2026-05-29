@@ -151,7 +151,26 @@ export default function AppSettings() {
             {!swSupported && (
               <p className="text-xs text-blush-500 mt-2">Este navegador no soporta service workers.</p>
             )}
-            {swSupported && !pushSupported && (
+            {/* On iOS Safari, the PushManager API is hidden until the PWA is
+                installed to the home screen. Show the proper install path
+                instead of the misleading "doesn't support push" message. */}
+            {swSupported && !pushSupported && ios && !installed && (
+              <div className="mt-2 rounded-lg bg-blush-100/40 border border-blush-300/30 p-2.5">
+                <p className="text-xs text-mauve-800 font-medium">📱 En iPhone, primero instala la app</p>
+                <ol className="text-[11px] text-mauve-600 mt-1 ml-3 list-decimal space-y-0.5">
+                  <li>Abre esta página en <strong>Safari</strong> (no Chrome iOS)</li>
+                  <li>Toca <strong>Compartir</strong> 📤 → <strong>Agregar a pantalla de inicio</strong></li>
+                  <li>Abre Ecodama desde el ícono nuevo (no desde Safari)</li>
+                  <li>Vuelve aquí y activa las notificaciones</li>
+                </ol>
+              </div>
+            )}
+            {swSupported && !pushSupported && ios && installed && (
+              <p className="text-xs text-blush-500 mt-2">
+                Necesitas iOS 16.4 o superior para recibir notificaciones push.
+              </p>
+            )}
+            {swSupported && !pushSupported && !ios && (
               <p className="text-xs text-blush-500 mt-2">
                 Tu navegador no soporta notificaciones push.
               </p>
