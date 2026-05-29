@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SUPPORT_MESSAGES, whatsappHref } from "../../_lib/support";
 
 export default function CTA() {
   return (
@@ -30,10 +31,26 @@ export default function CTA() {
               <Link href="/book/maison-rose" className="btn h-12 px-6 bg-cream/10 text-cream border border-cream/15 hover:bg-cream/15">
                 Ver una página de reservas
               </Link>
+              <a
+                href={whatsappHref(SUPPORT_MESSAGES.signup)}
+                target="_blank"
+                rel="noreferrer"
+                className="btn h-12 px-6 bg-cream/10 text-cream border border-cream/15 hover:bg-cream/15"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.2-.7.2s-.8 1-.9 1.2c-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.1-.2.1-.3 0-.5l-.7-1.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3.9 2.5c.1.2 1.7 2.6 4.1 3.6 2 .9 2 .6 2.4.6.4 0 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1z"/></svg>
+                Hablar con soporte
+              </a>
             </div>
             <div className="mt-6 flex flex-wrap gap-6 text-sm text-cream/60">
               <span>✦ Activación por transferencia</span>
-              <span>✦ Soporte personalizado</span>
+              <a
+                href={whatsappHref(SUPPORT_MESSAGES.general)}
+                target="_blank"
+                rel="noreferrer"
+                className="underline-offset-2 hover:text-cream hover:underline transition"
+              >
+                ✦ Soporte personalizado
+              </a>
               <span>✦ Cancela cuando quieras</span>
             </div>
           </div>

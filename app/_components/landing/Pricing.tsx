@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SUPPORT_MESSAGES, whatsappHref } from "../../_lib/support";
 
 const features = [
   "Calendario y reservas ilimitadas",
@@ -94,7 +95,16 @@ export default function Pricing() {
         </div>
 
         <p className="mt-8 text-center text-xs text-mauve-400">
-          Activación por transferencia bancaria · Coordinamos contigo personalmente · Garantía 30 días
+          Activación por transferencia bancaria ·{" "}
+          <a
+            href={whatsappHref(SUPPORT_MESSAGES.signup)}
+            target="_blank"
+            rel="noreferrer"
+            className="text-mauve-700 underline-offset-2 hover:underline"
+          >
+            Coordinamos contigo por WhatsApp
+          </a>{" "}
+          · Garantía 30 días
         </p>
       </div>
     </section>

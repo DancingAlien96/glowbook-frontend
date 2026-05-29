@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SUPPORT_MESSAGES, whatsappHref } from "../../_lib/support";
 
 const faqs = [
   {
@@ -76,10 +77,15 @@ export default function FAQ() {
 
         <p className="mt-10 text-center text-sm text-mauve-600">
           ¿Otra pregunta?{" "}
-          <a href="mailto:hola@ecodama.online" className="text-mauve-900 underline-offset-4 hover:underline">
-            Escríbenos
+          <a
+            href={whatsappHref(SUPPORT_MESSAGES.general)}
+            target="_blank"
+            rel="noreferrer"
+            className="text-mauve-900 underline-offset-4 hover:underline"
+          >
+            Escríbenos por WhatsApp
           </a>{" "}
-          y te respondemos en menos de 24h.
+          y te respondemos al instante.
         </p>
       </div>
     </section>

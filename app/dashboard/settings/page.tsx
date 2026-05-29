@@ -11,6 +11,7 @@ import BusinessHoursEditor from "../../_components/dashboard/BusinessHoursEditor
 import AppSettings from "../../_components/dashboard/AppSettings";
 import ChangePasswordCard from "../../_components/auth/ChangePasswordCard";
 import { startOnboarding } from "../../_lib/onboardingTour";
+import { SUPPORT_MESSAGES, SUPPORT_WHATSAPP_DISPLAY, whatsappHref } from "../../_lib/support";
 import { initials } from "../../_lib/format";
 import { withCurrency, withTimezone } from "../../_lib/locales";
 import type { DepositMode, Salon } from "../../_lib/types";
@@ -326,6 +327,25 @@ export default function SettingsPage() {
         >
           🎓 Repetir tour
         </button>
+      </div>
+
+      {/* Direct support line — opens WhatsApp with a pre-baked greeting */}
+      <div className="flex items-center justify-between rounded-2xl border border-line bg-cream-soft/40 px-4 py-3 gap-3">
+        <div className="min-w-0">
+          <div className="text-sm text-mauve-900 font-medium">Soporte técnico</div>
+          <div className="text-xs text-mauve-500">
+            ¿Algo no funciona o tienes una duda? Escríbenos por WhatsApp al <span className="font-mono text-mauve-700">{SUPPORT_WHATSAPP_DISPLAY}</span>.
+          </div>
+        </div>
+        <a
+          href={whatsappHref(SUPPORT_MESSAGES.general)}
+          target="_blank"
+          rel="noreferrer"
+          className="btn btn-primary h-9 text-xs shrink-0"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.2-.7.2s-.8 1-.9 1.2c-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.1-.2.1-.3 0-.5l-.7-1.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3.9 2.5c.1.2 1.7 2.6 4.1 3.6 2 .9 2 .6 2.4.6.4 0 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1z"/></svg>
+          Abrir chat
+        </a>
       </div>
 
       <section className="card-surface p-6">
