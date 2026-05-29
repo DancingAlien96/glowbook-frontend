@@ -5,12 +5,15 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import BillingBanner from "./BillingBanner";
 import { registerServiceWorker } from "../../_lib/pwa";
+import { startOnboardingIfFirstTime } from "../../_lib/onboardingTour";
+import { useAuth } from "../../_lib/auth";
 
 const COLLAPSE_KEY = "gb.sidebarCollapsed";
 
 export default function DashboardChrome({ children }: { children: React.ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const { user } = useAuth();
 
   // Remember the collapsed preference across visits.
   useEffect(() => {
@@ -22,6 +25,16 @@ export default function DashboardChrome({ children }: { children: React.ReactNod
   useEffect(() => {
     registerServiceWorker();
   }, []);
+
+  // First-time owner onboarding. Fires once per browser (localStorage flag);
+  // the small delay lets the sidebar mount so the tour can find data-tour
+  // anchors. Skipped automatically if the user has already seen it.
+  useEffect(() => {
+    if (!user || user.role !== "OWNER") return;
+    const firstName = user.name?.split(" ")[0];
+    const timeout = setTimeout(() => startOnboardingIfFirstTime(firstName), 600);
+    return () => clearTimeout(timeout);
+  }, [user]);
 
   const toggleCollapse = () => {
     setCollapsed((c) => {

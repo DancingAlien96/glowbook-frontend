@@ -10,6 +10,7 @@ import { LoadingBlock, ErrorBlock } from "../../_components/dashboard/States";
 import BusinessHoursEditor from "../../_components/dashboard/BusinessHoursEditor";
 import AppSettings from "../../_components/dashboard/AppSettings";
 import ChangePasswordCard from "../../_components/auth/ChangePasswordCard";
+import { startOnboarding } from "../../_lib/onboardingTour";
 import { initials } from "../../_lib/format";
 import { withCurrency, withTimezone } from "../../_lib/locales";
 import type { DepositMode, Salon } from "../../_lib/types";
@@ -310,6 +311,22 @@ export default function SettingsPage() {
       <AppSettings />
 
       <ChangePasswordCard />
+
+      {/* Replay the first-time onboarding tour — useful when the dueña wants
+          to revisit it or after assigning a new device. */}
+      <div className="flex items-center justify-between rounded-2xl border border-line bg-cream-soft/40 px-4 py-3 gap-3">
+        <div className="min-w-0">
+          <div className="text-sm text-mauve-900 font-medium">Tour de bienvenida</div>
+          <div className="text-xs text-mauve-500">Vuelve a ver la guía rápida de cómo configurar tu salón.</div>
+        </div>
+        <button
+          type="button"
+          onClick={() => startOnboarding(salon.name.split(" ")[0])}
+          className="btn btn-ghost h-9 text-xs shrink-0"
+        >
+          🎓 Repetir tour
+        </button>
+      </div>
 
       <section className="card-surface p-6">
         <h2 className="font-serif text-xl text-mauve-900">Política de pagos</h2>

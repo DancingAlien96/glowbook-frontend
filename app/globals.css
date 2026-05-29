@@ -362,6 +362,99 @@
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { scrollbar-width: none; }
 
+  /* driver.js — onboarding tour theme (mauve+cream+serif Ecodama style) */
+  .driver-popover {
+    background: var(--color-ivory) !important;
+    border: 1px solid var(--color-line) !important;
+    border-radius: 1.25rem !important;
+    box-shadow: var(--shadow-elevated) !important;
+    padding: 1.25rem 1.25rem 1rem !important;
+    color: var(--color-mauve-900) !important;
+    max-width: 360px !important;
+  }
+  .driver-popover-title {
+    font-family: var(--font-serif) !important;
+    font-size: 1.125rem !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+    color: var(--color-mauve-900) !important;
+    padding: 0 !important;
+    margin: 0 0 0.5rem !important;
+  }
+  .driver-popover-description {
+    color: var(--color-mauve-600) !important;
+    font-size: 0.875rem !important;
+    line-height: 1.55 !important;
+    margin: 0 0 0.75rem !important;
+  }
+  .driver-popover-description strong {
+    color: var(--color-mauve-900);
+    font-weight: 600;
+  }
+  .driver-popover-footer {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.5rem !important;
+    margin-top: 0.5rem !important;
+  }
+  .driver-popover-progress-text {
+    font-size: 0.6875rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    color: var(--color-mauve-400) !important;
+  }
+  .driver-popover-navigation-btns {
+    display: flex !important;
+    gap: 0.5rem !important;
+  }
+  .driver-popover-prev-btn,
+  .driver-popover-next-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 2.25rem !important;
+    padding: 0 1rem !important;
+    border-radius: 9999px !important;
+    font-size: 0.8125rem !important;
+    font-weight: 500 !important;
+    border: 0 !important;
+    cursor: pointer !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    text-shadow: none !important;
+  }
+  .driver-popover-prev-btn {
+    background: rgba(31, 15, 21, 0.06) !important;
+    color: var(--color-mauve-800) !important;
+  }
+  .driver-popover-prev-btn:hover {
+    background: rgba(31, 15, 21, 0.10) !important;
+  }
+  .driver-popover-next-btn {
+    background: linear-gradient(135deg, #1F0F15 0%, #3A2129 100%) !important;
+    color: var(--color-cream) !important;
+    box-shadow: 0 8px 20px -10px rgba(31, 15, 21, 0.7) !important;
+  }
+  .driver-popover-next-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px -10px rgba(31, 15, 21, 0.85) !important;
+  }
+  .driver-popover-close-btn {
+    color: var(--color-mauve-400) !important;
+    font-size: 1.5rem !important;
+    line-height: 1 !important;
+    top: 0.5rem !important;
+    right: 0.75rem !important;
+    background: transparent !important;
+  }
+  .driver-popover-close-btn:hover {
+    color: var(--color-mauve-900) !important;
+  }
+  .driver-popover-arrow-side-left.driver-popover-arrow { border-left-color: var(--color-ivory) !important; }
+  .driver-popover-arrow-side-right.driver-popover-arrow { border-right-color: var(--color-ivory) !important; }
+  .driver-popover-arrow-side-top.driver-popover-arrow { border-top-color: var(--color-ivory) !important; }
+  .driver-popover-arrow-side-bottom.driver-popover-arrow { border-bottom-color: var(--color-ivory) !important; }
+
   /* Form controls */
   .input-soft {
     width: 100%;

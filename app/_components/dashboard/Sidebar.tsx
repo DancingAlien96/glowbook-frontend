@@ -6,15 +6,23 @@ import Logo from "../shared/Logo";
 import { useAuth } from "../../_lib/auth";
 import { initials } from "../../_lib/format";
 
-const nav = [
+// `tour` matches the data-tour attribute the onboarding script looks for.
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  tour?: string;
+};
+
+const nav: { section: string; items: NavItem[] }[] = [
   {
     section: "Operación",
     items: [
       { href: "/dashboard", label: "Resumen", icon: <IconHome /> },
-      { href: "/dashboard/appointments", label: "Calendario", icon: <IconCalendar /> },
-      { href: "/dashboard/services", label: "Servicios", icon: <IconSparkle /> },
+      { href: "/dashboard/appointments", label: "Calendario", icon: <IconCalendar />, tour: "appointments" },
+      { href: "/dashboard/services", label: "Servicios", icon: <IconSparkle />, tour: "services" },
       { href: "/dashboard/clients", label: "Clientas", icon: <IconUsers /> },
-      { href: "/dashboard/team", label: "Equipo", icon: <IconTeam /> },
+      { href: "/dashboard/team", label: "Equipo", icon: <IconTeam />, tour: "team" },
     ],
   },
   {
@@ -22,7 +30,7 @@ const nav = [
     items: [
       { href: "/dashboard/payments", label: "Pagos", icon: <IconWallet /> },
       { href: "/dashboard/billing", label: "Plan & factura", icon: <IconBilling /> },
-      { href: "/dashboard/settings", label: "Ajustes", icon: <IconCog /> },
+      { href: "/dashboard/settings", label: "Ajustes", icon: <IconCog />, tour: "settings" },
     ],
   },
 ];
@@ -77,6 +85,7 @@ function SidebarContent({
                       href={item.href}
                       onClick={onNavigate}
                       title={collapsed ? item.label : undefined}
+                      data-tour={item.tour}
                       className={`flex items-center rounded-xl text-sm transition-all ${
                         collapsed ? "justify-center h-11" : "gap-3 px-3 py-2.5"
                       } ${

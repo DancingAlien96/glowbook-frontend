@@ -22,7 +22,12 @@ export default function Topbar({ onMenu }: { onMenu?: () => void }) {
         <div className="flex-1" />
 
         {slug && (
-          <Link href={`/book/${slug}`} target="_blank" className="btn btn-ghost h-9 text-xs">
+          <Link
+            href={`/book/${slug}`}
+            target="_blank"
+            data-tour="public-page"
+            className="btn btn-ghost h-9 text-xs"
+          >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h6v6M14 10l7-7M10 21H4a1 1 0 01-1-1v-6"/></svg>
             Mi página pública
           </Link>
