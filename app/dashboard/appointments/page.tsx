@@ -308,6 +308,8 @@ export default function AppointmentsPage() {
           appt={selected}
           currency={currency}
           fromDay={!!dayOpen}
+          services={(servicesQ.data?.services ?? []).filter((s) => s.active)}
+          stylists={stylists.filter((s) => s.active)}
           onClose={() => setSelected(null)}
           onChanged={async () => {
             await apptsQ.refetch();
@@ -323,6 +325,8 @@ function ApptModal({
   appt,
   currency,
   fromDay,
+  services,
+  stylists,
   onClose,
   onChanged,
 }: {
@@ -331,11 +335,16 @@ function ApptModal({
   /** True when the modal was opened from the day agenda sheet. Used to label
    *  the close button as "Volver" so the user knows where they're going. */
   fromDay?: boolean;
+  /** Catalogues passed in from the page so the reschedule modal can render
+   *  service + stylist selects without re-fetching. */
+  services: Service[];
+  stylists: Stylist[];
   onClose: () => void;
   onChanged: () => Promise<void>;
 }) {
   const [acting, setActing] = useState<AppointmentStatus | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
 
   const start = new Date(appt.startAt);
   const end = new Date(appt.endAt);
@@ -451,6 +460,23 @@ function ApptModal({
 
         {err && <div className="mt-4 text-sm text-blush-500 bg-blush-100/60 border border-blush-300/30 rounded-xl px-3 py-2.5">{err}</div>}
 
+        {/* Reschedule — only offered for not-yet-finished appointments. Once
+            it's completed / cancelled / no-show, editing date+stylist has no
+            practical value and could mask the audit trail. */}
+        {appt.status !== "COMPLETED" && appt.status !== "CANCELLED" && appt.status !== "NO_SHOW" && (
+          <div className="mt-5 pt-4 border-t border-line">
+            <div className="text-[11px] uppercase tracking-wider text-mauve-400 mb-2">Reprogramar</div>
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="btn btn-ghost h-10 text-sm w-full sm:w-auto"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Editar fecha, hora o estilista
+            </button>
+          </div>
+        )}
+
         {/* Status actions */}
         {actions.length > 0 && (
           <div className="mt-5 pt-4 border-t border-line">
@@ -470,6 +496,19 @@ function ApptModal({
           </div>
         )}
       </div>
+
+      {editing && (
+        <EditAppointmentModal
+          appt={appt}
+          services={services}
+          stylists={stylists}
+          onClose={() => setEditing(false)}
+          onSaved={async () => {
+            setEditing(false);
+            await onChanged();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -815,5 +854,180 @@ function AppointmentRow({
       </div>
       <svg className="text-mauve-400 self-center shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
+  );
+}
+
+// ─── Edit / reschedule appointment ──────────────────────────────────────
+// Owner-side reschedule for when the dueña realised she picked the wrong
+// day (or wants to swap service/stylist). Pre-fills with the current
+// values; backend re-runs conflict checking against the new slot,
+// excluding this row so it never thinks it conflicts with itself.
+function EditAppointmentModal({
+  appt,
+  services,
+  stylists,
+  onClose,
+  onSaved,
+}: {
+  appt: Appointment;
+  services: Service[];
+  stylists: Stylist[];
+  onClose: () => void;
+  onSaved: () => Promise<void>;
+}) {
+  // Local-time ISO breakdown so the date/time inputs show what the dueña sees.
+  const original = useMemo(() => new Date(appt.startAt), [appt.startAt]);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const defaultDate = `${original.getFullYear()}-${pad(original.getMonth() + 1)}-${pad(original.getDate())}`;
+  const defaultTime = `${pad(original.getHours())}:${pad(original.getMinutes())}`;
+
+  const [serviceId, setServiceId] = useState<string>(appt.service.id);
+  const [stylistId, setStylistId] = useState<string>(appt.stylist?.id ?? "");
+  const [date, setDate] = useState<string>(defaultDate);
+  const [time, setTime] = useState<string>(defaultTime);
+  const [notes, setNotes] = useState<string>(appt.notes ?? "");
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const selectedService = services.find((s) => s.id === serviceId);
+  const eligibleStylists = useMemo(() => {
+    if (!selectedService?.stylists?.length) return stylists;
+    const ids = new Set(selectedService.stylists.map((x) => x.stylistId));
+    return stylists.filter((s) => ids.has(s.id));
+  }, [selectedService, stylists]);
+
+  // Only enable save when something actually changed — keeps the dueña from
+  // hitting "Guardar" when she opened the modal by mistake.
+  const dirty =
+    serviceId !== appt.service.id ||
+    stylistId !== (appt.stylist?.id ?? "") ||
+    date !== defaultDate ||
+    time !== defaultTime ||
+    (notes ?? "") !== (appt.notes ?? "");
+
+  const canSubmit = dirty && serviceId && date && /^\d{2}:\d{2}$/.test(time) && !submitting;
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setSubmitting(true);
+    setErr(null);
+    try {
+      const [hh, mm] = time.split(":").map(Number);
+      const [y, m, d] = date.split("-").map(Number);
+      const start = new Date(y!, (m ?? 1) - 1, d!, hh ?? 0, mm ?? 0, 0, 0);
+      if (Number.isNaN(start.getTime())) throw new Error("Fecha u hora inválida.");
+
+      const body: Record<string, unknown> = {
+        startAt: start.toISOString(),
+        notes: notes.trim() || null,
+      };
+      if (serviceId !== appt.service.id) body.serviceId = serviceId;
+      if (stylistId !== (appt.stylist?.id ?? "")) body.stylistId = stylistId || null;
+
+      await api(`/appointments/${appt.id}`, { method: "PATCH", body });
+      await onSaved();
+    } catch (e) {
+      setErr(e instanceof ApiError ? e.message : e instanceof Error ? e.message : "No pudimos actualizar la cita.");
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] grid place-items-end sm:place-items-center p-3 sm:p-4 bg-mauve-900/40 backdrop-blur-sm" onClick={onClose}>
+      <form
+        onSubmit={submit}
+        onClick={(e) => e.stopPropagation()}
+        className="card-elevated w-full sm:max-w-lg p-6 sm:p-7 rounded-3xl max-h-[90vh] overflow-y-auto"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-xs text-mauve-400">Reprogramar</div>
+            <h2 className="font-serif text-2xl text-mauve-900 leading-tight">Editar cita</h2>
+            <p className="text-xs text-mauve-500 mt-1">
+              {appt.client.name} · {appt.service.name}
+            </p>
+          </div>
+          <button type="button" onClick={onClose} className="h-9 w-9 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-700 hover:bg-mauve-900/10 shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div className="mt-5 space-y-3.5">
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-mauve-400">Servicio</label>
+            <select
+              required
+              value={serviceId}
+              onChange={(e) => setServiceId(e.target.value)}
+              className="mt-1 w-full h-11 rounded-xl border border-line bg-cream px-3 text-sm text-mauve-900"
+            >
+              {services.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name} · {s.durationMin} min
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-mauve-400">Estilista</label>
+            <select
+              value={stylistId}
+              onChange={(e) => setStylistId(e.target.value)}
+              className="mt-1 w-full h-11 rounded-xl border border-line bg-cream px-3 text-sm text-mauve-900"
+            >
+              <option value="">Sin asignar</option>
+              {eligibleStylists.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-mauve-400">Fecha *</label>
+              <input
+                type="date"
+                required
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="mt-1 w-full h-11 rounded-xl border border-line bg-cream px-3 text-sm text-mauve-900"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-mauve-400">Hora *</label>
+              <input
+                type="time"
+                required
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="mt-1 w-full h-11 rounded-xl border border-line bg-cream px-3 text-sm text-mauve-900"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-mauve-400">Notas</label>
+            <textarea
+              rows={2}
+              placeholder="Detalles, preferencias…"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-line bg-cream px-3 py-2 text-sm text-mauve-900 placeholder:text-mauve-400 resize-none"
+            />
+          </div>
+        </div>
+
+        {err && <div className="mt-4 text-sm text-blush-500 bg-blush-100/60 border border-blush-300/30 rounded-xl px-3 py-2.5">{err}</div>}
+
+        <div className="mt-5 flex items-center justify-end gap-2 pt-4 border-t border-line">
+          <button type="button" onClick={onClose} className="btn btn-ghost h-11 px-5 text-sm">Cancelar</button>
+          <button type="submit" disabled={!canSubmit} className="btn btn-primary h-11 px-5 text-sm disabled:opacity-60">
+            {submitting ? "Guardando…" : "Guardar cambios"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
