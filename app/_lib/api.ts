@@ -1,7 +1,12 @@
 "use client";
 
 // Single-flight API client with JWT access token + cookie-based refresh.
-// Access token lives in memory + sessionStorage (so it survives reloads in dev).
+// Access token lives in memory + localStorage. We use localStorage (not
+// sessionStorage) because iOS Safari clears sessionStorage every time an
+// installed PWA is reopened from the home screen icon — so the user would
+// land on /login on every app launch even though the refresh cookie is
+// still alive. The access token has a short TTL (15m) and is rotated via
+// the httpOnly refresh cookie, so localStorage exposure is acceptable.
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:4000/api";
@@ -30,7 +35,7 @@ export function onAuthChange(fn: () => void): () => void {
 export function getAccessToken(): string | null {
   if (accessToken) return accessToken;
   if (typeof window !== "undefined") {
-    accessToken = window.sessionStorage.getItem(ACCESS_KEY);
+    accessToken = window.localStorage.getItem(ACCESS_KEY);
   }
   return accessToken;
 }
@@ -38,8 +43,8 @@ export function getAccessToken(): string | null {
 export function setAccessToken(token: string | null) {
   accessToken = token;
   if (typeof window !== "undefined") {
-    if (token) window.sessionStorage.setItem(ACCESS_KEY, token);
-    else window.sessionStorage.removeItem(ACCESS_KEY);
+    if (token) window.localStorage.setItem(ACCESS_KEY, token);
+    else window.localStorage.removeItem(ACCESS_KEY);
   }
   notify();
 }
