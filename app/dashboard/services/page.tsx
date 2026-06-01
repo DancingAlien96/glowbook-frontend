@@ -145,7 +145,9 @@ export default function ServicesPage() {
 }
 
 function NewServiceModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => Promise<void> }) {
-  const [form, setForm] = useState({ name: "", category: "Uñas", durationMin: 60, price: 30, description: "" });
+  // durationMin + price held as strings while typing so deleting the
+  // default doesn't snap to 0 (which would then prefix every new digit).
+  const [form, setForm] = useState({ name: "", category: "Uñas", durationMin: "60", price: "30", description: "" });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -159,8 +161,8 @@ function NewServiceModal({ onClose, onCreated }: { onClose: () => void; onCreate
         body: {
           name: form.name,
           category: form.category,
-          durationMin: form.durationMin,
-          priceCents: Math.round(form.price * 100),
+          durationMin: parseInt(form.durationMin, 10) || 0,
+          priceCents: Math.round((parseFloat(form.price) || 0) * 100),
           description: form.description || null,
         },
       });
@@ -191,12 +193,29 @@ function NewServiceModal({ onClose, onCreated }: { onClose: () => void; onCreate
             </div>
             <div>
               <label className="text-xs uppercase tracking-wider text-mauve-400">Duración (min)</label>
-              <input type="number" min={5} value={form.durationMin} onChange={(e) => setForm({ ...form, durationMin: +e.target.value })} className="input-soft mt-1.5" />
+              <input
+                type="number"
+                min={5}
+                inputMode="numeric"
+                value={form.durationMin}
+                onChange={(e) => setForm({ ...form, durationMin: e.target.value })}
+                onFocus={(e) => e.target.select()}
+                className="input-soft mt-1.5"
+              />
             </div>
           </div>
           <div>
             <label className="text-xs uppercase tracking-wider text-mauve-400">Precio</label>
-            <input type="number" step="0.01" min={0} value={form.price} onChange={(e) => setForm({ ...form, price: +e.target.value })} className="input-soft mt-1.5" />
+            <input
+              type="number"
+              step="0.01"
+              min={0}
+              inputMode="decimal"
+              value={form.price}
+              onChange={(e) => setForm({ ...form, price: e.target.value })}
+              onFocus={(e) => e.target.select()}
+              className="input-soft mt-1.5"
+            />
           </div>
           <div>
             <label className="text-xs uppercase tracking-wider text-mauve-400">Descripción</label>
