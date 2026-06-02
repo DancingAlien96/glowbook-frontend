@@ -243,51 +243,39 @@ export function StatusDonutChart({
         <EmptyChart msg="Sin citas registradas en los últimos 30 días." />
       ) : (
         <div className="flex items-center gap-4">
-          <svg viewBox="0 0 100 100" className="h-28 w-28 shrink-0 -rotate-90">
-            <circle cx="50" cy="50" r={radius} fill="none" stroke={PALETTE.line} strokeWidth={stroke} />
-            {sorted.map((d) => {
-              const len = (d.count / total) * circumference;
-              const dashArray = `${len} ${circumference - len}`;
-              const segment = (
-                <circle
-                  key={d.status}
-                  cx="50"
-                  cy="50"
-                  r={radius}
-                  fill="none"
-                  stroke={STATUS_COLOR[d.status] ?? PALETTE.mauveMid}
-                  strokeWidth={stroke}
-                  strokeDasharray={dashArray}
-                  strokeDashoffset={-offsetSoFar}
-                  strokeLinecap="butt"
-                >
-                  <title>{`${STATUS_LABEL[d.status] ?? d.status}: ${d.count}`}</title>
-                </circle>
-              );
-              offsetSoFar += len;
-              return segment;
-            })}
-            <text
-              x="50"
-              y="48"
-              textAnchor="middle"
-              fontSize="14"
-              fontWeight="500"
-              fill={PALETTE.mauve}
-              className="rotate-90"
-              style={{ transform: "rotate(90deg)", transformOrigin: "50px 50px" }}
-            >
+          {/* Group rotation instead of rotating the whole SVG so the text
+              inside stays upright. Donut segments are rotated -90° around
+              the centre so the slices start at 12 o'clock. */}
+          <svg viewBox="0 0 100 100" className="h-28 w-28 shrink-0">
+            <g transform="rotate(-90 50 50)">
+              <circle cx="50" cy="50" r={radius} fill="none" stroke={PALETTE.line} strokeWidth={stroke} />
+              {sorted.map((d) => {
+                const len = (d.count / total) * circumference;
+                const dashArray = `${len} ${circumference - len}`;
+                const segment = (
+                  <circle
+                    key={d.status}
+                    cx="50"
+                    cy="50"
+                    r={radius}
+                    fill="none"
+                    stroke={STATUS_COLOR[d.status] ?? PALETTE.mauveMid}
+                    strokeWidth={stroke}
+                    strokeDasharray={dashArray}
+                    strokeDashoffset={-offsetSoFar}
+                    strokeLinecap="butt"
+                  >
+                    <title>{`${STATUS_LABEL[d.status] ?? d.status}: ${d.count}`}</title>
+                  </circle>
+                );
+                offsetSoFar += len;
+                return segment;
+              })}
+            </g>
+            <text x="50" y="50" textAnchor="middle" dominantBaseline="middle" fontSize="14" fontWeight="500" fill={PALETTE.mauve}>
               {total}
             </text>
-            <text
-              x="50"
-              y="60"
-              textAnchor="middle"
-              fontSize="6"
-              fill={PALETTE.mauveMid}
-              className="rotate-90"
-              style={{ transform: "rotate(90deg)", transformOrigin: "50px 50px" }}
-            >
+            <text x="50" y="62" textAnchor="middle" dominantBaseline="middle" fontSize="6" fill={PALETTE.mauveMid} letterSpacing="0.5">
               CITAS
             </text>
           </svg>
