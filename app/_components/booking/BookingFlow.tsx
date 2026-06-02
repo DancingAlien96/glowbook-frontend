@@ -487,19 +487,22 @@ function Flow({ salon }: { salon: PublicSalon }) {
               <p className="text-sm text-mauve-600 mt-1">Para confirmarte la cita y enviarte recordatorios.</p>
               <div className="mt-5 space-y-4">
                 <div>
-                  <label className="text-xs uppercase tracking-wider text-mauve-400">Nombre completo</label>
-                  <input value={client.name} onChange={(e) => setClient({ ...client, name: e.target.value })} className="input-soft mt-1.5" placeholder="Ej. Catalina Ríos" />
+                  <label className="text-xs uppercase tracking-wider text-mauve-400">Nombre completo *</label>
+                  <input required value={client.name} onChange={(e) => setClient({ ...client, name: e.target.value })} className="input-soft mt-1.5" placeholder="Ej. Catalina Ríos" />
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs uppercase tracking-wider text-mauve-400">Email</label>
-                    <input type="email" value={client.email} onChange={(e) => setClient({ ...client, email: e.target.value })} className="input-soft mt-1.5" placeholder="tu@email.com" />
+                    <label className="text-xs uppercase tracking-wider text-mauve-400">Email *</label>
+                    <input type="email" required value={client.email} onChange={(e) => setClient({ ...client, email: e.target.value })} className="input-soft mt-1.5" placeholder="tu@email.com" />
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-wider text-mauve-400">WhatsApp</label>
-                    <input value={client.phone} onChange={(e) => setClient({ ...client, phone: e.target.value })} className="input-soft mt-1.5" placeholder="+593 99 ..." />
+                    <label className="text-xs uppercase tracking-wider text-mauve-400">WhatsApp *</label>
+                    <input type="tel" required minLength={5} value={client.phone} onChange={(e) => setClient({ ...client, phone: e.target.value })} className="input-soft mt-1.5" placeholder="+593 99 ..." />
                   </div>
                 </div>
+                <p className="text-[11px] text-mauve-400 -mt-1">
+                  Usamos el email para mandarte la confirmación y el WhatsApp para recordarte la cita.
+                </p>
                 <div>
                   <label className="text-xs uppercase tracking-wider text-mauve-400">Notas (opcional)</label>
                   <textarea

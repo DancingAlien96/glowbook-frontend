@@ -116,24 +116,25 @@ export default function AppointmentsPage() {
           <div className="text-xs text-mauve-400">Agenda mensual</div>
           <h1 className="font-serif text-3xl sm:text-4xl text-mauve-900 leading-tight">Agenda</h1>
         </div>
-        {/* Two sub-clusters that wrap independently on mobile:
-            actions (Nueva cita / Bloquear) and month nav (← label →). */}
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <div className="flex items-center gap-2 flex-wrap">
-            <button onClick={() => setShowNew(true)} className="btn btn-primary h-10 text-xs">
+        {/* Two clusters: actions (Nueva cita / Bloquear) and month nav.
+            Mobile: action buttons split 50/50 in their own row, month nav
+            full width below. Desktop: everything inline. */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
+            <button onClick={() => setShowNew(true)} className="btn btn-primary h-10 text-xs w-full sm:w-auto">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
               Nueva cita
             </button>
-            <button onClick={() => setShowBlocks(true)} className="btn btn-ghost h-10 text-xs">
+            <button onClick={() => setShowBlocks(true)} className="btn btn-ghost h-10 text-xs w-full sm:w-auto">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
               Bloquear fechas
             </button>
           </div>
-          <div className="flex items-center gap-2 ml-auto sm:ml-0">
+          <div className="flex items-center justify-between sm:justify-start gap-2 sm:ml-0">
             <button onClick={() => goMonth(-1)} aria-label="Mes anterior" className="h-10 w-10 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-700 hover:bg-mauve-900/10 shrink-0">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-            <div className="h-10 px-3 sm:px-4 rounded-full bg-mauve-900/5 flex flex-col items-center justify-center min-w-0 sm:min-w-[150px] leading-none">
+            <div className="flex-1 sm:flex-none h-10 px-3 sm:px-4 rounded-full bg-mauve-900/5 flex flex-col items-center justify-center min-w-0 sm:min-w-[150px] leading-none">
               <span className="text-sm font-medium text-mauve-900 capitalize whitespace-nowrap">{monthLabel}</span>
               <span className="text-[10px] text-mauve-400 mt-0.5">{isCurrentMonth ? "Este mes" : "Mes"}</span>
             </div>
@@ -141,32 +142,34 @@ export default function AppointmentsPage() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
             {!isCurrentMonth && (
-              <button onClick={() => setMonthAnchor(startOfMonth(new Date()))} className="btn btn-ghost h-10 text-xs">Hoy</button>
+              <button onClick={() => setMonthAnchor(startOfMonth(new Date()))} className="btn btn-ghost h-10 text-xs shrink-0">Hoy</button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Stylist filter — only useful when there's actually a team to filter by.
-          Solo owners get a cleaner header without the empty "Todas" chip. */}
+      {/* Stylist filter — vertical list on mobile so the chips don't reflow
+          awkwardly; horizontal chip row on tablet+ where there's room. */}
       {stylists.length > 0 && (
-        <div className="card-surface p-4 flex flex-wrap items-center gap-3">
-          <span className="text-xs text-mauve-400 uppercase tracking-wider">Estilistas</span>
-          <button
-            onClick={() => setStylistFilter("")}
-            className={`chip ${!stylistFilter ? "bg-mauve-900 text-cream" : "chip-cream"} transition`}
-          >
-            Todas
-          </button>
-          {stylists.map((s, i) => (
+        <div className="card-surface p-4">
+          <span className="text-xs text-mauve-400 uppercase tracking-wider block sm:inline mb-2 sm:mb-0 sm:mr-3">Estilistas</span>
+          <div className="flex flex-col sm:inline-flex sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2">
             <button
-              key={s.id}
-              onClick={() => setStylistFilter(s.id)}
-              className={`chip ${stylistFilter === s.id ? "bg-mauve-900 text-cream" : i % 3 === 0 ? "chip-blush" : i % 3 === 1 ? "chip-lavender" : "chip-gold"} transition`}
+              onClick={() => setStylistFilter("")}
+              className={`chip w-full sm:w-auto justify-center ${!stylistFilter ? "bg-mauve-900 text-cream" : "chip-cream"} transition`}
             >
-              {s.name.split(" ")[0]}
+              Todas
             </button>
-          ))}
+            {stylists.map((s, i) => (
+              <button
+                key={s.id}
+                onClick={() => setStylistFilter(s.id)}
+                className={`chip w-full sm:w-auto justify-center ${stylistFilter === s.id ? "bg-mauve-900 text-cream" : i % 3 === 0 ? "chip-blush" : i % 3 === 1 ? "chip-lavender" : "chip-gold"} transition`}
+              >
+                {s.name.split(" ")[0]}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -560,7 +563,13 @@ function NewAppointmentModal({
     return stylists.filter((s) => ids.has(s.id));
   }, [selectedService, stylists]);
 
-  const canSubmit = serviceId && date && /^\d{2}:\d{2}$/.test(time) && name.trim().length >= 2 && !submitting;
+  // The owner must give us at least one stable identifier (email or phone)
+  // — otherwise we can't dedup the client across visits. Name alone leads
+  // to "Maria García" / "Maria Garcia" duplicates.
+  const hasIdentifier = email.trim().length > 0 || phone.trim().length >= 5;
+  const canSubmit =
+    serviceId && date && /^\d{2}:\d{2}$/.test(time) &&
+    name.trim().length >= 2 && hasIdentifier && !submitting;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -684,19 +693,22 @@ function NewAppointmentModal({
               <div className="grid grid-cols-2 gap-3">
                 <input
                   type="tel"
-                  placeholder="Teléfono"
+                  placeholder="Teléfono *"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="h-11 rounded-xl border border-line bg-cream px-3 text-sm text-mauve-900 placeholder:text-mauve-400"
                 />
                 <input
                   type="email"
-                  placeholder="Email"
+                  placeholder="Email *"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="h-11 rounded-xl border border-line bg-cream px-3 text-sm text-mauve-900 placeholder:text-mauve-400"
                 />
               </div>
+              <p className={`text-[11px] ${name.trim().length >= 2 && !hasIdentifier ? "text-blush-500" : "text-mauve-400"}`}>
+                Necesitamos al menos <strong>teléfono</strong> o <strong>email</strong> para identificarla en futuras visitas.
+              </p>
             </div>
           </div>
 
