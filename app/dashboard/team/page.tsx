@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api, ApiError } from "../../_lib/api";
 import { useApi } from "../../_lib/useFetch";
 import { LoadingBlock, ErrorBlock, EmptyBlock } from "../../_components/dashboard/States";
@@ -18,6 +18,7 @@ type Member = {
     id: string;
     role: string | null;
     active: boolean;
+    commissionPercent: number;
     services: { serviceId: string }[];
     hours: WeekHour[];
   } | null;
@@ -47,6 +48,23 @@ export default function TeamPage() {
     if (!confirm(`¿Eliminar el acceso de ${m.name}? Esta acción no borra sus citas pasadas.`)) return;
     try {
       await api(`/staff/${m.id}`, { method: "DELETE" });
+      await refetch();
+    } catch (e) {
+      alert(e instanceof ApiError ? e.message : "Error");
+    }
+  };
+
+  // Save the commission % when the dueña tabs out of (or presses enter on)
+  // the input. Only patches if the number actually changed so we don't ping
+  // the API on every focus.
+  const saveCommission = async (m: Member, next: number) => {
+    if (!m.stylist || next === m.stylist.commissionPercent) return;
+    if (next < 0 || next > 100) return;
+    try {
+      await api(`/staff/${m.id}`, {
+        method: "PATCH",
+        body: { commissionPercent: next },
+      });
       await refetch();
     } catch (e) {
       alert(e instanceof ApiError ? e.message : "Error");
@@ -123,6 +141,13 @@ export default function TeamPage() {
                       🗓 Editar
                     </button>
                   </div>
+                )}
+
+                {m.stylist && (
+                  <CommissionRow
+                    initial={m.stylist.commissionPercent}
+                    onSave={(n) => saveCommission(m, n)}
+                  />
                 )}
 
                 <div className="mt-4 pt-4 border-t border-line flex items-center justify-between gap-2">
@@ -346,6 +371,61 @@ function ResetPasswordModal({ member, onClose }: { member: Member; onClose: () =
           </>
         )}
       </form>
+    </div>
+  );
+}
+
+// ─── Commission % editor ─────────────────────────────────────────────────
+// Inline editable input that saves on blur (and on Enter) so the dueña can
+// tab through the cards without hitting a "Guardar" button on each one.
+// Kept as its own component so the local string state doesn't force the
+// parent to re-render every keystroke.
+function CommissionRow({
+  initial,
+  onSave,
+}: {
+  initial: number;
+  onSave: (n: number) => void | Promise<void>;
+}) {
+  const [value, setValue] = useState(String(initial));
+
+  // If the parent refetches and the saved value changes, mirror it locally.
+  useEffect(() => {
+    setValue(String(initial));
+  }, [initial]);
+
+  const commit = () => {
+    const n = parseInt(value, 10);
+    if (Number.isNaN(n) || n < 0 || n > 100) {
+      setValue(String(initial));
+      return;
+    }
+    void onSave(n);
+  };
+
+  return (
+    <div className="mt-2 flex items-center justify-between rounded-xl bg-cream-soft/60 px-3 py-2 gap-2">
+      <span className="text-[11px] text-mauve-500 truncate">Comisión por servicio</span>
+      <div className="flex items-center gap-1 shrink-0">
+        <input
+          type="number"
+          min={0}
+          max={100}
+          inputMode="numeric"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onFocus={(e) => e.target.select()}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              (e.target as HTMLInputElement).blur();
+            }
+          }}
+          className="w-14 h-8 rounded-md border border-line bg-cream px-2 text-sm text-mauve-900 text-right font-mono"
+        />
+        <span className="text-xs text-mauve-500">%</span>
+      </div>
     </div>
   );
 }

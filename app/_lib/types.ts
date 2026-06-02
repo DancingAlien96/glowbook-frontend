@@ -95,6 +95,8 @@ export interface Stylist {
   name: string;
   role: string | null;
   active: boolean;
+  /** % of priceCents the stylist earns on COMPLETED appointments. 0-100. */
+  commissionPercent?: number;
   services?: { serviceId: string }[];
 }
 
