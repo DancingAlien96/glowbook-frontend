@@ -7,13 +7,31 @@ import { useAuth } from "../_lib/auth";
 import { LoadingBlock, ErrorBlock } from "../_components/dashboard/States";
 import { formatTime, initials, money } from "../_lib/format";
 import { statusDot, translateStatus } from "../_lib/status";
+import {
+  ClientMixChart,
+  MonthlyRevenueChart,
+  StatusDonutChart,
+  StylistRevenueChart,
+  TopServicesChart,
+  WeekdayChart,
+} from "../_components/dashboard/Charts";
 import type { Appointment, Metrics } from "../_lib/types";
+
+type Analytics = {
+  revenueByMonth: { month: string; cents: number }[];
+  revenueByStylist: { name: string; cents: number }[];
+  topServices: { name: string; count: number; cents: number }[];
+  statusDistribution: { status: string; count: number }[];
+  weekdayOccupancy: number[];
+  clientMix: { newCount: number; returningCount: number; totalNewThisMonth: number };
+};
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const currency = user?.salon?.currency ?? "USD";
 
   const metricsQ = useApi<{ metrics: Metrics }>("/salon/me/metrics");
+  const analyticsQ = useApi<{ analytics: Analytics }>("/salon/me/analytics");
 
   const todayRange = useMemo(() => {
     const from = new Date();
@@ -37,8 +55,6 @@ export default function DashboardPage() {
         { label: "Nuevas clientas (7d)", val: String(m.newClientsThisWeek), tone: "from-nude-200 to-nude-300" },
       ]
     : null;
-
-  const maxBucket = m ? Math.max(1, ...m.weekRevenueBuckets) : 1;
 
   return (
     <div className="space-y-6 max-w-[1400px] min-w-0">
@@ -132,24 +148,13 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-6 min-w-0">
-              <div className="card-surface p-5 sm:p-6 min-w-0 overflow-hidden">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-serif text-lg text-mauve-900">Ingresos · 7 días</h3>
-                </div>
-                <div className="mt-3 font-serif text-2xl text-mauve-900 truncate" title={money(m!.weekRevenueCents, currency)}>{money(m!.weekRevenueCents, currency)}</div>
-                <div className="mt-5 h-32 flex items-end gap-2">
-                  {m!.weekRevenueBuckets.map((v, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
-                      <div
-                        className="w-full rounded-md bg-gradient-to-t from-blush-200 via-blush-300 to-blush-400 min-h-[3px]"
-                        style={{ height: `${Math.max(3, (v / maxBucket) * 100)}%` }}
-                        title={money(v, currency)}
-                      />
-                      <span className="text-[9px] text-mauve-400">{["L", "M", "M", "J", "V", "S", "D"][i]}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              {/* Headline chart on the side: 6-month revenue trend gives a
+                  much better business signal than the old 7-day strip. */}
+              {analyticsQ.data ? (
+                <MonthlyRevenueChart data={analyticsQ.data.analytics.revenueByMonth} currency={currency} />
+              ) : (
+                <div className="card-surface p-5 sm:p-6 min-w-0 overflow-hidden h-44 animate-pulse" />
+              )}
 
               {m!.pendingPayments > 0 && (
                 <Link
@@ -167,6 +172,35 @@ export default function DashboardPage() {
                 </Link>
               )}
             </div>
+          </div>
+
+          {/* Analytics grid — five charts that round out the financial
+              picture beyond the headline KPIs. Loads independently of
+              metrics so the rest of the page stays snappy. */}
+          <div>
+            <div className="flex items-baseline justify-between mb-3">
+              <h2 className="font-serif text-xl sm:text-2xl text-mauve-900">Análisis</h2>
+              <span className="text-[10px] uppercase tracking-wider text-mauve-400">
+                Tu salón en números
+              </span>
+            </div>
+            {analyticsQ.loading && !analyticsQ.data ? (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="card-surface p-5 sm:p-6 min-w-0 overflow-hidden h-48 animate-pulse" />
+                ))}
+              </div>
+            ) : analyticsQ.error ? (
+              <ErrorBlock error={analyticsQ.error} onRetry={analyticsQ.refetch} />
+            ) : analyticsQ.data ? (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <StylistRevenueChart data={analyticsQ.data.analytics.revenueByStylist} currency={currency} />
+                <TopServicesChart data={analyticsQ.data.analytics.topServices} currency={currency} />
+                <StatusDonutChart data={analyticsQ.data.analytics.statusDistribution} />
+                <WeekdayChart data={analyticsQ.data.analytics.weekdayOccupancy} />
+                <ClientMixChart data={analyticsQ.data.analytics.clientMix} />
+              </div>
+            ) : null}
           </div>
         </>
       )}
