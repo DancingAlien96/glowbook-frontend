@@ -73,9 +73,9 @@ export default function PaymentsPage() {
           { label: "Total transacciones", val: String(payments.length), tone: "from-lavender-100 to-lavender-200" },
           { label: "Rechazados", val: String(payments.filter((p) => p.status === "REJECTED").length), tone: "from-nude-200 to-nude-300" },
         ].map((s) => (
-          <div key={s.label} className={`rounded-2xl p-5 bg-gradient-to-br ${s.tone}`}>
-            <div className="text-[11px] uppercase tracking-wider text-mauve-600">{s.label}</div>
-            <div className="mt-1 font-serif text-2xl text-mauve-900">{s.val}</div>
+          <div key={s.label} className={`min-w-0 rounded-2xl p-4 sm:p-5 bg-gradient-to-br ${s.tone}`}>
+            <div className="text-[11px] uppercase tracking-wider text-mauve-600 font-medium truncate">{s.label}</div>
+            <div className="mt-2 font-serif text-2xl sm:text-3xl text-mauve-900 truncate">{s.val}</div>
           </div>
         ))}
       </div>
@@ -173,8 +173,8 @@ export default function PaymentsPage() {
             <tbody className="divide-y divide-line">
               {history.map((p) => (
                 <tr key={p.id} className="hover:bg-cream/40 transition-colors">
-                  <td className="px-5 py-3.5 text-mauve-900 font-medium">{p.appointment.client.name}</td>
-                  <td className="px-5 py-3.5 text-sm text-mauve-600">{p.appointment.service.name}</td>
+                  <td className="px-5 py-3.5 text-mauve-900 font-medium max-w-[150px]"><div className="truncate">{p.appointment.client.name}</div></td>
+                  <td className="px-5 py-3.5 text-sm text-mauve-600 max-w-[150px]"><div className="truncate">{p.appointment.service.name}</div></td>
                   <td className="px-5 py-3.5 text-sm text-mauve-600 hidden md:table-cell">{p.method}</td>
                   <td className="px-5 py-3.5 font-serif text-lg text-mauve-900">{money(p.amountCents, currency)}</td>
                   <td className="px-5 py-3.5"><span className={`chip ${paymentChip(p.status)}`}>{translatePayment(p.status)}</span></td>

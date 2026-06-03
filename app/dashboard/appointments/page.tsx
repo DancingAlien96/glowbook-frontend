@@ -775,7 +775,7 @@ function DayAgendaSheet({
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="text-[11px] uppercase tracking-wider text-mauve-400">Agenda del día</div>
-            <h2 className="font-serif text-xl sm:text-2xl text-mauve-900 leading-tight capitalize truncate">
+            <h2 className="font-serif text-lg sm:text-xl text-mauve-900 leading-snug capitalize">
               {heading}
             </h2>
             <p className="text-xs text-mauve-500 mt-1">

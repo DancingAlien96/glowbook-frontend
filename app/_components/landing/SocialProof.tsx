@@ -14,7 +14,7 @@ export default function SocialProof() {
     <section className="relative py-14 border-y border-line bg-ivory/50">
       <div className="container-tight">
         <p className="text-center text-xs uppercase tracking-[0.25em] text-mauve-400">
-          Salones premium que confían en Ecodama
+          Salones, spas y estudios que confían en Ecodama
         </p>
         <div className="mt-6 overflow-hidden mask-fade">
           <div className="flex gap-12 anim-marquee whitespace-nowrap" style={{ width: "max-content" }}>

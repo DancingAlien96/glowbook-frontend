@@ -63,7 +63,7 @@ export default function ClientsPage() {
 
       <div className="card-surface p-0 overflow-hidden">
         <div className="p-4 flex flex-wrap gap-3 items-center justify-between border-b border-line">
-          <div className="relative flex-1 min-w-64">
+          <div className="relative flex-1 min-w-0">
             <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-mauve-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
             <input
               value={search}
@@ -106,11 +106,11 @@ export default function ClientsPage() {
               {clients.map((c, i) => (
                 <tr key={c.id} className="hover:bg-cream/40 transition-colors">
                   <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${tones[i % tones.length]} grid place-items-center text-cream font-serif`}>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${tones[i % tones.length]} grid place-items-center text-cream font-serif shrink-0`}>
                         {initials(c.name)}
                       </div>
-                      <div className="font-medium text-mauve-900">{c.name}</div>
+                      <div className="font-medium text-mauve-900 truncate">{c.name}</div>
                     </div>
                   </td>
                   <td className="px-5 py-3.5 text-sm text-mauve-600 hidden md:table-cell">

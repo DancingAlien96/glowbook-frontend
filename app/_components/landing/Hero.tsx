@@ -46,7 +46,11 @@ export default function Hero() {
               </Link>
             </div>
 
-            <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-mauve-600">
+            <p className="mt-6 text-sm text-mauve-500">
+              ✦ También ideal para <span className="text-mauve-700 font-medium">spas</span>, centros de estética y nail studios.
+            </p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-6 text-sm text-mauve-600">
               <div className="flex items-center gap-2.5">
                 <div className="flex -space-x-2">
                   {["from-blush-300 to-blush-400", "from-lavender-200 to-lavender-400", "from-nude-200 to-nude-300", "from-gold-300 to-gold-500"].map((c, i) => (
