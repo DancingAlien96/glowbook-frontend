@@ -1,0 +1,60 @@
+---
+# Syncs source, builds Next.js standalone, and restarts PM2.
+
+- name: Create frontend directory
+  ansible.builtin.file:
+    path: "{{ frontend_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Sync frontend source to server
+  ansible.posix.synchronize:
+    src: "{{ playbook_dir }}/../"
+    dest: "{{ frontend_dir }}/"
+    rsync_opts:
+      - "--exclude=node_modules"
+      - "--exclude=.next"
+      - "--exclude=.env.local"
+      - "--exclude=deploy/"
+      - "--exclude=playwright-report/"
+      - "--exclude=test-results/"
+    delete: yes
+
+- name: Deploy frontend .env.local
+  ansible.builtin.template:
+    src: env.local.j2
+    dest: "{{ frontend_dir }}/.env.local"
+    mode: "0640"
+
+- name: Install npm dependencies
+  ansible.builtin.shell: |
+    cd {{ frontend_dir }} && npm ci
+  changed_when: true
+
+- name: Build Next.js (standalone)
+  ansible.builtin.shell: |
+    cd {{ frontend_dir }} && npm run build
+  changed_when: true
+
+- name: Copy static assets into standalone output
+  ansible.builtin.shell: |
+    cp -r {{ frontend_dir }}/.next/static {{ frontend_dir }}/.next/standalone/.next/static
+    cp -r {{ frontend_dir }}/public        {{ frontend_dir }}/.next/standalone/public
+  changed_when: true
+
+- name: Deploy PM2 ecosystem config
+  ansible.builtin.template:
+    src: ecosystem.config.js.j2
+    dest: "{{ app_dir }}/ecosystem.config.js"
+    mode: "0644"
+
+- name: Start or restart frontend via PM2
+  ansible.builtin.shell: |
+    pm2 describe ecodama-frontend > /dev/null 2>&1 \
+      && pm2 reload ecodama-frontend \
+      || pm2 start {{ app_dir }}/ecosystem.config.js
+  changed_when: true
+
+- name: Save PM2 process list
+  ansible.builtin.shell: pm2 save
+  changed_when: false

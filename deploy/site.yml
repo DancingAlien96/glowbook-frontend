@@ -1,0 +1,29 @@
+---
+# ansible-playbook site.yml                  → deploy backend + frontend
+# ansible-playbook site.yml --tags bootstrap → first-time server setup
+# ansible-playbook site.yml --tags backend   → only backend
+# ansible-playbook site.yml --tags frontend  → only frontend
+
+- name: Bootstrap (first run)
+  hosts: production
+  vars_files:
+    - group_vars/vault.yml
+  roles:
+    - role: bootstrap
+  tags: [bootstrap, never]
+
+- name: Deploy backend
+  hosts: production
+  vars_files:
+    - group_vars/vault.yml
+  roles:
+    - role: backend
+  tags: [backend, deploy]
+
+- name: Deploy frontend
+  hosts: production
+  vars_files:
+    - group_vars/vault.yml
+  roles:
+    - role: frontend
+  tags: [frontend, deploy]

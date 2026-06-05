@@ -1,0 +1,157 @@
+---
+# First-time server setup. Run once with: make bootstrap
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install base packages
+  ansible.builtin.apt:
+    name:
+      - curl
+      - git
+      - unzip
+      - ufw
+      - nginx
+      - certbot
+      - python3-certbot-nginx
+    state: present
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+
+- name: Add Docker GPG key
+  ansible.builtin.shell: |
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+      | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    chmod a+r /etc/apt/keyrings/docker.gpg
+  args:
+    creates: /etc/apt/keyrings/docker.gpg
+
+- name: Add Docker apt repository
+  ansible.builtin.shell: |
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+      https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+      > /etc/apt/sources.list.d/docker.list
+  args:
+    creates: /etc/apt/sources.list.d/docker.list
+
+- name: Install Docker
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    update_cache: yes
+    state: present
+
+- name: Enable and start Docker
+  ansible.builtin.systemd:
+    name: docker
+    enabled: yes
+    state: started
+
+# ── Node.js ───────────────────────────────────────────────────────────────────
+
+- name: Add NodeSource repository (Node {{ node_version }})
+  ansible.builtin.shell: |
+    curl -fsSL https://deb.nodesource.com/setup_{{ node_version }}.x | bash -
+  args:
+    creates: /etc/apt/sources.list.d/nodesource.list
+
+- name: Install Node.js
+  ansible.builtin.apt:
+    name: nodejs
+    state: present
+    update_cache: yes
+
+- name: Install PM2 globally
+  ansible.builtin.shell: npm install -g pm2
+  args:
+    creates: /usr/bin/pm2
+
+# ── Firewall ──────────────────────────────────────────────────────────────────
+
+- name: Allow SSH
+  community.general.ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+  ignore_errors: yes  # ufw module may not be installed; fall back to shell
+
+- name: Allow HTTP and HTTPS via ufw shell
+  ansible.builtin.shell: |
+    ufw allow 22/tcp
+    ufw allow 80/tcp
+    ufw allow 443/tcp
+    ufw --force enable
+  changed_when: false
+
+# ── Directories ───────────────────────────────────────────────────────────────
+
+- name: Create app directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ app_dir }}"
+    - "{{ backend_dir }}"
+    - "{{ frontend_dir }}"
+
+# ── Nginx initial config ──────────────────────────────────────────────────────
+
+- name: Deploy Nginx site config
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/ecodama.conf
+    mode: "0644"
+  notify: reload nginx
+
+- name: Enable Nginx site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/ecodama.conf
+    dest: /etc/nginx/sites-enabled/ecodama.conf
+    state: link
+
+- name: Remove default Nginx site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: Ensure Nginx is started
+  ansible.builtin.systemd:
+    name: nginx
+    enabled: yes
+    state: started
+
+- name: Reload Nginx
+  ansible.builtin.systemd:
+    name: nginx
+    state: reloaded
+
+# ── SSL certificate ───────────────────────────────────────────────────────────
+
+- name: Obtain SSL certificate (certbot)
+  ansible.builtin.shell: |
+    certbot --nginx -d {{ domain }} -d {{ www_domain }} \
+      --non-interactive --agree-tos -m {{ admin_email }} --redirect
+  args:
+    creates: /etc/letsencrypt/live/{{ domain }}/fullchain.pem
+
+# ── PM2 startup ───────────────────────────────────────────────────────────────
+
+- name: Configure PM2 to start on boot
+  ansible.builtin.shell: |
+    pm2 startup systemd -u root --hp /root | tail -1 | bash
+  args:
+    creates: /etc/systemd/system/pm2-root.service
+
+handlers:
+  - name: reload nginx
+    ansible.builtin.systemd:
+      name: nginx
+      state: reloaded

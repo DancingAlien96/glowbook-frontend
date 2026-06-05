@@ -1,0 +1,34 @@
+---
+# Non-secret configuration — safe to commit
+
+# Domains
+domain:     ecodama.online
+www_domain: www.ecodama.online
+frontend_url: https://ecodama.online
+admin_email:  soporte@ecodama.online
+
+# Server paths
+app_dir:      /opt/ecodama
+backend_dir:  /opt/ecodama/backend
+frontend_dir: /opt/ecodama/frontend
+
+# Ports (only accessible from localhost; Nginx proxies inbound)
+backend_port:  4000
+frontend_port: 3000
+
+# Node
+node_version: "22"
+
+# MySQL
+mysql_db:   glowbook
+mysql_user: glowbook
+
+# VAPID (public key is not a secret)
+vapid_public_key: "BLWXxzwu8P6jCzyVtVD-yyLo0CYsdrsQTBEHaT9FHbknFXyBDTuISU0lXMAL-NgaEzv7_EMWbB4iNuuytew7QzQ"
+vapid_subject:    "mailto:soporte@ecodama.online"
+
+# Email
+email_from: "Ecodama <onboarding@resend.dev>"
+
+# Recurrente (public subscription URL)
+recurrente_subscription_url: "https://app.recurrente.com/s/arcadiasolutions/suscripcion-mensual-ecodama-tbp0az"

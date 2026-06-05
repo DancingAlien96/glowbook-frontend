@@ -1,0 +1,44 @@
+---
+# Syncs source, templates the production compose file, builds and starts containers.
+
+- name: Create backend directory
+  ansible.builtin.file:
+    path: "{{ backend_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Sync backend source to server
+  ansible.posix.synchronize:
+    src: "{{ playbook_dir }}/../../glowbook-backend/"
+    dest: "{{ backend_dir }}/"
+    rsync_opts:
+      - "--exclude=node_modules"
+      - "--exclude=dist"
+      - "--exclude=.env"
+      - "--exclude=uploads"
+    delete: yes
+
+- name: Deploy production docker-compose
+  ansible.builtin.template:
+    src: docker-compose.prod.yml.j2
+    dest: "{{ backend_dir }}/docker-compose.prod.yml"
+    mode: "0640"
+
+- name: Build and start backend stack
+  ansible.builtin.shell: |
+    docker compose -f {{ backend_dir }}/docker-compose.prod.yml up -d --build --remove-orphans
+  register: compose_output
+  changed_when: true
+
+- name: Show compose output
+  ansible.builtin.debug:
+    var: compose_output.stderr_lines
+
+- name: Wait for MySQL to be healthy
+  ansible.builtin.shell: |
+    docker exec glowbook-mysql \
+      mysqladmin ping -h localhost -uroot -p{{ vault_mysql_root_password }} --silent
+  register: mysql_health
+  retries: 15
+  delay: 8
+  until: mysql_health.rc == 0

@@ -1,0 +1,28 @@
+---
+# Copia este archivo a vault.yml y completa los valores, luego:
+#
+#   ansible-vault encrypt group_vars/vault.yml
+#
+# Para editar después:  ansible-vault edit group_vars/vault.yml
+# Para ver:             ansible-vault view group_vars/vault.yml
+
+# MySQL
+vault_mysql_root_password: "CHANGE_ME_strong_root_password"
+vault_mysql_password:      "CHANGE_ME_strong_db_password"
+
+# JWT (mínimo 32 caracteres, usa: openssl rand -hex 32)
+vault_jwt_access_secret:  "CHANGE_ME_access_secret_min_32_chars_xxxxxxxxxxxx"
+vault_jwt_refresh_secret: "CHANGE_ME_refresh_secret_min_32_chars_xxxxxxxxxxx"
+
+# Resend (email)
+vault_resend_api_key: "re_..."
+
+# UploadThing
+vault_uploadthing_token: "eyJhcGlLZXki..."
+
+# VAPID (private key — nunca exponer)
+vault_vapid_private_key: "IM6mui3x5YRkgBYQPdSlrDpn68SpoDeVs7Ss4DOTakA"
+
+# Recurrente (pasarela de pago)
+vault_recurrente_secret_key:     "sk_live_..."
+vault_recurrente_webhook_secret: ""   # whsec_... agregar después de crear endpoint en Svix

@@ -1,0 +1,49 @@
+# /etc/nginx/sites-available/ecodama.conf
+# Managed by Ansible — do not edit manually.
+# certbot will append SSL blocks below after first run.
+
+server {
+    listen 80;
+    server_name {{ domain }} {{ www_domain }};
+
+    client_max_body_size 20M;
+
+    # UploadThing webhook/handler lives in Next.js (app/api/uploadthing)
+    location /api/uploadthing {
+        proxy_pass         http://127.0.0.1:{{ frontend_port }};
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+
+    # Express backend API
+    location /api/ {
+        proxy_pass         http://127.0.0.1:{{ backend_port }};
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+    }
+
+    # Static uploads served by backend
+    location /uploads/ {
+        proxy_pass       http://127.0.0.1:{{ backend_port }};
+        proxy_set_header Host $host;
+    }
+
+    # Next.js frontend (standalone)
+    location / {
+        proxy_pass         http://127.0.0.1:{{ frontend_port }};
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade           $http_upgrade;
+        proxy_set_header   Connection        'upgrade';
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
