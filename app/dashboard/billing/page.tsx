@@ -109,7 +109,7 @@ export default function BillingPage() {
         <div className="text-xs text-mauve-400">Plan & facturación</div>
         <h1 className="font-serif text-3xl sm:text-4xl text-mauve-900 leading-tight">Tu suscripción</h1>
         <p className="mt-2 text-mauve-600 max-w-xl text-sm">
-          Paga tu plan por transferencia bancaria y sube el comprobante. Ecodama lo revisa y activa tu próximo período.
+          Paga con tarjeta de débito o crédito y tu suscripción se activa al instante. También puedes pagar por transferencia bancaria si lo prefieres.
         </p>
       </div>
 
