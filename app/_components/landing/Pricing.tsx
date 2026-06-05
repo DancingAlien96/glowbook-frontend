@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { SUPPORT_MESSAGES, whatsappHref } from "../../_lib/support";
 
+const RECURRENTE_MONTHLY_URL =
+  "https://app.recurrente.com/s/arcadiasolutions/suscripcion-mensual-ecodama-tbp0az";
+
 const features = [
   "Calendario y reservas ilimitadas",
   "Página de reservas personalizada",
@@ -41,9 +44,21 @@ export default function Pricing() {
             </div>
             <div className="text-xs text-mauve-400 mt-1">Cancela cuando quieras.</div>
 
-            <Link href="/register" className="btn btn-outline w-full h-12 mt-7">
+            <a
+              href={RECURRENTE_MONTHLY_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-outline w-full h-12 mt-7"
+            >
               Crear mi salón
-            </Link>
+            </a>
+            <p className="mt-2 text-xs text-center text-mauve-400">
+              ¿Ya pagaste?{" "}
+              <Link href="/register" className="underline text-mauve-600 hover:text-mauve-800">
+                Crea tu cuenta
+              </Link>{" "}
+              con el mismo email.
+            </p>
 
             <ul className="mt-7 space-y-3">
               {features.map((f) => (
@@ -77,10 +92,15 @@ export default function Pricing() {
               </div>
               <div className="text-xs text-mauve-400 mt-1">≈ 2.75 años del plan mensual.</div>
 
-              <Link href="/register" className="btn btn-gold w-full h-12 mt-7">
+              <a
+                href={whatsappHref(SUPPORT_MESSAGES.lifetime)}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-gold w-full h-12 mt-7"
+              >
                 Quiero acceso de por vida
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-              </Link>
+              </a>
 
               <ul className="mt-7 space-y-3">
                 {[...features, "Actualizaciones gratuitas para siempre", "Acceso anticipado a nuevas funciones"].map((f) => (
@@ -97,12 +117,12 @@ export default function Pricing() {
         <p className="mt-8 text-center text-xs text-mauve-400">
           Pago seguro con tarjeta de débito o crédito ·{" "}
           <a
-            href={whatsappHref(SUPPORT_MESSAGES.signup)}
+            href={whatsappHref(SUPPORT_MESSAGES.demo)}
             target="_blank"
             rel="noreferrer"
             className="text-mauve-700 underline-offset-2 hover:underline"
           >
-            ¿Dudas? Escríbenos por WhatsApp
+            Solicitar demo gratuita
           </a>{" "}
           · Garantía 30 días
         </p>

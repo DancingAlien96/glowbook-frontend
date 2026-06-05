@@ -19,4 +19,6 @@ export const SUPPORT_MESSAGES = {
   general: "Hola Ecodama, necesito ayuda con mi salón.",
   billing: "Hola Ecodama, tengo una consulta sobre mi suscripción.",
   signup: "Hola Ecodama, quiero activar mi salón en la plataforma.",
+  demo: "Hola Ecodama, me gustaría solicitar una demo gratuita de la plataforma.",
+  lifetime: "Hola Ecodama, me interesa el plan Lifetime ($660 USD). ¿Cómo puedo adquirirlo?",
 } as const;

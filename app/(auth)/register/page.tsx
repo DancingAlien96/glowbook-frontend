@@ -52,7 +52,7 @@ export default function RegisterPage() {
         ...form,
         salonSlug: form.salonSlug || slugify(form.salonName),
       });
-      router.replace("/dashboard");
+      router.replace("/dashboard/billing");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "No pudimos crear tu cuenta.");
     } finally {
@@ -65,7 +65,11 @@ export default function RegisterPage() {
       <div className="text-center">
         <span className="chip chip-blush">Crea tu salón</span>
         <h1 className="mt-4 font-serif text-3xl text-mauve-900">Crea tu salón</h1>
-        <p className="mt-2 text-sm text-mauve-600">Tu cuenta lista en 2 minutos. Activación coordinada por transferencia.</p>
+        <p className="mt-2 text-sm text-mauve-600">Tu cuenta lista en 2 minutos.</p>
+      </div>
+
+      <div className="mt-5 rounded-2xl bg-blush-50 border border-blush-200/60 px-4 py-3 text-xs text-mauve-700 leading-relaxed">
+        ¿Ya pagaste en Recurrente? Regístrate con el <strong>mismo email</strong> que usaste al pagar y tu suscripción se activa sola.
       </div>
 
       <form onSubmit={onSubmit} className="mt-7 space-y-4">
