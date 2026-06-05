@@ -13,8 +13,8 @@ const faqs = [
     a: "Tú apruebas cada comprobante manualmente antes de que la cita pase a confirmada. La imagen queda guardada en tu historial — si algo no cuadra, rechazas el pago con un motivo y la clienta es notificada.",
   },
   {
-    q: "¿Aceptan pagos con tarjeta de crédito?",
-    a: "Por ahora no. Trabajamos con transferencia bancaria y wallets locales tipo Yape o Plin (subiendo el comprobante). La integración con pasarela de tarjetas está en nuestro roadmap pero no tiene fecha confirmada — preferimos no prometer lo que aún no ofrecemos.",
+    q: "¿Aceptan pagos con tarjeta de crédito o débito?",
+    a: "Sí. La suscripción a Ecodama se paga con tarjeta de débito o crédito a través de Recurrente, nuestra pasarela de pago segura. El proceso toma menos de 2 minutos — ingresas tus datos de tarjeta, se procesa el cargo y tu cuenta queda activa de inmediato.",
   },
   {
     q: "¿Funciona para spas y centros de estética con varios profesionales?",
@@ -30,7 +30,7 @@ const faqs = [
   },
   {
     q: "¿Cómo se paga la suscripción de Ecodama?",
-    a: "Mientras integramos pasarela de pagos, la activación se hace por transferencia bancaria coordinada con nosotras. Escríbenos por WhatsApp o email y te enviamos los datos. El plan Lifetime ($660 USD único pago) está disponible bajo el mismo esquema.",
+    a: "Con tarjeta de débito o crédito directamente desde tu panel de Ecodama. Una vez registrada, vas a Facturación, haces clic en 'Pagar con tarjeta' y completas el pago en nuestra pasarela segura. El plan Lifetime ($660 USD pago único) también está disponible — escríbenos por WhatsApp para coordinarlo.",
   },
 ];
 

@@ -95,14 +95,14 @@ export default function Pricing() {
         </div>
 
         <p className="mt-8 text-center text-xs text-mauve-400">
-          Activación por transferencia bancaria ·{" "}
+          Pago seguro con tarjeta de débito o crédito ·{" "}
           <a
             href={whatsappHref(SUPPORT_MESSAGES.signup)}
             target="_blank"
             rel="noreferrer"
             className="text-mauve-700 underline-offset-2 hover:underline"
           >
-            Coordinamos contigo por WhatsApp
+            ¿Dudas? Escríbenos por WhatsApp
           </a>{" "}
           · Garantía 30 días
         </p>
