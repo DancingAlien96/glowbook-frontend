@@ -151,9 +151,43 @@ export default function BillingPage() {
         </div>
       </section>
 
+      {/* Card payment via Recurrente — shown only when URL is configured */}
+      {sub.status !== "LIFETIME" && platform.recurrenteUrl && (
+        <section className="card-elevated p-6 border-2 border-mauve-900/10">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-serif text-xl text-mauve-900">Pagar con tarjeta</h2>
+                <span className="chip chip-gold text-[10px]">Recomendado</span>
+              </div>
+              <p className="text-sm text-mauve-600 mt-1">
+                Paga de forma segura con tu tarjeta de crédito o débito. Se activa al instante.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-mauve-400">
+              <svg width="24" height="16" viewBox="0 0 24 16" fill="none"><rect width="24" height="16" rx="3" fill="#1A1F71"/><rect x="9" y="3" width="6" height="10" rx="1" fill="#FF5F00"/><circle cx="6.5" cy="8" r="4.5" fill="#EB001B"/><circle cx="17.5" cy="8" r="4.5" fill="#F79E1B"/></svg>
+              <svg width="32" height="16" viewBox="0 0 32 16" fill="none"><rect width="32" height="16" rx="3" fill="#016FD0"/><text x="4" y="12" fontSize="9" fontWeight="bold" fill="white" fontFamily="Arial">AMEX</text></svg>
+            </div>
+          </div>
+          <a
+            href={platform.recurrenteUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-5 btn btn-primary h-12 w-full sm:w-auto text-sm"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+            Pagar {money(platform.monthlyPriceCents)} / mes con tarjeta
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          </a>
+          <p className="mt-3 text-[11px] text-mauve-400">
+            Procesado de forma segura por Recurrente · Tu suscripción se activa automáticamente.
+          </p>
+        </section>
+      )}
+
       {sub.status !== "LIFETIME" && (
         <section className="card-elevated p-6">
-          <h2 className="font-serif text-xl text-mauve-900">Pagar / renovar</h2>
+          <h2 className="font-serif text-xl text-mauve-900">Pagar por transferencia</h2>
           <p className="text-sm text-mauve-600 mt-1">
             Transfiere a la cuenta de Ecodama y sube tu comprobante. Activamos tu próximo período en cuanto lo aprobemos
             (usualmente en menos de 24h).

@@ -193,6 +193,7 @@ export interface PlatformInfo {
   lifetimePriceCents: number;
   contactEmail: string | null;
   contactWhatsapp: string | null;
+  recurrenteUrl: string | null;
 }
 
 export interface PlatformSettings extends PlatformInfo {
