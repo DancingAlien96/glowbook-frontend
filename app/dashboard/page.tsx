@@ -61,7 +61,7 @@ export default function DashboardPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="text-xs text-mauve-400">{new Date().toLocaleDateString("es-EC", { weekday: "long", day: "numeric", month: "long" })}</div>
-          <h1 className="font-serif text-3xl sm:text-4xl text-mauve-900 leading-tight">
+          <h1 className="font-serif text-xl sm:text-3xl lg:text-4xl text-mauve-900 leading-tight">
             Hola {user?.name?.split(" ")[0] ?? ""}, <em className="not-italic text-rose-shimmer">tu día se ve hermoso ✨</em>
           </h1>
         </div>
@@ -83,9 +83,9 @@ export default function DashboardPage() {
             {kpis!.map((k) => (
               // min-w-0 lets long values (eg. "$1,234,567.89") truncate instead
               // of stretching the grid past the viewport.
-              <div key={k.label} className={`min-w-0 rounded-2xl p-4 sm:p-5 bg-gradient-to-br ${k.tone}`}>
-                <div className="text-[11px] uppercase tracking-wider text-mauve-600 font-medium truncate">{k.label}</div>
-                <div className="mt-2 font-serif text-2xl sm:text-3xl text-mauve-900 truncate" title={k.val}>{k.val}</div>
+              <div key={k.label} className={`min-w-0 rounded-2xl p-3 sm:p-5 bg-gradient-to-br ${k.tone}`}>
+                <div className="text-[10px] sm:text-[11px] uppercase tracking-wider text-mauve-600 font-medium truncate">{k.label}</div>
+                <div className="mt-2 font-serif text-lg sm:text-2xl lg:text-3xl text-mauve-900 truncate" title={k.val}>{k.val}</div>
               </div>
             ))}
           </div>
