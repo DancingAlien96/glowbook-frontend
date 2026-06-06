@@ -55,30 +55,24 @@
     chown -R www-data:www-data /var/www/ecodama
   changed_when: true
 
-- name: Ensure systemd service for frontend exists
-  ansible.builtin.copy:
-    dest: /etc/systemd/system/ecodama-frontend.service
-    mode: "0644"
-    content: |
-      [Unit]
-      Description=Ecodama Frontend (Next.js)
-      After=network.target
-
-      [Service]
-      WorkingDirectory=/var/www/ecodama
-      ExecStart=/usr/bin/node server.js
-      Restart=always
-      RestartSec=5
-      User=www-data
-      Environment=NODE_ENV=production
-      Environment=PORT=3000
-
-      [Install]
-      WantedBy=multi-user.target
-
-- name: Enable and restart frontend service
+- name: Stop conflicting systemd service if active
   ansible.builtin.systemd:
     name: ecodama-frontend
-    enabled: true
-    state: restarted
+    enabled: false
+    state: stopped
     daemon_reload: true
+  failed_when: false
+
+- name: Reload frontend with PM2
+  ansible.builtin.shell: |
+    pm2 describe ecodama-frontend > /dev/null 2>&1 \
+      && pm2 reload ecodama-frontend \
+      || pm2 start /var/www/ecodama/server.js \
+           --name ecodama-frontend \
+           --env production \
+           -- --port 3000
+    pm2 save
+  environment:
+    NODE_ENV: production
+    PORT: "3000"
+  changed_when: true
