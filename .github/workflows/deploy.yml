@@ -5,9 +5,11 @@ on:
     branches:
       - main
 
+permissions: {}
+
 jobs:
   deploy:
-    if: ${{ secrets.DEPLOY_HOST != '' && secrets.DEPLOY_USER != '' && secrets.DEPLOY_PASSWORD != '' }}
+    if: ${{ secrets.DEPLOY_HOST && secrets.DEPLOY_USER && secrets.DEPLOY_PASSWORD }}
     runs-on: ubuntu-latest
     steps:
       - name: Validate deploy secrets
