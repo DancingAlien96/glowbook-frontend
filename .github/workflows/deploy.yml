@@ -13,8 +13,12 @@ jobs:
     steps:
       - name: Check deploy secrets
         id: check_secrets
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PASSWORD: ${{ secrets.DEPLOY_PASSWORD }}
         run: |
-          if [ -n "${{ secrets.DEPLOY_HOST }}" ] && [ -n "${{ secrets.DEPLOY_USER }}" ] && [ -n "${{ secrets.DEPLOY_PASSWORD }}" ]; then
+          if [ -n "$DEPLOY_HOST" ] && [ -n "$DEPLOY_USER" ] && [ -n "$DEPLOY_PASSWORD" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
             echo "✅ All deploy secrets are configured"
           else
@@ -24,7 +28,7 @@ jobs:
 
       - name: Deploy to production
         if: steps.check_secrets.outputs.ready == 'true'
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@1530429296e979861824d74fb800013190b5dee0
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
