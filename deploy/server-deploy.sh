@@ -34,6 +34,18 @@ for i in $(seq 1 20); do
     --silent 2>/dev/null && break || sleep 5
 done
 
+log "Esperando que API esté lista..."
+API_URL=$(grep NEXT_PUBLIC_API_URL "$FRONTEND_DIR/.env.local" | cut -d'=' -f2 | tr -d ' ')
+API_URL=${API_URL:-"http://localhost:4000/api"}
+for i in $(seq 1 30); do
+  if curl -sf "${API_URL}/health" > /dev/null 2>&1 || curl -sf "${API_URL}/salons" > /dev/null 2>&1; then
+    log "API está lista"
+    break
+  fi
+  warn "Esperando API... intento $i/30"
+  sleep 2
+done
+
 # ── Frontend (Next.js standalone) ─────────────────────────────────────────────
 log "Instalando dependencias del frontend..."
 cd "$FRONTEND_DIR"
