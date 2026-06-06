@@ -9,17 +9,21 @@ permissions: {}
 
 jobs:
   deploy:
-    if: secrets.DEPLOY_HOST != '' && secrets.DEPLOY_USER != '' && secrets.DEPLOY_PASSWORD != ''
     runs-on: ubuntu-latest
     steps:
-      - name: Validate deploy secrets
+      - name: Check deploy secrets
+        id: check_secrets
         run: |
-          test -n "${{ secrets.DEPLOY_HOST }}" || { echo "❌ DEPLOY_HOST is not set"; exit 1; }
-          test -n "${{ secrets.DEPLOY_USER }}" || { echo "❌ DEPLOY_USER is not set"; exit 1; }
-          test -n "${{ secrets.DEPLOY_PASSWORD }}" || { echo "❌ DEPLOY_PASSWORD is not set"; exit 1; }
-          echo "✅ All deploy secrets are configured"
+          if [ -n "${{ secrets.DEPLOY_HOST }}" ] && [ -n "${{ secrets.DEPLOY_USER }}" ] && [ -n "${{ secrets.DEPLOY_PASSWORD }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "✅ All deploy secrets are configured"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Skipping deploy because one or more deploy secrets are not configured."
+          fi
 
       - name: Deploy to production
+        if: steps.check_secrets.outputs.ready == 'true'
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.DEPLOY_HOST }}
