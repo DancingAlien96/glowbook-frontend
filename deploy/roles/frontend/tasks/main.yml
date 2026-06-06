@@ -1,11 +1,19 @@
 ---
-# Syncs source, builds Next.js standalone, and restarts PM2.
+# Syncs source, builds Next.js export (static files), and deploys via Nginx.
 
-- name: Create frontend directory
+- name: Create frontend source directory
   ansible.builtin.file:
     path: "{{ frontend_dir }}"
     state: directory
     mode: "0755"
+
+- name: Create Nginx static files directory
+  ansible.builtin.file:
+    path: "/var/www/ecodama"
+    state: directory
+    mode: "0755"
+    owner: "www-data"
+    group: "www-data"
 
 - name: Sync frontend source to server
   ansible.posix.synchronize:
@@ -14,6 +22,7 @@
     rsync_opts:
       - "--exclude=node_modules"
       - "--exclude=.next"
+      - "--exclude=out"
       - "--exclude=.env.local"
       - "--exclude=deploy/"
       - "--exclude=playwright-report/"
@@ -31,28 +40,21 @@
     cd {{ frontend_dir }} && npm ci
   changed_when: true
 
-- name: Build Next.js (standalone)
+- name: Build Next.js (export static files)
   ansible.builtin.shell: |
     cd {{ frontend_dir }} && npm run build
   changed_when: true
 
-- name: Copy static assets into standalone output
+- name: Copy static files to Nginx directory
   ansible.builtin.shell: |
-    cp -r {{ frontend_dir }}/.next/static {{ frontend_dir }}/.next/standalone/.next/static
-    cp -r {{ frontend_dir }}/public        {{ frontend_dir }}/.next/standalone/public
+    rm -rf /var/www/ecodama/*
+    cp -r {{ frontend_dir }}/out/* /var/www/ecodama/
+    chown -R www-data:www-data /var/www/ecodama
   changed_when: true
 
-- name: Deploy PM2 ecosystem config
-  ansible.builtin.template:
-    src: ecosystem.config.js.j2
-    dest: "{{ app_dir }}/ecosystem.config.js"
-    mode: "0644"
-
-- name: Start or restart frontend via PM2
+- name: Stop PM2 frontend process (if running)
   ansible.builtin.shell: |
-    pm2 describe ecodama-frontend > /dev/null 2>&1 \
-      && pm2 reload ecodama-frontend \
-      || pm2 start {{ app_dir }}/ecosystem.config.js
+    pm2 describe ecodama-frontend > /dev/null 2>&1 && pm2 delete ecodama-frontend || true
   changed_when: true
 
 - name: Save PM2 process list

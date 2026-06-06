@@ -14,7 +14,6 @@ frontend_dir: /opt/ecodama/frontend
 
 # Ports (only accessible from localhost; Nginx proxies inbound)
 backend_port:  4000
-frontend_port: 3000
 
 # Node
 node_version: "22"
