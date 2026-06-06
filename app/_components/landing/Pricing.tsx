@@ -44,16 +44,37 @@ export default function Pricing() {
             </div>
             <div className="text-xs text-mauve-400 mt-1">Cancela cuando quieras.</div>
 
+            {/* 3-step flow */}
+            <div className="mt-6 py-4 border-y border-line">
+              <p className="text-[10px] uppercase tracking-widest text-mauve-400 mb-3">Así funciona</p>
+              <div className="flex items-start gap-1">
+                <div className="flex-1 flex flex-col items-center gap-1.5 text-center">
+                  <span className="h-6 w-6 rounded-full bg-mauve-900 text-cream text-[11px] font-semibold flex items-center justify-center">1</span>
+                  <span className="text-[11px] text-mauve-700 leading-tight">Ingresa tu tarjeta en Recurrente</span>
+                </div>
+                <svg className="mt-2 shrink-0 text-mauve-300" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                <div className="flex-1 flex flex-col items-center gap-1.5 text-center">
+                  <span className="h-6 w-6 rounded-full bg-mauve-100 text-mauve-500 text-[11px] font-semibold flex items-center justify-center">2</span>
+                  <span className="text-[11px] text-mauve-500 leading-tight">Crea tu cuenta con el mismo email</span>
+                </div>
+                <svg className="mt-2 shrink-0 text-mauve-300" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                <div className="flex-1 flex flex-col items-center gap-1.5 text-center">
+                  <span className="h-6 w-6 rounded-full bg-mauve-100 text-mauve-500 text-[11px] font-semibold flex items-center justify-center">3</span>
+                  <span className="text-[11px] text-mauve-500 leading-tight">Empieza a usar — cobro al día 15</span>
+                </div>
+              </div>
+            </div>
+
             <a
               href={RECURRENTE_MONTHLY_URL}
               target="_blank"
               rel="noreferrer"
-              className="btn btn-outline w-full h-12 mt-7"
+              className="btn btn-outline w-full h-12 mt-5"
             >
               Empezar 14 días gratis
             </a>
             <p className="mt-2 text-xs text-center text-mauve-400">
-              Ingresa tu tarjeta hoy — el primer cobro es al día 15.{" "}
+              Sin cargos hasta el día 15 ·{" "}
               <Link href="/register" className="underline text-mauve-600 hover:text-mauve-800">
                 ¿Ya tienes cuenta?
               </Link>
