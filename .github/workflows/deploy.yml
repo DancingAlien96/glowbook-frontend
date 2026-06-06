@@ -9,6 +9,13 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Validate deploy secrets
+        run: |
+          test -n "${{ secrets.DEPLOY_HOST }}" || { echo "❌ DEPLOY_HOST is not set"; exit 1; }
+          test -n "${{ secrets.DEPLOY_USER }}" || { echo "❌ DEPLOY_USER is not set"; exit 1; }
+          test -n "${{ secrets.DEPLOY_PASSWORD }}" || { echo "❌ DEPLOY_PASSWORD is not set"; exit 1; }
+          echo "✅ All deploy secrets are configured"
+
       - name: Deploy to production
         uses: appleboy/ssh-action@master
         with:
