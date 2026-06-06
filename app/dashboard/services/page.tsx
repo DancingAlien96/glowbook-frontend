@@ -22,6 +22,7 @@ export default function ServicesPage() {
   const { data, loading, error, refetch } = useApi<{ services: Service[] }>("/services");
   const [cat, setCat] = useState("Todos");
   const [showNew, setShowNew] = useState(false);
+  const [editingService, setEditingService] = useState<Service | null>(null);
 
   const services = data?.services ?? [];
 
@@ -129,9 +130,14 @@ export default function ServicesPage() {
                   <span className={`chip ${s.active ? "status-completed" : "chip-cream"} text-[10px]`}>
                     {s.active ? "Activo" : "Pausado"}
                   </span>
-                  <button onClick={() => remove(s)} className="h-8 w-8 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-700 hover:bg-blush-100 hover:text-blush-500 transition">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-                  </button>
+                  <div className="flex gap-1">
+                    <button onClick={() => setEditingService(s)} className="h-8 w-8 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-700 hover:bg-gold-300/20 hover:text-gold-600 transition">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button onClick={() => remove(s)} className="h-8 w-8 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-700 hover:bg-blush-100 hover:text-blush-500 transition">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                    </button>
+                  </div>
                 </div>
               </article>
             ))}
@@ -139,37 +145,46 @@ export default function ServicesPage() {
         </>
       )}
 
-      {showNew && <NewServiceModal onClose={() => setShowNew(false)} onCreated={refetch} />}
+      {showNew && <ServiceModal onClose={() => setShowNew(false)} onSaved={refetch} />}
+      {editingService && <ServiceModal service={editingService} onClose={() => setEditingService(null)} onSaved={refetch} />}
     </div>
   );
 }
 
-function NewServiceModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => Promise<void> }) {
-  // durationMin + price held as strings while typing so deleting the
-  // default doesn't snap to 0 (which would then prefix every new digit).
-  const [form, setForm] = useState({ name: "", category: "Uñas", durationMin: "60", price: "30", description: "" });
+function ServiceModal({ service, onClose, onSaved }: { service?: Service; onClose: () => void; onSaved: () => Promise<void> }) {
+  const isEditing = !!service;
+  const [form, setForm] = useState({
+    name: service?.name ?? "",
+    category: service?.category ?? "Uñas",
+    durationMin: String(service?.durationMin ?? "60"),
+    price: String((service?.priceCents ?? 0) / 100),
+    description: service?.description ?? "",
+  });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
     setErr(null);
     try {
-      await api("/services", {
-        method: "POST",
-        body: {
-          name: form.name,
-          category: form.category,
-          durationMin: parseInt(form.durationMin, 10) || 0,
-          priceCents: Math.round((parseFloat(form.price) || 0) * 100),
-          description: form.description || null,
-        },
-      });
-      await onCreated();
+      const body = {
+        name: form.name,
+        category: form.category,
+        durationMin: parseInt(form.durationMin, 10) || 0,
+        priceCents: Math.round((parseFloat(form.price) || 0) * 100),
+        description: form.description || null,
+      };
+
+      if (isEditing) {
+        await api(`/services/${service!.id}`, { method: "PATCH", body });
+      } else {
+        await api("/services", { method: "POST", body });
+      }
+      await onSaved();
       onClose();
     } catch (e) {
-      setErr(e instanceof ApiError ? e.message : "Error al crear");
+      setErr(e instanceof ApiError ? e.message : isEditing ? "Error al guardar" : "Error al crear");
     } finally {
       setSaving(false);
     }
@@ -178,7 +193,7 @@ function NewServiceModal({ onClose, onCreated }: { onClose: () => void; onCreate
   return (
     <div className="fixed inset-0 z-50 grid place-items-end sm:place-items-center p-3 sm:p-4 bg-mauve-900/40 backdrop-blur-sm">
       <form onSubmit={onSubmit} className="card-elevated p-6 sm:p-7 w-full max-w-md rounded-3xl max-h-[90vh] overflow-y-auto">
-        <h3 className="font-serif text-2xl text-mauve-900">Nuevo servicio</h3>
+        <h3 className="font-serif text-2xl text-mauve-900">{isEditing ? "Editar servicio" : "Nuevo servicio"}</h3>
         <div className="mt-5 space-y-4">
           <div>
             <label className="text-xs uppercase tracking-wider text-mauve-400">Nombre</label>
@@ -199,7 +214,7 @@ function NewServiceModal({ onClose, onCreated }: { onClose: () => void; onCreate
                 inputMode="numeric"
                 value={form.durationMin}
                 onChange={(e) => setForm({ ...form, durationMin: e.target.value })}
-                onFocus={(e) => e.target.select()}
+                onFocus={(e) => e.currentTarget.select()}
                 className="input-soft mt-1.5"
               />
             </div>
@@ -213,7 +228,7 @@ function NewServiceModal({ onClose, onCreated }: { onClose: () => void; onCreate
               inputMode="decimal"
               value={form.price}
               onChange={(e) => setForm({ ...form, price: e.target.value })}
-              onFocus={(e) => e.target.select()}
+              onFocus={(e) => e.currentTarget.select()}
               className="input-soft mt-1.5"
             />
           </div>
@@ -225,7 +240,9 @@ function NewServiceModal({ onClose, onCreated }: { onClose: () => void; onCreate
         </div>
         <div className="mt-6 flex gap-2 justify-end">
           <button type="button" onClick={onClose} className="btn btn-ghost h-10 px-5">Cancelar</button>
-          <button type="submit" disabled={saving} className="btn btn-primary h-10 px-5 disabled:opacity-60">{saving ? "Guardando…" : "Crear"}</button>
+          <button type="submit" disabled={saving} className="btn btn-primary h-10 px-5 disabled:opacity-60">
+            {saving ? "Guardando…" : isEditing ? "Guardar cambios" : "Crear"}
+          </button>
         </div>
       </form>
     </div>
