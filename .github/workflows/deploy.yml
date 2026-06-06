@@ -16,11 +16,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Checkout backend repo (needed by Ansible backend role)
-        uses: actions/checkout@v4
-        with:
-          repository: DancingAlien96/glowbook-backend
-          path: ../glowbook-backend
-          token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/DancingAlien96/glowbook-backend.git \
+            ${{ github.workspace }}/../glowbook-backend
 
       - name: Set up Python
         uses: actions/setup-python@v5
