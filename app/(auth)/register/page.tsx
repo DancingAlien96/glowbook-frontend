@@ -69,7 +69,7 @@ export default function RegisterPage() {
       </div>
 
       <div className="mt-5 rounded-2xl bg-blush-50 border border-blush-200/60 px-4 py-3 text-xs text-mauve-700 leading-relaxed">
-        ¿Ya pagaste en Recurrente? Regístrate con el <strong>mismo email</strong> que usaste al pagar y tu suscripción se activa sola.
+        ¿Ingresaste tu tarjeta en Recurrente? Regístrate con el <strong>mismo email</strong> — tu período de prueba quedará activo de inmediato.
       </div>
 
       <form onSubmit={onSubmit} className="mt-7 space-y-4">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SUPPORT_MESSAGES, whatsappHref } from "../../_lib/support";
 
+// TODO: reemplazar con el URL del producto con 14 días de trial una vez creado en Recurrente
 const RECURRENTE_MONTHLY_URL =
   "https://app.recurrente.com/s/arcadiasolutions/suscripcion-mensual-ecodama-tbp0az";
 
@@ -50,14 +51,13 @@ export default function Pricing() {
               rel="noreferrer"
               className="btn btn-outline w-full h-12 mt-7"
             >
-              Crear mi salón
+              Empezar 14 días gratis
             </a>
             <p className="mt-2 text-xs text-center text-mauve-400">
-              ¿Ya pagaste?{" "}
+              Ingresa tu tarjeta hoy — el primer cobro es al día 15.{" "}
               <Link href="/register" className="underline text-mauve-600 hover:text-mauve-800">
-                Crea tu cuenta
-              </Link>{" "}
-              con el mismo email.
+                ¿Ya tienes cuenta?
+              </Link>
             </p>
 
             <ul className="mt-7 space-y-3">
