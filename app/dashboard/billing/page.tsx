@@ -113,6 +113,34 @@ export default function BillingPage() {
         </p>
       </div>
 
+      {/* Trial expiration banner */}
+      {sub.status === "TRIAL" && sub.trialEndsAt && (() => {
+        const daysLeft = Math.ceil((new Date(sub.trialEndsAt).getTime() - Date.now()) / 86_400_000);
+        if (daysLeft > 7) return null;
+        const urgent = daysLeft <= 2;
+        return (
+          <section className={`rounded-2xl border px-5 py-4 flex flex-wrap items-center justify-between gap-4 ${urgent ? "bg-blush-50 border-blush-300/60" : "bg-gold-50/60 border-gold-300/60"}`}>
+            <div className="flex items-start gap-3">
+              <svg className={`mt-0.5 shrink-0 ${urgent ? "text-blush-500" : "text-gold-600"}`} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              <div>
+                <p className={`font-medium text-sm ${urgent ? "text-blush-700" : "text-gold-800"}`}>
+                  {daysLeft <= 0 ? "Tu prueba gratuita ha terminado" : daysLeft === 1 ? "Tu prueba termina mañana" : `Tu prueba termina en ${daysLeft} días`}
+                </p>
+                <p className="text-xs text-mauve-600 mt-0.5">
+                  Activa tu suscripción para seguir usando Ecodama sin interrupciones.
+                </p>
+              </div>
+            </div>
+            {platform.recurrenteUrl && (
+              <a href={platform.recurrenteUrl} target="_blank" rel="noreferrer"
+                className={`btn h-9 text-sm shrink-0 ${urgent ? "btn-primary" : "btn-outline"}`}>
+                Activar suscripción →
+              </a>
+            )}
+          </section>
+        );
+      })()}
+
       {/* Status card */}
       <section className="card-elevated p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">

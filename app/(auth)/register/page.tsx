@@ -62,29 +62,10 @@ export default function RegisterPage() {
 
   return (
     <div className="card-elevated p-8 anim-fade-up">
-      {/* Step indicator */}
-      <div className="flex items-center gap-2 mb-6">
-        <div className="flex items-center gap-2 opacity-40">
-          <span className="h-6 w-6 rounded-full bg-mauve-900 text-cream text-[11px] font-semibold flex items-center justify-center shrink-0">1</span>
-          <span className="text-xs text-mauve-700 hidden sm:block">Tarjeta en Recurrente</span>
-        </div>
-        <svg className="text-mauve-300 shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        <div className="flex items-center gap-2">
-          <span className="h-6 w-6 rounded-full bg-mauve-900 text-cream text-[11px] font-semibold flex items-center justify-center shrink-0">2</span>
-          <span className="text-xs font-medium text-mauve-900 hidden sm:block">Crea tu cuenta</span>
-        </div>
-        <svg className="text-mauve-300 shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        <div className="flex items-center gap-2 opacity-40">
-          <span className="h-6 w-6 rounded-full bg-mauve-100 text-mauve-500 text-[11px] font-semibold flex items-center justify-center shrink-0">3</span>
-          <span className="text-xs text-mauve-500 hidden sm:block">Empieza a usar</span>
-        </div>
-      </div>
-
       <div className="text-center">
-        <h1 className="font-serif text-3xl text-mauve-900">Crea tu salón</h1>
-        <p className="mt-2 text-sm text-mauve-500">
-          Usa el <strong className="text-mauve-700">mismo email</strong> que ingresaste en Recurrente y tu prueba queda activa al instante.
-        </p>
+        <span className="chip chip-blush">14 días gratis</span>
+        <h1 className="mt-4 font-serif text-3xl text-mauve-900">Crea tu salón</h1>
+        <p className="mt-2 text-sm text-mauve-600">Sin tarjeta. Tu cuenta lista en 2 minutos.</p>
       </div>
 
       <form onSubmit={onSubmit} className="mt-7 space-y-4">
