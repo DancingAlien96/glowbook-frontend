@@ -148,10 +148,4 @@
   ansible.builtin.shell: |
     pm2 startup systemd -u root --hp /root | tail -1 | bash
   args:
-    creates: /etc/systemd/system/pm2-root.service
-
-handlers:
-  - name: reload nginx
-    ansible.builtin.systemd:
-      name: nginx
-      state: reloaded
+    creates: "/etc/systemd/system/pm2-root.service"
