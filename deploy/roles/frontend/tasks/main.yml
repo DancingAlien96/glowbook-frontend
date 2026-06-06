@@ -40,23 +40,45 @@
     cd {{ frontend_dir }} && npm ci
   changed_when: true
 
-- name: Build Next.js (export static files)
+- name: Build Next.js (standalone)
   ansible.builtin.shell: |
     cd {{ frontend_dir }} && npm run build
   changed_when: true
 
-- name: Copy static files to Nginx directory
+- name: Deploy standalone build to /var/www/ecodama
   ansible.builtin.shell: |
     rm -rf /var/www/ecodama/*
-    cp -r {{ frontend_dir }}/out/* /var/www/ecodama/
+    cp -r {{ frontend_dir }}/.next/standalone/. /var/www/ecodama/
+    cp -r {{ frontend_dir }}/public /var/www/ecodama/public
+    mkdir -p /var/www/ecodama/.next/static
+    cp -r {{ frontend_dir }}/.next/static/. /var/www/ecodama/.next/static/
     chown -R www-data:www-data /var/www/ecodama
   changed_when: true
 
-- name: Stop PM2 frontend process (if running)
-  ansible.builtin.shell: |
-    pm2 describe ecodama-frontend > /dev/null 2>&1 && pm2 delete ecodama-frontend || true
-  changed_when: true
+- name: Ensure systemd service for frontend exists
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/ecodama-frontend.service
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=Ecodama Frontend (Next.js)
+      After=network.target
 
-- name: Save PM2 process list
-  ansible.builtin.shell: pm2 save
-  changed_when: false
+      [Service]
+      WorkingDirectory=/var/www/ecodama
+      ExecStart=/usr/bin/node server.js
+      Restart=always
+      RestartSec=5
+      User=www-data
+      Environment=NODE_ENV=production
+      Environment=PORT=3000
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Enable and restart frontend service
+  ansible.builtin.systemd:
+    name: ecodama-frontend
+    enabled: true
+    state: restarted
+    daemon_reload: true
