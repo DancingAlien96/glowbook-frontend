@@ -5,6 +5,7 @@
 domain:     ecodama.online
 www_domain: www.ecodama.online
 frontend_url: https://ecodama.online
+frontend_url_www: https://www.ecodama.online
 admin_email:  soporte@ecodama.online
 
 # Server paths
