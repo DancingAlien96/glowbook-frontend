@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { SUPPORT_MESSAGES, whatsappHref } from "../../_lib/support";
 
-// TODO: reemplazar con el URL del producto con 14 días de trial una vez creado en Recurrente
 const RECURRENTE_MONTHLY_URL =
   "https://app.recurrente.com/s/arcadiasolutions/suscripcion-mensual-ecodama-tbp0az";
 
