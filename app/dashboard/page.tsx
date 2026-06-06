@@ -61,7 +61,7 @@ export default function DashboardPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="text-xs text-mauve-400">{new Date().toLocaleDateString("es-EC", { weekday: "long", day: "numeric", month: "long" })}</div>
-          <h1 className="font-serif text-3xl sm:text-4xl text-mauve-900 leading-tight">
+          <h1 className="font-serif text-xl sm:text-3xl lg:text-4xl text-mauve-900 leading-tight">
             Hola {user?.name?.split(" ")[0] ?? ""}, <em className="not-italic text-rose-shimmer">tu día se ve hermoso ✨</em>
           </h1>
         </div>
