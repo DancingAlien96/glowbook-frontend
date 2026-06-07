@@ -40,8 +40,12 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
   },
   icons: {
-    icon: "/ecodamalogo.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/ecodamalogo.png", type: "image/png", sizes: "192x192" },
+    ],
     apple: "/ecodamalogo.png",
+    shortcut: "/ecodamalogo.png",
   },
   openGraph: {
     title: "Ecodama — Reservas premium para salones de belleza",
