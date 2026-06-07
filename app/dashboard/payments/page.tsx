@@ -49,10 +49,12 @@ export default function PaymentsPage() {
     }
   };
 
-  // Receipt URLs from API are server-relative ("/uploads/..."). Resolve against the API host.
+  // Receipt URLs can be from UploadThing (absolute HTTPS URLs) or server-relative paths.
   const resolveReceipt = (url: string | null) => {
     if (!url) return null;
-    if (url.startsWith("http")) return url;
+    // UploadThing and absolute URLs are returned as-is
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    // Server-relative paths: resolve against the API host
     const base = apiUrl("/").replace(/\/api\/$/, "");
     return `${base}${url}`;
   };
@@ -113,10 +115,21 @@ export default function PaymentsPage() {
                     rel="noreferrer"
                     className="mt-4 rounded-2xl border border-dashed border-line-strong bg-gradient-to-br from-cream-soft to-blush-100/40 aspect-[4/3] grid place-items-center text-mauve-400 relative overflow-hidden block"
                   >
-                    {receiptUrl && /\.(png|jpe?g|gif|webp)$/i.test(receiptUrl) ? (
+                    {receiptUrl ? (
+                      // Try to load as image (UploadThing CDN handles various formats)
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={receiptUrl} alt="Comprobante" className="absolute inset-0 w-full h-full object-cover" />
-                    ) : (
+                      <img
+                        src={receiptUrl}
+                        alt="Comprobante"
+                        className="absolute inset-0 w-full h-full object-cover"
+                        onError={(e) => {
+                          // If image fails to load, hide it and show icon instead
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    ) : null}
+                    {/* Fallback icon - shown if no URL or image fails to load */}
+                    {!receiptUrl && (
                       <svg viewBox="0 0 24 24" className="h-12 w-12" fill="none" stroke="currentColor" strokeWidth="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                     )}
                     <span className="absolute bottom-3 left-3 text-[10px] uppercase tracking-wider bg-cream/80 px-2 py-1 rounded-full">{p.receiptName ?? "Comprobante"}</span>
