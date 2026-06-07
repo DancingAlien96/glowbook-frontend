@@ -132,7 +132,6 @@ export default function PaymentsPage() {
                     {!receiptUrl && (
                       <svg viewBox="0 0 24 24" className="h-12 w-12" fill="none" stroke="currentColor" strokeWidth="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                     )}
-                    <span className="absolute bottom-3 left-3 text-[10px] uppercase tracking-wider bg-cream/80 px-2 py-1 rounded-full">{p.receiptName ?? "Comprobante"}</span>
                   </a>
 
                   <div className="mt-4 flex items-end justify-between">
