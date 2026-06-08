@@ -9,8 +9,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <Logo className="h-16 w-auto" />
         </Link>
       </header>
-      <main className="flex-1 grid place-items-center px-4 pb-12">
-        <div className="w-full max-w-md">{children}</div>
+      <main className="flex-1 grid place-items-center px-4 sm:px-6 pb-12">
+        <div className="w-full max-w-md mx-auto">{children}</div>
       </main>
     </div>
   );

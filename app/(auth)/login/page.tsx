@@ -11,7 +11,7 @@ import PasswordInput from "../../_components/auth/PasswordInput";
 export default function LoginPage() {
   // useSearchParams() must be inside a Suspense boundary for static export.
   return (
-    <Suspense fallback={<div className="card-elevated p-8 h-72" />}>
+    <Suspense fallback={<div className="w-full card-elevated p-6 sm:p-8 h-72" />}>
       <LoginForm />
     </Suspense>
   );
@@ -49,7 +49,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="card-elevated p-8 anim-fade-up">
+    <div className="w-full card-elevated p-6 sm:p-8 anim-fade-up">
       <div className="text-center">
         <span className="chip chip-gold">Bienvenida de vuelta</span>
         <h1 className="mt-4 font-serif text-3xl text-mauve-900">Inicia sesión</h1>

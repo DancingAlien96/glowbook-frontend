@@ -61,7 +61,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="card-elevated p-8 anim-fade-up">
+    <div className="w-full card-elevated p-6 sm:p-8 anim-fade-up">
       <div className="text-center">
         <span className="chip chip-blush">14 días gratis</span>
         <h1 className="mt-4 font-serif text-3xl text-mauve-900">Crea tu salón</h1>
