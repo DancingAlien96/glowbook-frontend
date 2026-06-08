@@ -44,7 +44,7 @@ const PAYMENT_LABEL: Record<SubscriptionPayment["status"], string> = {
 
 export default function BillingPage() {
   const { data, loading, error, refetch } = useApi<BillingResp>("/subscription/me");
-  const [plan, setPlan] = useState<"MONTHLY" | "LIFETIME">("MONTHLY");
+  const [plan, setPlan] = useState<"MONTHLY" | "YEARLY" | "LIFETIME">("MONTHLY");
   const [months, setMonths] = useState(1);
   const [reference, setReference] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -61,7 +61,7 @@ export default function BillingPage() {
 
   const { subscription: sub, platform, payments } = data;
   const monthlyTotal = platform.monthlyPriceCents * months;
-  const total = plan === "LIFETIME" ? platform.lifetimePriceCents : monthlyTotal;
+  const total = plan === "LIFETIME" ? platform.lifetimePriceCents : plan === "YEARLY" ? platform.yearlyPriceCents : monthlyTotal;
 
   const onSubmitReceipt = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,15 +172,17 @@ export default function BillingPage() {
           <div className="text-right">
             <div className="text-xs text-mauve-400">Costo del plan</div>
             <div className="font-serif text-3xl text-mauve-900">
-              {money(sub.plan === "LIFETIME" ? platform.lifetimePriceCents : platform.monthlyPriceCents)}
+              {sub.plan === "LIFETIME" ? money(platform.lifetimePriceCents) : sub.plan === "YEARLY" ? money(platform.yearlyPriceCents) : money(platform.monthlyPriceCents)}
             </div>
-            <div className="text-xs text-mauve-400 mt-1">{sub.plan === "LIFETIME" ? "USD único pago" : "USD / mes"}</div>
+            <div className="text-xs text-mauve-400 mt-1">
+              {sub.plan === "LIFETIME" ? "USD único pago" : sub.plan === "YEARLY" ? "USD / año" : "USD / mes"}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Card payment via Recurrente — shown only when URL is configured */}
-      {sub.status !== "LIFETIME" && platform.recurrenteUrl && (
+      {/* Card payment via Recurrente */}
+      {sub.status !== "LIFETIME" && (
         <section className="card-elevated p-6 border-2 border-mauve-900/10">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -197,16 +199,25 @@ export default function BillingPage() {
               <svg width="32" height="16" viewBox="0 0 32 16" fill="none"><rect width="32" height="16" rx="3" fill="#016FD0"/><text x="4" y="12" fontSize="9" fontWeight="bold" fill="white" fontFamily="Arial">AMEX</text></svg>
             </div>
           </div>
-          <a
-            href={platform.recurrenteUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-5 btn btn-primary h-12 w-full sm:w-auto text-sm"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
-            Pagar {money(platform.monthlyPriceCents)} / mes con tarjeta
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
-          </a>
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {([
+              { id: "MONTHLY" as const, label: "Mensual", price: platform.monthlyPriceCents, url: platform.recurrenteUrl },
+              { id: "YEARLY" as const, label: "Anual", price: platform.yearlyPriceCents, url: platform.recurrenteYearlyUrl, saving: true },
+              { id: "LIFETIME" as const, label: "Lifetime", price: platform.lifetimePriceCents, url: platform.recurrenteLifetimeUrl },
+            ]).map((option) => (
+              <a
+                key={option.id}
+                href={option.url || "#"}
+                target="_blank"
+                rel="noreferrer"
+                className={`btn h-12 text-sm transition flex flex-col items-center justify-center ${option.url ? "btn-primary" : "btn-outline opacity-50 cursor-not-allowed"}`}
+              >
+                <span className="font-medium">{option.label}</span>
+                <span className="text-xs opacity-75">{money(option.price)}{option.id !== "LIFETIME" ? "/" + (option.id === "YEARLY" ? "año" : "mes") : ""}</span>
+                {option.saving && <span className="text-[10px] opacity-90">-17%</span>}
+              </a>
+            ))}
+          </div>
           <p className="mt-3 text-[11px] text-mauve-400">
             Procesado de forma segura por Recurrente · Tu suscripción se activa automáticamente.
           </p>
@@ -240,9 +251,10 @@ export default function BillingPage() {
             <form onSubmit={onSubmitReceipt} className="space-y-4">
               <div>
                 <label className="text-xs uppercase tracking-wider text-mauve-400">Qué pagaste</label>
-                <div className="mt-2 grid grid-cols-2 gap-2">
+                <div className="mt-2 grid grid-cols-3 gap-2">
                   {([
                     { id: "MONTHLY" as const, t: "Mensual", d: `${money(platform.monthlyPriceCents)} / mes` },
+                    { id: "YEARLY" as const, t: "Anual", d: `${money(platform.yearlyPriceCents)} / año` },
                     { id: "LIFETIME" as const, t: "Lifetime", d: `${money(platform.lifetimePriceCents)} único pago` },
                   ]).map((o) => {
                     const sel = plan === o.id;
@@ -276,6 +288,12 @@ export default function BillingPage() {
                       </button>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {plan === "YEARLY" && (
+                <div className="text-xs text-mauve-500 bg-gold-100/40 border border-gold-300/40 rounded-xl px-3 py-2">
+                  Pago anual de {money(platform.yearlyPriceCents)} que se renueva automáticamente cada 12 meses
                 </div>
               )}
 

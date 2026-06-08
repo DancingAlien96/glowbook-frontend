@@ -156,7 +156,7 @@ export interface Metrics {
 // =========================
 // Platform billing
 // =========================
-export type Plan = "MONTHLY" | "LIFETIME";
+export type Plan = "MONTHLY" | "YEARLY" | "LIFETIME";
 export type SubStatus = "TRIAL" | "ACTIVE" | "OVERDUE" | "SUSPENDED" | "CANCELLED" | "LIFETIME";
 export type SubPaymentStatus = "PENDING_REVIEW" | "APPROVED" | "REJECTED";
 
@@ -190,10 +190,13 @@ export interface SubscriptionPayment {
 export interface PlatformInfo {
   bankDetails: string | null;
   monthlyPriceCents: number;
+  yearlyPriceCents: number;
   lifetimePriceCents: number;
   contactEmail: string | null;
   contactWhatsapp: string | null;
   recurrenteUrl: string | null;
+  recurrenteYearlyUrl: string | null;
+  recurrenteLifetimeUrl: string | null;
 }
 
 export interface PlatformSettings extends PlatformInfo {
