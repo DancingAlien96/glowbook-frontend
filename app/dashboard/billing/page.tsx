@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { api, ApiError } from "../../_lib/api";
 import { useApi } from "../../_lib/useFetch";
-import { useAuth } from "../../_lib/auth";
 import { LoadingBlock, ErrorBlock } from "../../_components/dashboard/States";
 import { money, moneyWhole, formatDate } from "../../_lib/format";
 import type { PlatformInfo, Subscription, SubscriptionPayment } from "../../_lib/types";
@@ -41,11 +41,12 @@ const PAYMENT_LABEL: Record<SubscriptionPayment["status"], string> = {
 };
 
 export default function BillingPage() {
-  const { user } = useAuth();
   const { data, loading, error, refetch } = useApi<BillingResp>("/subscription/me");
   // Post-payment redirect feedback from Recurrente (?success / ?cancelled).
   // Read from the URL on mount, then clean it so a refresh doesn't re-show it.
   const [payResult, setPayResult] = useState<"success" | "cancelled" | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState<"MONTHLY" | "YEARLY" | "LIFETIME" | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -62,6 +63,26 @@ export default function BillingPage() {
       window.history.replaceState(null, "", window.location.pathname);
     }
   }, [refetch]);
+
+  // Ask the backend for a checkout URL (it creates a Recurrente checkout mapped
+  // to this salon, so activation is reliable regardless of the email typed), then
+  // redirect. On success the page navigates away, so we don't clear loading.
+  const startCheckout = async (plan: "MONTHLY" | "YEARLY" | "LIFETIME") => {
+    setCheckoutError(null);
+    setCheckoutLoading(plan);
+    try {
+      const { url } = await api<{ url: string }>("/subscription/checkout", {
+        method: "POST",
+        body: { plan },
+      });
+      window.location.href = url;
+    } catch (e) {
+      setCheckoutLoading(null);
+      setCheckoutError(
+        e instanceof ApiError ? e.message : "No pudimos iniciar el pago. Intenta de nuevo."
+      );
+    }
+  };
 
   if (loading && !data) return <LoadingBlock label="Cargando tu plan" />;
   if (error) return <ErrorBlock error={error} onRetry={refetch} />;
@@ -127,12 +148,10 @@ export default function BillingPage() {
                 </p>
               </div>
             </div>
-            {platform.recurrenteUrl && (
-              <a href={platform.recurrenteUrl} target="_blank" rel="noreferrer"
-                className={`btn h-9 text-sm shrink-0 ${urgent ? "btn-primary" : "btn-outline"}`}>
-                Activar suscripción →
-              </a>
-            )}
+            <a href="#pagar"
+              className={`btn h-9 text-sm shrink-0 ${urgent ? "btn-primary" : "btn-outline"}`}>
+              Activar suscripción →
+            </a>
           </section>
         );
       })()}
@@ -179,7 +198,7 @@ export default function BillingPage() {
 
       {/* Card payment via Recurrente */}
       {sub.status !== "LIFETIME" && (
-        <section className="card-elevated p-6 border-2 border-mauve-900/10">
+        <section id="pagar" className="card-elevated p-6 border-2 border-mauve-900/10">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
@@ -195,35 +214,22 @@ export default function BillingPage() {
               <svg width="32" height="16" viewBox="0 0 32 16" fill="none"><rect width="32" height="16" rx="3" fill="#016FD0"/><text x="4" y="12" fontSize="9" fontWeight="bold" fill="white" fontFamily="Arial">AMEX</text></svg>
             </div>
           </div>
-          {/* Email-match warning: the webhook links the payment to the account
-              by email, so the user MUST pay with their account email. */}
-          {user?.email && (
-            <div className="mt-4 rounded-xl bg-gold-50/70 border border-gold-300/50 px-4 py-3 flex items-start gap-2.5">
-              <svg className="mt-0.5 shrink-0 text-gold-600" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-              <p className="text-xs text-mauve-700 leading-relaxed">
-                Importante: al pagar, usa el correo de tu cuenta{" "}
-                <span className="font-semibold text-mauve-900">{user.email}</span>{" "}
-                para que tu suscripción se active automáticamente.
-              </p>
-            </div>
-          )}
-
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
             {([
-              { id: "MONTHLY" as const, label: "Mensual", price: platform.monthlyPriceCents, period: "/ mes", url: platform.recurrenteUrl, saving: null, highlight: false },
-              { id: "YEARLY" as const, label: "Anual", price: platform.yearlyPriceCents, period: "/ año", url: platform.recurrenteYearlyUrl, saving: "Ahorra 17%", highlight: true },
-              { id: "LIFETIME" as const, label: "Lifetime", price: platform.lifetimePriceCents, period: "único pago", url: platform.recurrenteLifetimeUrl, saving: null, highlight: false },
+              { id: "MONTHLY" as const, label: "Mensual", price: platform.monthlyPriceCents, period: "/ mes", saving: null, highlight: false },
+              { id: "YEARLY" as const, label: "Anual", price: platform.yearlyPriceCents, period: "/ año", saving: "Ahorra 17%", highlight: true },
+              { id: "LIFETIME" as const, label: "Lifetime", price: platform.lifetimePriceCents, period: "único pago", saving: null, highlight: false },
             ]).map((option) => (
-              <a
+              <button
                 key={option.id}
-                href={option.url || "#"}
-                target="_blank"
-                rel="noreferrer"
-                className={`relative rounded-2xl border-2 p-4 flex flex-col text-center transition ${
+                type="button"
+                onClick={() => startCheckout(option.id)}
+                disabled={checkoutLoading !== null}
+                className={`relative rounded-2xl border-2 p-4 flex flex-col text-center transition disabled:opacity-60 disabled:cursor-not-allowed ${
                   option.highlight
                     ? "border-gold-400 bg-gold-50/50 hover:border-gold-500"
                     : "border-line bg-ivory hover:border-mauve-900/30"
-                } ${!option.url ? "opacity-50 cursor-not-allowed pointer-events-none" : ""}`}
+                }`}
               >
                 {option.saving && (
                   <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 chip chip-gold text-[10px] whitespace-nowrap">
@@ -236,12 +242,24 @@ export default function BillingPage() {
                 <span className={`mt-3 inline-flex items-center justify-center gap-1.5 rounded-full h-9 text-sm font-medium ${
                   option.highlight ? "btn-gold" : "bg-mauve-900 text-cream"
                 }`}>
-                  Pagar
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+                  {checkoutLoading === option.id ? (
+                    "Redirigiendo…"
+                  ) : (
+                    <>
+                      Pagar
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+                    </>
+                  )}
                 </span>
-              </a>
+              </button>
             ))}
           </div>
+
+          {checkoutError && (
+            <p className="mt-3 text-sm text-blush-600 bg-blush-50 border border-blush-300/40 rounded-xl px-3 py-2.5">
+              {checkoutError}
+            </p>
+          )}
           <p className="mt-3 text-[11px] text-mauve-400">
             Procesado de forma segura por Recurrente · Tu suscripción se activa automáticamente.
           </p>
