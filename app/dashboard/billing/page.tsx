@@ -1,10 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { api, ApiError } from "../../_lib/api";
+import { useEffect, useState } from "react";
 import { useApi } from "../../_lib/useFetch";
-import { useUploadThing } from "../../_lib/uploadthing";
-import { optimizeImage, formatBytes } from "../../_lib/imageOptimize";
 import { LoadingBlock, ErrorBlock } from "../../_components/dashboard/States";
 import { money, formatDate } from "../../_lib/format";
 import type { PlatformInfo, Subscription, SubscriptionPayment } from "../../_lib/types";
@@ -44,64 +41,31 @@ const PAYMENT_LABEL: Record<SubscriptionPayment["status"], string> = {
 
 export default function BillingPage() {
   const { data, loading, error, refetch } = useApi<BillingResp>("/subscription/me");
-  const [plan, setPlan] = useState<"MONTHLY" | "YEARLY" | "LIFETIME">("MONTHLY");
-  const [months, setMonths] = useState(1);
-  const [reference, setReference] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [savedAt, setSavedAt] = useState<number | null>(null);
+  // Post-payment redirect feedback from Recurrente (?success / ?cancelled).
+  // Read from the URL on mount, then clean it so a refresh doesn't re-show it.
+  const [payResult, setPayResult] = useState<"success" | "cancelled" | null>(null);
 
-  const { startUpload, isUploading } = useUploadThing("subscriptionReceiptUploader", {
-    onUploadError: (e) => setSubmitError(e.message || "No pudimos subir el comprobante."),
-  });
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success") === "true") {
+      setPayResult("success");
+      // The webhook activates the subscription a few seconds after redirect;
+      // refetch shortly after so the status card reflects the new plan.
+      const t = setTimeout(() => refetch(), 3000);
+      window.history.replaceState(null, "", window.location.pathname);
+      return () => clearTimeout(t);
+    }
+    if (params.get("cancelled") === "true") {
+      setPayResult("cancelled");
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, [refetch]);
 
   if (loading && !data) return <LoadingBlock label="Cargando tu plan" />;
   if (error) return <ErrorBlock error={error} onRetry={refetch} />;
   if (!data) return null;
 
   const { subscription: sub, platform, payments } = data;
-  const monthlyTotal = platform.monthlyPriceCents * months;
-  const total = plan === "LIFETIME" ? platform.lifetimePriceCents : plan === "YEARLY" ? platform.yearlyPriceCents : monthlyTotal;
-
-  const onSubmitReceipt = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const fileInput = (e.target as HTMLFormElement).elements.namedItem("receipt") as HTMLInputElement;
-    const picked = fileInput.files?.[0];
-    if (!picked) {
-      setSubmitError("Selecciona tu comprobante.");
-      return;
-    }
-    setSubmitting(true);
-    setSubmitError(null);
-    try {
-      // Optimize oversized images before uploading (PDFs pass through).
-      const { file, originalBytes, optimized } = await optimizeImage(picked, { maxMB: 3, maxDim: 2000 });
-      const uploaded = await startUpload([file]);
-      const u = uploaded?.[0];
-      if (!u) throw new Error("La subida fue cancelada.");
-      await api("/subscription/me/receipts", {
-        method: "POST",
-        body: {
-          url: u.ufsUrl,
-          name: u.name,
-          reference: reference || undefined,
-          plan,
-          periodMonths: plan === "LIFETIME" ? 999 : months,
-        },
-      });
-      setSavedAt(Date.now());
-      setReference("");
-      fileInput.value = "";
-      if (optimized) {
-        console.info(`[billing] receipt optimized from ${formatBytes(originalBytes)} to ${formatBytes(file.size)}`);
-      }
-      await refetch();
-    } catch (e) {
-      setSubmitError(e instanceof ApiError ? e.message : "Error al registrar el comprobante.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -109,9 +73,39 @@ export default function BillingPage() {
         <div className="text-xs text-mauve-400">Plan & facturación</div>
         <h1 className="font-serif text-3xl sm:text-4xl text-mauve-900 leading-tight">Tu suscripción</h1>
         <p className="mt-2 text-mauve-600 max-w-xl text-sm">
-          Paga con tarjeta de débito o crédito y tu suscripción se activa al instante. También puedes pagar por transferencia bancaria si lo prefieres.
+          Paga con tarjeta de débito o crédito y tu suscripción se activa al instante.
         </p>
       </div>
+
+      {/* Post-payment feedback banner */}
+      {payResult === "success" && (
+        <section className="rounded-2xl border border-gold-400/50 bg-gold-50/70 px-5 py-4 flex items-start gap-3">
+          <svg className="mt-0.5 shrink-0 text-gold-600" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg>
+          <div>
+            <p className="font-medium text-sm text-gold-800">¡Pago recibido! 🎉</p>
+            <p className="text-xs text-mauve-600 mt-0.5">
+              Tu suscripción se está activando. Puede tardar unos segundos en reflejarse aquí.
+            </p>
+          </div>
+          <button onClick={() => setPayResult(null)} className="ml-auto shrink-0 text-mauve-400 hover:text-mauve-700">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </section>
+      )}
+      {payResult === "cancelled" && (
+        <section className="rounded-2xl border border-blush-300/60 bg-blush-50 px-5 py-4 flex items-start gap-3">
+          <svg className="mt-0.5 shrink-0 text-blush-500" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          <div>
+            <p className="font-medium text-sm text-blush-700">Pago cancelado</p>
+            <p className="text-xs text-mauve-600 mt-0.5">
+              No se realizó ningún cargo. Puedes intentar de nuevo cuando quieras.
+            </p>
+          </div>
+          <button onClick={() => setPayResult(null)} className="ml-auto shrink-0 text-mauve-400 hover:text-mauve-700">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </section>
+      )}
 
       {/* Trial expiration banner */}
       {sub.status === "TRIAL" && sub.trialEndsAt && (() => {
@@ -147,7 +141,7 @@ export default function BillingPage() {
           <div>
             <div className="flex items-center gap-3">
               <span className={`chip ${STATUS_BADGE[sub.status]}`}>{STATUS_LABEL[sub.status]}</span>
-              <span className="text-xs text-mauve-400">Plan {sub.plan === "LIFETIME" ? "Lifetime" : "Mensual"}</span>
+              <span className="text-xs text-mauve-400">Plan {sub.plan === "LIFETIME" ? "Lifetime" : sub.plan === "YEARLY" ? "Anual" : "Mensual"}</span>
             </div>
             <div className="mt-4">
               {sub.status === "LIFETIME" ? (
