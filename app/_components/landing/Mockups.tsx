@@ -56,8 +56,8 @@ function DashboardMockup() {
             { label: "Ocupación", val: "78%", delta: "+5%", tone: "from-lavender-100 to-lavender-200" },
             { label: "Nuevas clientas", val: "5", delta: "+2", tone: "from-nude-200 to-nude-300" },
           ].map((k) => (
-            <div key={k.label} className={`rounded-2xl p-3.5 bg-gradient-to-br ${k.tone}`}>
-              <div className="text-[10px] uppercase tracking-wider text-mauve-600">{k.label}</div>
+            <div key={k.label} className={`min-w-0 overflow-hidden rounded-2xl p-3.5 bg-gradient-to-br ${k.tone}`}>
+              <div className="text-[10px] uppercase tracking-wide text-mauve-600 leading-tight break-words">{k.label}</div>
               <div className="mt-1 font-serif text-xl text-mauve-900">{k.val}</div>
               <div className="text-[10px] text-mauve-600 mt-0.5">{k.delta} vs ayer</div>
             </div>
