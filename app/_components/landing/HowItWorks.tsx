@@ -57,13 +57,13 @@ const steps = [
     title: "Recibe reservas y pagos",
     desc: "Tus clientas eligen servicio, fecha, estilista y pagan el anticipo. Tú recibes todo confirmado.",
     visual: (
-      <div className="space-y-2.5">
+      <div className="space-y-2.5 pr-2">
         {[
           { name: "Camila P.", svc: "Pedicure spa", time: "10:30", color: "status-confirmed" },
           { name: "Antonia R.", svc: "Color + corte", time: "13:00", color: "status-pending" },
           { name: "Sofía L.", svc: "Cejas perfectas", time: "16:00", color: "status-confirmed" },
         ].map((r) => (
-          <div key={r.name} className="rounded-xl border border-line bg-ivory p-2.5 flex items-center gap-3">
+          <div key={r.name} className="rounded-xl border border-line bg-ivory p-2.5 flex items-center gap-2.5 overflow-hidden">
             <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blush-200 to-blush-400 grid place-items-center text-mauve-900 font-serif text-sm">
               {r.name[0]}
             </div>
