@@ -5,7 +5,7 @@ export default function Hero() {
   return (
     <section className="relative overflow-hidden pt-28 pb-20 sm:pt-32 sm:pb-28 isolate">
       {/* Ambient background */}
-      <div className="absolute inset-0 bg-aurora -z-10" />
+      <div className="absolute inset-0 bg-gradient-to-br from-cream via-ivory to-gold-100/30 -z-10" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/40 to-transparent -z-10" />
 
       {/* Floating decorative blobs — blur-2xl (40px) instead of 3xl (64px):
