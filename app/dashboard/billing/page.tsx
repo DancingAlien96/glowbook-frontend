@@ -210,11 +210,12 @@ export default function BillingPage() {
                 href={option.url || "#"}
                 target="_blank"
                 rel="noreferrer"
-                className={`btn h-12 text-sm transition flex flex-col items-center justify-center ${option.url ? "btn-primary" : "btn-outline opacity-50 cursor-not-allowed"}`}
+                className={`btn h-16 transition flex flex-col items-center justify-center gap-1.5 px-4 ${option.url ? "btn-primary" : "btn-outline opacity-50 cursor-not-allowed"}`}
               >
-                <span className="font-medium">{option.label}</span>
-                <span className="text-xs opacity-75">{money(option.price)}{option.id !== "LIFETIME" ? "/" + (option.id === "YEARLY" ? "año" : "mes") : ""}</span>
-                {option.saving && <span className="text-[10px] opacity-90">-17%</span>}
+                <span className="font-medium text-base">{option.label}</span>
+                <span className="text-sm font-semibold">{money(option.price)}</span>
+                {option.id !== "LIFETIME" && <span className="text-[10px] opacity-80">/{option.id === "YEARLY" ? "año" : "mes"}</span>}
+                {option.saving && <span className="text-xs font-medium opacity-90 mt-0.5">Ahorra 17%</span>}
               </a>
             ))}
           </div>
@@ -224,128 +225,6 @@ export default function BillingPage() {
         </section>
       )}
 
-      {sub.status !== "LIFETIME" && (
-        <section className="card-elevated p-6">
-          <h2 className="font-serif text-xl text-mauve-900">Pagar por transferencia</h2>
-          <p className="text-sm text-mauve-600 mt-1">
-            Transfiere a la cuenta de Ecodama y sube tu comprobante. Activamos tu próximo período en cuanto lo aprobemos
-            (usualmente en menos de 24h).
-          </p>
-
-          <div className="mt-5 grid lg:grid-cols-[1fr_1.2fr] gap-5">
-            <div className="rounded-2xl bg-cream-soft p-4 border border-line">
-              <div className="text-xs uppercase tracking-wider text-mauve-400">Datos para transferir</div>
-              {platform.bankDetails ? (
-                <pre className="mt-2 text-sm text-mauve-900 font-mono whitespace-pre-wrap break-words leading-relaxed">{platform.bankDetails}</pre>
-              ) : (
-                <p className="mt-2 text-sm text-mauve-600">El equipo de Ecodama aún no publicó datos. Contáctanos.</p>
-              )}
-              {(platform.contactEmail || platform.contactWhatsapp) && (
-                <div className="mt-3 pt-3 border-t border-line text-xs text-mauve-600 space-y-1">
-                  {platform.contactWhatsapp && <div>WhatsApp · <span className="font-mono">{platform.contactWhatsapp}</span></div>}
-                  {platform.contactEmail && <div>Email · <span className="font-mono">{platform.contactEmail}</span></div>}
-                </div>
-              )}
-            </div>
-
-            <form onSubmit={onSubmitReceipt} className="space-y-4">
-              <div>
-                <label className="text-xs uppercase tracking-wider text-mauve-400">Qué pagaste</label>
-                <div className="mt-2 grid grid-cols-3 gap-2">
-                  {([
-                    { id: "MONTHLY" as const, t: "Mensual", d: `${money(platform.monthlyPriceCents)} / mes` },
-                    { id: "YEARLY" as const, t: "Anual", d: `${money(platform.yearlyPriceCents)} / año` },
-                    { id: "LIFETIME" as const, t: "Lifetime", d: `${money(platform.lifetimePriceCents)} único pago` },
-                  ]).map((o) => {
-                    const sel = plan === o.id;
-                    return (
-                      <button
-                        type="button"
-                        key={o.id}
-                        onClick={() => setPlan(o.id)}
-                        className={`text-left rounded-2xl border-2 p-3 transition ${sel ? "border-mauve-900 bg-cream-soft" : "border-line bg-ivory hover:border-line-strong"}`}
-                      >
-                        <div className="font-serif text-base text-mauve-900">{o.t}</div>
-                        <div className="text-[11px] text-mauve-600 mt-0.5">{o.d}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {plan === "MONTHLY" && (
-                <div>
-                  <label className="text-xs uppercase tracking-wider text-mauve-400">Meses a pagar</label>
-                  <div className="mt-1.5 flex items-center gap-2">
-                    {[1, 3, 6, 12].map((m) => (
-                      <button
-                        type="button"
-                        key={m}
-                        onClick={() => setMonths(m)}
-                        className={`h-10 flex-1 rounded-xl text-sm font-medium transition ${months === m ? "bg-mauve-900 text-cream" : "bg-mauve-900/5 text-mauve-700 hover:bg-mauve-900/10"}`}
-                      >
-                        {m} {m === 1 ? "mes" : "meses"}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {plan === "YEARLY" && (
-                <div className="text-xs text-mauve-500 bg-gold-100/40 border border-gold-300/40 rounded-xl px-3 py-2">
-                  Pago anual de {money(platform.yearlyPriceCents)} que se renueva automáticamente cada 12 meses
-                </div>
-              )}
-
-              <div className="flex items-center justify-between rounded-2xl bg-cream-soft border border-line p-3">
-                <span className="text-sm text-mauve-600">Total transferido</span>
-                <span className="font-serif text-2xl text-mauve-900">{money(total)}</span>
-              </div>
-
-              <div>
-                <label className="text-xs uppercase tracking-wider text-mauve-400">Referencia (opcional)</label>
-                <input
-                  value={reference}
-                  onChange={(e) => setReference(e.target.value)}
-                  className="input-soft mt-1.5 font-mono"
-                  placeholder="Nº de operación o nombre que usaste"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs uppercase tracking-wider text-mauve-400">Tu comprobante</label>
-                <input
-                  type="file"
-                  name="receipt"
-                  accept="image/*,application/pdf"
-                  required
-                  className="mt-1.5 block w-full text-sm text-mauve-700 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-mauve-900 file:text-cream file:font-medium file:cursor-pointer hover:file:bg-mauve-800"
-                />
-                <p className="text-[11px] text-mauve-400 mt-1">PNG, JPG o PDF · si la imagen pasa el límite la optimizamos por ti</p>
-              </div>
-
-              {submitError && (
-                <div className="text-sm text-blush-500 bg-blush-100/60 border border-blush-300/30 rounded-xl px-3 py-2.5">
-                  {submitError}
-                </div>
-              )}
-              {savedAt && (
-                <div className="text-sm text-mauve-900 bg-gold-300/30 border border-gold-400/30 rounded-xl px-3 py-2.5">
-                  Comprobante enviado ✓ Te avisamos cuando lo aprobemos.
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={submitting || isUploading}
-                className="btn btn-primary w-full h-12 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {isUploading ? "Subiendo…" : submitting ? "Enviando…" : "Enviar comprobante"}
-              </button>
-            </form>
-          </div>
-        </section>
-      )}
 
       {/* History */}
       <section className="card-surface p-0 overflow-hidden">
