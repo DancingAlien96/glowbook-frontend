@@ -36,16 +36,16 @@ const steps = [
     title: "Comparte tu enlace",
     desc: "Tu salón obtiene una página de reservas única, elegante y optimizada para móvil.",
     visual: (
-      <div className="space-y-3">
-        <div className="rounded-xl bg-mauve-900 p-3 flex items-center gap-2 text-cream/80 text-[11px] font-mono">
-          <span className="h-2 w-2 rounded-full bg-gold-400" />
-          ecodama.online/<span className="text-cream">tu-salon</span>
+      <div className="space-y-3 pr-2">
+        <div className="rounded-xl bg-mauve-900 p-3 flex items-center gap-2 text-cream/80 text-[11px] font-mono overflow-hidden">
+          <span className="h-2 w-2 rounded-full bg-gold-400 shrink-0" />
+          <span className="truncate">ecodama.online/<span className="text-cream">tu-salon</span></span>
         </div>
         <div className="grid grid-cols-3 gap-2">
           {["WhatsApp", "Instagram", "QR"].map((t) => (
-            <div key={t} className="rounded-xl border border-line bg-ivory p-3 text-center">
+            <div key={t} className="rounded-xl border border-line bg-ivory p-3 text-center overflow-hidden">
               <div className="text-[11px] text-mauve-400">Compartir</div>
-              <div className="text-xs font-medium text-mauve-900 mt-0.5">{t}</div>
+              <div className="text-xs font-medium text-mauve-900 mt-0.5 truncate">{t}</div>
             </div>
           ))}
         </div>
