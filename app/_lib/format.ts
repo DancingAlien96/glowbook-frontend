@@ -8,6 +8,24 @@ export const money = (cents: number, currency = "USD"): string => {
   }
 };
 
+/**
+ * Like money() but without the .00 decimals — for round figures such as plan
+ * prices ($20, $200, $1,000) where cents only add visual noise. Do NOT use for
+ * service prices / deposits, which can have real cents.
+ */
+export const moneyWhole = (cents: number, currency = "USD"): string => {
+  try {
+    return new Intl.NumberFormat("es-EC", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format((cents ?? 0) / 100);
+  } catch {
+    return `$${Math.round((cents ?? 0) / 100)}`;
+  }
+};
+
 export const initials = (name: string): string =>
   name
     .split(/\s+/)

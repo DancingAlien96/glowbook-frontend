@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useApi } from "../../_lib/useFetch";
 import { LoadingBlock, ErrorBlock } from "../../_components/dashboard/States";
-import { money, formatDate } from "../../_lib/format";
+import { money, moneyWhole, formatDate } from "../../_lib/format";
 import type { PlatformInfo, Subscription, SubscriptionPayment } from "../../_lib/types";
 
 type BillingResp = {
@@ -166,7 +166,7 @@ export default function BillingPage() {
           <div className="text-right">
             <div className="text-xs text-mauve-400">Costo del plan</div>
             <div className="font-serif text-3xl text-mauve-900">
-              {sub.plan === "LIFETIME" ? money(platform.lifetimePriceCents) : sub.plan === "YEARLY" ? money(platform.yearlyPriceCents) : money(platform.monthlyPriceCents)}
+              {sub.plan === "LIFETIME" ? moneyWhole(platform.lifetimePriceCents) : sub.plan === "YEARLY" ? moneyWhole(platform.yearlyPriceCents) : moneyWhole(platform.monthlyPriceCents)}
             </div>
             <div className="text-xs text-mauve-400 mt-1">
               {sub.plan === "LIFETIME" ? "USD único pago" : sub.plan === "YEARLY" ? "USD / año" : "USD / mes"}
@@ -216,7 +216,7 @@ export default function BillingPage() {
                   </span>
                 )}
                 <span className="font-serif text-base text-mauve-900 mt-1">{option.label}</span>
-                <span className="font-serif text-2xl text-mauve-900 mt-1.5">{money(option.price)}</span>
+                <span className="font-serif text-2xl text-mauve-900 mt-1.5">{moneyWhole(option.price)}</span>
                 <span className="text-[11px] text-mauve-500 mt-0.5">{option.period}</span>
                 <span className={`mt-3 inline-flex items-center justify-center gap-1.5 rounded-full h-9 text-sm font-medium ${
                   option.highlight ? "btn-gold" : "bg-mauve-900 text-cream"
@@ -258,7 +258,7 @@ export default function BillingPage() {
                 <tr key={p.id} className="hover:bg-cream/40">
                   <td className="px-5 py-3.5 text-sm text-mauve-700">{formatDate(p.createdAt)}</td>
                   <td className="px-5 py-3.5 text-sm text-mauve-700">
-                    {p.periodMonths >= 999 ? "Lifetime ✦" : `${p.periodMonths} mes${p.periodMonths === 1 ? "" : "es"}`}
+                    {p.periodMonths >= 999 ? "Lifetime ✦" : p.periodMonths === 12 ? "1 año" : `${p.periodMonths} mes${p.periodMonths === 1 ? "" : "es"}`}
                   </td>
                   <td className="px-5 py-3.5 font-serif text-lg text-mauve-900">{money(p.amountCents)}</td>
                   <td className="px-5 py-3.5 text-xs text-mauve-500 font-mono hidden md:table-cell">{p.reference ?? "—"}</td>
