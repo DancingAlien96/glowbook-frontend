@@ -47,6 +47,8 @@ services:
       VAPID_SUBJECT:     "{{ vapid_subject }}"
       RECURRENTE_SECRET_KEY:     "{{ vault_recurrente_secret_key }}"
       RECURRENTE_SUBSCRIPTION_URL: "{{ recurrente_subscription_url }}"
+      RECURRENTE_YEARLY_URL:       "{{ recurrente_yearly_url }}"
+      RECURRENTE_LIFETIME_URL:     "{{ recurrente_lifetime_url }}"
       RECURRENTE_WEBHOOK_SECRET: "{{ vault_recurrente_webhook_secret | default('') }}"
     ports:
       # Only listen on localhost — Nginx proxies external traffic
