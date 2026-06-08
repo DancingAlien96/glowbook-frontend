@@ -79,11 +79,11 @@ export default function DashboardPage() {
         <ErrorBlock error={metricsQ.error} onRetry={metricsQ.refetch} />
       ) : (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
             {kpis!.map((k) => (
-              <div key={k.label} className={`min-w-0 rounded-2xl p-3 sm:p-5 bg-gradient-to-br ${k.tone} overflow-hidden`}>
-                <div className="text-[10px] sm:text-[11px] uppercase tracking-wider text-mauve-600 font-medium truncate">{k.label}</div>
-                <div className="mt-2 font-serif text-lg sm:text-3xl text-mauve-900 truncate leading-tight" title={k.val}>{k.val}</div>
+              <div key={k.label} className={`min-w-0 rounded-2xl p-4 sm:p-5 bg-gradient-to-br ${k.tone} overflow-hidden`}>
+                <div className="text-[9px] sm:text-xs uppercase tracking-wider text-mauve-700 font-medium truncate">{k.label}</div>
+                <div className="mt-3 font-serif text-xl sm:text-3xl text-mauve-900 truncate leading-tight" title={k.val}>{k.val}</div>
               </div>
             ))}
           </div>
