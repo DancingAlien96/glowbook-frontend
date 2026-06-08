@@ -20,8 +20,8 @@ const cols = [
     links: [
       { href: whatsappHref(SUPPORT_MESSAGES.general), label: "Centro de ayuda", external: true },
       { href: whatsappHref(SUPPORT_MESSAGES.general), label: "Contacto", external: true },
-      { id: "terms", label: "Términos y condiciones", modal: true },
-      { id: "privacy", label: "Política de privacidad", modal: true },
+      { id: "terms", label: "Términos y condiciones", modal: true, href: undefined },
+      { id: "privacy", label: "Política de privacidad", modal: true, href: undefined },
     ],
   },
 ];
@@ -149,13 +149,13 @@ export default function Footer() {
                           {l.label}
                         </button>
                       </li>
-                    ) : (
+                    ) : "href" in l && l.href ? (
                       <li key={l.label}>
                         <Link href={l.href} className="text-mauve-700 hover:text-mauve-900 transition-colors text-sm">
                           {l.label}
                         </Link>
                       </li>
-                    )
+                    ) : null
                   )}
                 </ul>
               </div>
