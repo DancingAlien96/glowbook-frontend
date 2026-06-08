@@ -201,21 +201,35 @@ export default function BillingPage() {
           </div>
           <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
             {([
-              { id: "MONTHLY" as const, label: "Mensual", price: platform.monthlyPriceCents, url: platform.recurrenteUrl },
-              { id: "YEARLY" as const, label: "Anual", price: platform.yearlyPriceCents, url: platform.recurrenteYearlyUrl, saving: true },
-              { id: "LIFETIME" as const, label: "Lifetime", price: platform.lifetimePriceCents, url: platform.recurrenteLifetimeUrl },
+              { id: "MONTHLY" as const, label: "Mensual", price: platform.monthlyPriceCents, period: "/ mes", url: platform.recurrenteUrl, saving: null, highlight: false },
+              { id: "YEARLY" as const, label: "Anual", price: platform.yearlyPriceCents, period: "/ año", url: platform.recurrenteYearlyUrl, saving: "Ahorra 17%", highlight: true },
+              { id: "LIFETIME" as const, label: "Lifetime", price: platform.lifetimePriceCents, period: "único pago", url: platform.recurrenteLifetimeUrl, saving: null, highlight: false },
             ]).map((option) => (
               <a
                 key={option.id}
                 href={option.url || "#"}
                 target="_blank"
                 rel="noreferrer"
-                className={`btn h-16 transition flex flex-col items-center justify-center gap-1.5 px-4 ${option.url ? "btn-primary" : "btn-outline opacity-50 cursor-not-allowed"}`}
+                className={`relative rounded-2xl border-2 p-4 flex flex-col text-center transition ${
+                  option.highlight
+                    ? "border-gold-400 bg-gold-50/50 hover:border-gold-500"
+                    : "border-line bg-ivory hover:border-mauve-900/30"
+                } ${!option.url ? "opacity-50 cursor-not-allowed pointer-events-none" : ""}`}
               >
-                <span className="font-medium text-base">{option.label}</span>
-                <span className="text-sm font-semibold">{money(option.price)}</span>
-                {option.id !== "LIFETIME" && <span className="text-[10px] opacity-80">/{option.id === "YEARLY" ? "año" : "mes"}</span>}
-                {option.saving && <span className="text-xs font-medium opacity-90 mt-0.5">Ahorra 17%</span>}
+                {option.saving && (
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 chip chip-gold text-[10px] whitespace-nowrap">
+                    {option.saving}
+                  </span>
+                )}
+                <span className="font-serif text-base text-mauve-900 mt-1">{option.label}</span>
+                <span className="font-serif text-2xl text-mauve-900 mt-1.5">{money(option.price)}</span>
+                <span className="text-[11px] text-mauve-500 mt-0.5">{option.period}</span>
+                <span className={`mt-3 inline-flex items-center justify-center gap-1.5 rounded-full h-9 text-sm font-medium ${
+                  option.highlight ? "btn-gold" : "bg-mauve-900 text-cream"
+                }`}>
+                  Pagar
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+                </span>
               </a>
             ))}
           </div>
