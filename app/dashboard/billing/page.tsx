@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useApi } from "../../_lib/useFetch";
+import { useAuth } from "../../_lib/auth";
 import { LoadingBlock, ErrorBlock } from "../../_components/dashboard/States";
 import { money, moneyWhole, formatDate } from "../../_lib/format";
 import type { PlatformInfo, Subscription, SubscriptionPayment } from "../../_lib/types";
@@ -40,6 +41,7 @@ const PAYMENT_LABEL: Record<SubscriptionPayment["status"], string> = {
 };
 
 export default function BillingPage() {
+  const { user } = useAuth();
   const { data, loading, error, refetch } = useApi<BillingResp>("/subscription/me");
   // Post-payment redirect feedback from Recurrente (?success / ?cancelled).
   // Read from the URL on mount, then clean it so a refresh doesn't re-show it.
@@ -193,7 +195,20 @@ export default function BillingPage() {
               <svg width="32" height="16" viewBox="0 0 32 16" fill="none"><rect width="32" height="16" rx="3" fill="#016FD0"/><text x="4" y="12" fontSize="9" fontWeight="bold" fill="white" fontFamily="Arial">AMEX</text></svg>
             </div>
           </div>
-          <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Email-match warning: the webhook links the payment to the account
+              by email, so the user MUST pay with their account email. */}
+          {user?.email && (
+            <div className="mt-4 rounded-xl bg-gold-50/70 border border-gold-300/50 px-4 py-3 flex items-start gap-2.5">
+              <svg className="mt-0.5 shrink-0 text-gold-600" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              <p className="text-xs text-mauve-700 leading-relaxed">
+                Importante: al pagar, usa el correo de tu cuenta{" "}
+                <span className="font-semibold text-mauve-900">{user.email}</span>{" "}
+                para que tu suscripción se active automáticamente.
+              </p>
+            </div>
+          )}
+
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
             {([
               { id: "MONTHLY" as const, label: "Mensual", price: platform.monthlyPriceCents, period: "/ mes", url: platform.recurrenteUrl, saving: null, highlight: false },
               { id: "YEARLY" as const, label: "Anual", price: platform.yearlyPriceCents, period: "/ año", url: platform.recurrenteYearlyUrl, saving: "Ahorra 17%", highlight: true },
