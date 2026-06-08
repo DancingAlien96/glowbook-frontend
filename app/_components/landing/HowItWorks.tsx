@@ -4,27 +4,27 @@ const steps = [
     title: "Configura tu salón",
     desc: "Crea servicios, define duración, precios y reglas de anticipo. En 5 minutos estás listo.",
     visual: (
-      <div className="space-y-2.5">
-        <div className="rounded-xl bg-cream-soft p-3 flex items-center justify-between">
-          <div>
+      <div className="space-y-2.5 pr-2">
+        <div className="rounded-xl bg-cream-soft p-3 flex items-center justify-between overflow-hidden gap-2">
+          <div className="min-w-0">
             <div className="text-[11px] text-mauve-400">Servicio</div>
-            <div className="text-sm font-medium text-mauve-900">Corte + tratamiento capilar</div>
+            <div className="text-sm font-medium text-mauve-900 truncate">Corte + tratamiento capilar</div>
           </div>
-          <span className="text-xs font-medium text-gold-600">$45</span>
+          <span className="text-xs font-medium text-gold-600 shrink-0">$45</span>
         </div>
-        <div className="rounded-xl bg-cream-soft p-3 flex items-center justify-between">
-          <div>
+        <div className="rounded-xl bg-cream-soft p-3 flex items-center justify-between overflow-hidden gap-2">
+          <div className="min-w-0">
             <div className="text-[11px] text-mauve-400">Servicio</div>
-            <div className="text-sm font-medium text-mauve-900">Maquillaje social</div>
+            <div className="text-sm font-medium text-mauve-900 truncate">Maquillaje social</div>
           </div>
-          <span className="text-xs font-medium text-gold-600">$60</span>
+          <span className="text-xs font-medium text-gold-600 shrink-0">$60</span>
         </div>
-        <div className="rounded-xl bg-cream-soft p-3 flex items-center justify-between">
-          <div>
+        <div className="rounded-xl bg-cream-soft p-3 flex items-center justify-between overflow-hidden gap-2">
+          <div className="min-w-0">
             <div className="text-[11px] text-mauve-400">Anticipo</div>
-            <div className="text-sm font-medium text-mauve-900">30% requerido</div>
+            <div className="text-sm font-medium text-mauve-900 truncate">30% requerido</div>
           </div>
-          <span className="h-5 w-9 rounded-full bg-mauve-900 relative">
+          <span className="h-5 w-9 rounded-full bg-mauve-900 relative shrink-0">
             <span className="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-cream" />
           </span>
         </div>

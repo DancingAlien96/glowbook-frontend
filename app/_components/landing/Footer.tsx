@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Logo from "../shared/Logo";
 import { SUPPORT_MESSAGES, SUPPORT_WHATSAPP_DISPLAY, whatsappHref } from "../../_lib/support";
@@ -13,26 +16,79 @@ const cols = [
     ],
   },
   {
-    title: "Recursos",
-    links: [
-      { href: whatsappHref(SUPPORT_MESSAGES.general), label: "Centro de ayuda", external: true },
-      { href: "#", label: "Guía para fundadoras" },
-      { href: "#", label: "Casos de éxito" },
-      { href: "#", label: "Cambios y novedades" },
-    ],
-  },
-  {
     title: "Compañía",
     links: [
-      { href: "#", label: "Sobre nosotros" },
+      { href: whatsappHref(SUPPORT_MESSAGES.general), label: "Centro de ayuda", external: true },
       { href: whatsappHref(SUPPORT_MESSAGES.general), label: "Contacto", external: true },
-      { href: "#", label: "Términos" },
-      { href: "#", label: "Privacidad" },
+      { id: "terms", label: "Términos y condiciones", modal: true },
+      { id: "privacy", label: "Política de privacidad", modal: true },
     ],
   },
 ];
 
+const TERMS_CONTENT = `# Términos y Condiciones
+
+**Última actualización: 2025**
+
+## 1. Aceptación de Términos
+Al utilizar Ecodama, aceptas estos términos y condiciones en su totalidad.
+
+## 2. Uso del Servicio
+- Ecodama es una plataforma de reservas para salones de belleza
+- Eres responsable de mantener la confidencialidad de tu cuenta
+- No puedes usar la plataforma para fines ilegales
+
+## 3. Suscripción y Pago
+- Los planes son: Mensual ($20), Anual ($200) y Lifetime ($1,000)
+- Los pagos se procesan mediante Recurrente
+- Las suscripciones se renuevan automáticamente según el plan
+
+## 4. Cancelación
+- Puedes cancelar tu suscripción en cualquier momento
+- No hay reembolsos por pagos ya procesados
+- El acceso se mantiene hasta el final del período pagado
+
+## 5. Limitaciones de Responsabilidad
+Ecodama no es responsable por interrupciones, pérdida de datos o daños indirectos.
+
+## 6. Cambios en los Términos
+Nos reservamos el derecho de modificar estos términos. Los cambios serán notificados por email.`;
+
+const PRIVACY_CONTENT = `# Política de Privacidad
+
+**Última actualización: 2025**
+
+## 1. Información que Recopilamos
+- Datos de tu cuenta (nombre, email, teléfono)
+- Información del salón (servicios, horarios, precios)
+- Datos de clientes y citas
+- Información de pago procesada por Recurrente
+
+## 2. Cómo Usamos tu Información
+- Para proporcionar el servicio de reservas
+- Para mejorar la plataforma
+- Para enviar notificaciones importantes
+- Para procesar pagos y facturación
+
+## 3. Protección de Datos
+Utilizamos encriptación y medidas de seguridad estándar para proteger tu información.
+
+## 4. Terceros
+- Recurrente procesa tus pagos (su política de privacidad aplica)
+- Resend envía tus emails (su política de privacidad aplica)
+- No vendemos tu información a terceros
+
+## 5. Derechos del Usuario
+Tienes derecho a:
+- Acceder a tus datos
+- Solicitar la corrección de información incorrecta
+- Solicitar la eliminación de tu cuenta
+
+## 6. Cambios en la Política
+Nos reservamos el derecho de actualizar esta política. Notificaremos cambios importantes por email.`;
+
 export default function Footer() {
+  const [openModal, setOpenModal] = useState<"terms" | "privacy" | null>(null);
   return (
     <footer className="relative border-t border-line">
       <div className="container-tight py-16">
@@ -66,7 +122,7 @@ export default function Footer() {
             </form>
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 gap-8">
             {cols.map((c) => (
               <div key={c.title}>
                 <div className="text-xs uppercase tracking-[0.18em] text-mauve-400">{c.title}</div>
@@ -83,6 +139,15 @@ export default function Footer() {
                           {l.label}
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h6v6M14 10l7-7M10 21H4a1 1 0 01-1-1v-6"/></svg>
                         </a>
+                      </li>
+                    ) : "modal" in l && l.modal ? (
+                      <li key={l.id}>
+                        <button
+                          onClick={() => setOpenModal(l.id as "terms" | "privacy")}
+                          className="text-mauve-700 hover:text-mauve-900 transition-colors text-sm"
+                        >
+                          {l.label}
+                        </button>
                       </li>
                     ) : (
                       <li key={l.label}>
@@ -127,6 +192,53 @@ export default function Footer() {
           </div>
         </div>
       </div>
+
+      {/* Modal overlay */}
+      {openModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl bg-cream-soft">
+            <div className="sticky top-0 bg-cream-soft border-b border-line px-6 py-4 flex items-center justify-between">
+              <h2 className="font-serif text-xl text-mauve-900">
+                {openModal === "terms" ? "Términos y Condiciones" : "Política de Privacidad"}
+              </h2>
+              <button
+                onClick={() => setOpenModal(null)}
+                className="h-9 w-9 rounded-full bg-mauve-900/5 hover:bg-mauve-900/10 transition flex items-center justify-center"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="prose prose-sm max-w-none px-6 py-6 text-mauve-700">
+              <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                {(openModal === "terms" ? TERMS_CONTENT : PRIVACY_CONTENT)
+                  .split("\n")
+                  .map((line, i) => (
+                    <div
+                      key={i}
+                      className={`${
+                        line.startsWith("#") ? "mt-4 font-serif text-lg text-mauve-900 font-bold" : ""
+                      } ${line.startsWith("- ") ? "ml-4" : ""}`}
+                    >
+                      {line.replace(/^#+\s/, "").replace(/^\- /, "• ")}
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            <div className="border-t border-line p-6 flex gap-3">
+              <button
+                onClick={() => setOpenModal(null)}
+                className="btn btn-outline w-full"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </footer>
   );
 }
