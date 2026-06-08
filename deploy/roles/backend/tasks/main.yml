@@ -16,6 +16,7 @@
       - "--exclude=dist"
       - "--exclude=.env"
       - "--exclude=uploads"
+      - "--exclude=docker-compose.prod.yml"
     delete: yes
 
 - name: Deploy production docker-compose

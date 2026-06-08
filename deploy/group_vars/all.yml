@@ -28,7 +28,9 @@ vapid_public_key: "BLWXxzwu8P6jCzyVtVD-yyLo0CYsdrsQTBEHaT9FHbknFXyBDTuISU0lXMAL-
 vapid_subject:    "mailto:soporte@ecodama.online"
 
 # Email
-email_from: "Ecodama <onboarding@resend.dev>"
+email_from: "Ecodama <noreply@ecodama.online>"
 
-# Recurrente (public subscription URL)
+# Recurrente (public checkout URLs)
 recurrente_subscription_url: "https://app.recurrente.com/s/arcadiasolutions/suscripcion-mensual-ecodama-tbp0az"
+recurrente_yearly_url:       "https://app.recurrente.com/s/arcadiasolutions/suscripcion-anual-ecodama"
+recurrente_lifetime_url:     "https://app.recurrente.com/s/arcadiasolutions/plan-lifetime-ecodama"
