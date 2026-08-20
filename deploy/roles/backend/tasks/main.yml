@@ -41,8 +41,11 @@
   # This pulls it onto the CI runner so deploy.yml can upload it to GitHub's
   # artifact storage, which is independent infrastructure.
   ansible.builtin.fetch:
+    # Lands at {github.workspace}/backup-artifact/ — inside the backend
+    # checkout dir, not a sibling via "..", because actions/upload-artifact
+    # rejects ".." in its path input.
     src: "{{ latest_backup.stdout }}"
-    dest: "{{ playbook_dir }}/../../backup-artifact/"
+    dest: "{{ playbook_dir }}/../../glowbook-backend/backup-artifact/"
     flat: yes
   when: mysql_container_check.stdout != "" and latest_backup.stdout != ""
 
@@ -70,15 +73,16 @@
     dest: "{{ backend_dir }}/docker-compose.prod.yml"
     mode: "0640"
 
-- name: Remove any dangling glowbook-api container from a previous interrupted recreate
-  # `docker compose up` recreates a changed container by renaming the old one
-  # to "<id>_glowbook-api" and removing it once the new one is up. If that
-  # last removal is ever interrupted (slow stop, runner hiccup, etc.) the
-  # renamed container lingers and the *next* deploy's rename step collides
-  # with it ("Conflict: container name already in use"), failing the whole
-  # deploy even though nothing about the app itself is wrong. Clear any such
-  # leftovers before every deploy — no-op when there aren't any.
+- name: Remove the current glowbook-api container so it's always created fresh
+  # `docker compose up`'s in-place recreate (rename old -> temp name, create
+  # new, remove temp) has repeatedly raced and failed on this server with
+  # "container name already in use" — whether from a genuinely interrupted
+  # previous run or from Compose's own bookkeeping. Side-step the whole
+  # rename dance: just remove the container outright before building. It's
+  # stateless (all real state lives in the mysql volume), so this is safe,
+  # and `up -d` below creates it fresh with no rename step to race on.
   ansible.builtin.shell: |
+    docker rm -f glowbook-api 2>/dev/null || true
     docker ps -aq --filter "name=_glowbook-api" | xargs -r docker rm -f
   changed_when: false
 
