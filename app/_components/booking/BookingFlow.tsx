@@ -156,32 +156,38 @@ function Flow({ salon }: { salon: PublicSalon }) {
   const slots = useMemo(() => {
     if (selectedServices.length === 0 || !date) return [] as string[];
     const dow = date.getDay();
-    const hours = (availabilityQ.data?.businessHours ?? salon.businessHours).find((h) => h.dayOfWeek === dow);
-    if (!hours) return [];
+    // A day can have more than one open range (e.g. 09:00-13:00 and
+    // 15:00-19:00 for a lunch break) — generate slots inside every range,
+    // not just the first one.
+    const dayRanges = (availabilityQ.data?.businessHours ?? salon.businessHours).filter((h) => h.dayOfWeek === dow);
+    if (dayRanges.length === 0) return [];
 
     const result: string[] = [];
     const dayStart = new Date(date);
     dayStart.setHours(0, 0, 0, 0);
     const slotStep = 30; // minutes
-    for (let m = hours.openMin; m + totalDurationMin <= hours.closeMin; m += slotStep) {
-      const slotStart = new Date(dayStart.getTime() + m * 60_000);
-      const slotEnd = new Date(slotStart.getTime() + totalDurationMin * 60_000);
-      const isPast = slotStart.getTime() < Date.now() + 60_000;
+    for (const hours of dayRanges) {
+      for (let m = hours.openMin; m + totalDurationMin <= hours.closeMin; m += slotStep) {
+        const slotStart = new Date(dayStart.getTime() + m * 60_000);
+        const slotEnd = new Date(slotStart.getTime() + totalDurationMin * 60_000);
+        const isPast = slotStart.getTime() < Date.now() + 60_000;
 
-      const busy = (availabilityQ.data?.busy ?? []).some((b) => {
-        if (stylistId && b.stylistId && b.stylistId !== stylistId) return false;
-        return new Date(b.startAt) < slotEnd && new Date(b.endAt) > slotStart;
-      });
-      const blocked = (availabilityQ.data?.blocked ?? []).some(
-        (b) => new Date(b.startAt) < slotEnd && new Date(b.endAt) > slotStart
-      );
+        const busy = (availabilityQ.data?.busy ?? []).some((b) => {
+          if (stylistId && b.stylistId && b.stylistId !== stylistId) return false;
+          return new Date(b.startAt) < slotEnd && new Date(b.endAt) > slotStart;
+        });
+        const blocked = (availabilityQ.data?.blocked ?? []).some(
+          (b) => new Date(b.startAt) < slotEnd && new Date(b.endAt) > slotStart
+        );
 
-      if (!isPast && !busy && !blocked) {
-        const hh = String(Math.floor(m / 60)).padStart(2, "0");
-        const mm = String(m % 60).padStart(2, "0");
-        result.push(`${hh}:${mm}`);
+        if (!isPast && !busy && !blocked) {
+          const hh = String(Math.floor(m / 60)).padStart(2, "0");
+          const mm = String(m % 60).padStart(2, "0");
+          result.push(`${hh}:${mm}`);
+        }
       }
     }
+    result.sort();
     return result;
   }, [selectedServices, totalDurationMin, date, availabilityQ.data, salon.businessHours, stylistId]);
 
