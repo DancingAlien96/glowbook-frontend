@@ -16,30 +16,45 @@
 - name: Backup the database before this deploy touches anything
   # Runs BEFORE any migration gets a chance to run — if a migration ever
   # goes wrong again, there's always a snapshot from right before it.
+  # Piped straight into openssl so the plaintext dump never touches disk —
+  # glowbook-backend is a PUBLIC repo, and this backup contains real client
+  # PII (names, emails, phone numbers), so only the encrypted .enc file is
+  # ever written or leaves this server.
   ansible.builtin.shell: |
+    set -o pipefail
     ts=$(date +%Y%m%d_%H%M%S)
     docker exec glowbook-mysql mysqldump -uroot -p{{ vault_mysql_root_password }} \
-      --single-transaction --routines --triggers glowbook | gzip > /opt/ecodama/backups/glowbook_${ts}.sql.gz
+      --single-transaction --routines --triggers glowbook \
+      | gzip \
+      | openssl enc -aes-256-cbc -pbkdf2 -salt -pass pass:'{{ vault_backup_encryption_key }}' \
+      > /opt/ecodama/backups/glowbook_${ts}.sql.gz.enc
+  args:
+    executable: /bin/bash
   when: mysql_container_check.stdout != ""
   changed_when: true
 
 - name: Prune on-server backups, keep the last 14
   ansible.builtin.shell: |
-    ls -1t /opt/ecodama/backups/glowbook_*.sql.gz 2>/dev/null | tail -n +15 | xargs -r rm -f
+    ls -1t /opt/ecodama/backups/glowbook_*.sql.gz.enc 2>/dev/null | tail -n +15 | xargs -r rm -f
   when: mysql_container_check.stdout != ""
   changed_when: false
 
 - name: Find the backup just taken
-  ansible.builtin.shell: ls -1t /opt/ecodama/backups/glowbook_*.sql.gz 2>/dev/null | head -1
+  ansible.builtin.shell: ls -1t /opt/ecodama/backups/glowbook_*.sql.gz.enc 2>/dev/null | head -1
   register: latest_backup
   when: mysql_container_check.stdout != ""
   changed_when: false
 
-- name: Fetch the backup off the server (uploaded as a CI artifact by the workflow)
+- name: Fetch the encrypted backup off the server (uploaded as a CI artifact by the workflow)
   # The server is a single point of failure — a copy that only lives next to
   # the database it backs up isn't much of a safety net if that disk dies.
   # This pulls it onto the CI runner so deploy.yml can upload it to GitHub's
-  # artifact storage, which is independent infrastructure.
+  # artifact storage, which is independent infrastructure. Safe to do even
+  # though the repo is public: the file is AES-256 encrypted, decryptable
+  # only with BACKUP_ENCRYPTION_KEY.
+  #
+  # To restore: openssl enc -d -aes-256-cbc -pbkdf2 -salt -pass pass:"$KEY" \
+  #   -in glowbook_TIMESTAMP.sql.gz.enc | gunzip > glowbook.sql
   ansible.builtin.fetch:
     # Lands at {github.workspace}/backup-artifact/ — inside the backend
     # checkout dir, not a sibling via "..", because actions/upload-artifact
