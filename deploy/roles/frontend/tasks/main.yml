@@ -40,6 +40,18 @@
     cd {{ frontend_dir }} && npm ci
   changed_when: true
 
+- name: Clear any stuck Next.js build lock from a previous interrupted deploy
+  # .next/ is excluded from the source sync above so it survives between
+  # deploys — which means a build interrupted mid-way (killed runner,
+  # dropped SSH session, etc.) can leave its "another build is already
+  # running" lock behind and block every deploy after it, even though
+  # nothing is actually building anymore.
+  ansible.builtin.shell: |
+    pkill -f "next build" 2>/dev/null || true
+    sleep 1
+    rm -rf {{ frontend_dir }}/.next
+  changed_when: false
+
 - name: Build Next.js (standalone)
   ansible.builtin.shell: |
     cd {{ frontend_dir }} && npm run build
