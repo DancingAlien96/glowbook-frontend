@@ -25,6 +25,18 @@
     dest: "{{ backend_dir }}/docker-compose.prod.yml"
     mode: "0640"
 
+- name: Remove any dangling glowbook-api container from a previous interrupted recreate
+  # `docker compose up` recreates a changed container by renaming the old one
+  # to "<id>_glowbook-api" and removing it once the new one is up. If that
+  # last removal is ever interrupted (slow stop, runner hiccup, etc.) the
+  # renamed container lingers and the *next* deploy's rename step collides
+  # with it ("Conflict: container name already in use"), failing the whole
+  # deploy even though nothing about the app itself is wrong. Clear any such
+  # leftovers before every deploy — no-op when there aren't any.
+  ansible.builtin.shell: |
+    docker ps -aq --filter "name=_glowbook-api" | xargs -r docker rm -f
+  changed_when: false
+
 - name: Build and start backend stack
   ansible.builtin.shell: |
     docker compose -f {{ backend_dir }}/docker-compose.prod.yml up -d --build --remove-orphans
