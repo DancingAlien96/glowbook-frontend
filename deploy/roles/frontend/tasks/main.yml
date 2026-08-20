@@ -45,10 +45,11 @@
   # deploys — which means a build interrupted mid-way (killed runner,
   # dropped SSH session, etc.) can leave its "another build is already
   # running" lock behind and block every deploy after it, even though
-  # nothing is actually building anymore.
+  # nothing is actually building anymore. Just drop the whole directory —
+  # it's a build artifact, not state — so the next build starts clean.
+  # (Deliberately NOT pkill-ing "next build": that pattern also matches
+  # this very shell's own invocation text and kills itself instead.)
   ansible.builtin.shell: |
-    pkill -f "next build" 2>/dev/null || true
-    sleep 1
     rm -rf {{ frontend_dir }}/.next
   changed_when: false
 
