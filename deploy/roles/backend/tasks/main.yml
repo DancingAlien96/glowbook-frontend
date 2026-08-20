@@ -20,10 +20,15 @@
   # glowbook-backend is a PUBLIC repo, and this backup contains real client
   # PII (names, emails, phone numbers), so only the encrypted .enc file is
   # ever written or leaves this server.
+  # Uses the app's own `glowbook` DB user, not root — the MYSQL_ROOT_PASSWORD
+  # secret doesn't actually match this long-running container's real root
+  # password (it's only applied on first init of an empty data dir, and this
+  # container predates that secret being what it is today). glowbook has
+  # full rights over its own schema, which is all this dump needs.
   ansible.builtin.shell: |
     set -o pipefail
     ts=$(date +%Y%m%d_%H%M%S)
-    docker exec glowbook-mysql mysqldump -uroot -p{{ vault_mysql_root_password }} \
+    docker exec glowbook-mysql mysqldump -uglowbook -p{{ vault_mysql_password }} \
       --single-transaction --routines --triggers glowbook \
       | gzip \
       | openssl enc -aes-256-cbc -pbkdf2 -salt -pass pass:'{{ vault_backup_encryption_key }}' \
