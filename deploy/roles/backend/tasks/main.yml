@@ -1,6 +1,51 @@
 ---
 # Syncs source, templates the production compose file, builds and starts containers.
 
+- name: Check if the MySQL container already exists (skip backup on the very first deploy)
+  ansible.builtin.shell: docker ps -aq --filter "name=glowbook-mysql"
+  register: mysql_container_check
+  changed_when: false
+
+- name: Ensure the backup directory exists
+  ansible.builtin.file:
+    path: /opt/ecodama/backups
+    state: directory
+    mode: "0750"
+  when: mysql_container_check.stdout != ""
+
+- name: Backup the database before this deploy touches anything
+  # Runs BEFORE any migration gets a chance to run — if a migration ever
+  # goes wrong again, there's always a snapshot from right before it.
+  ansible.builtin.shell: |
+    ts=$(date +%Y%m%d_%H%M%S)
+    docker exec glowbook-mysql mysqldump -uroot -p{{ vault_mysql_root_password }} \
+      --single-transaction --routines --triggers glowbook | gzip > /opt/ecodama/backups/glowbook_${ts}.sql.gz
+  when: mysql_container_check.stdout != ""
+  changed_when: true
+
+- name: Prune on-server backups, keep the last 14
+  ansible.builtin.shell: |
+    ls -1t /opt/ecodama/backups/glowbook_*.sql.gz 2>/dev/null | tail -n +15 | xargs -r rm -f
+  when: mysql_container_check.stdout != ""
+  changed_when: false
+
+- name: Find the backup just taken
+  ansible.builtin.shell: ls -1t /opt/ecodama/backups/glowbook_*.sql.gz 2>/dev/null | head -1
+  register: latest_backup
+  when: mysql_container_check.stdout != ""
+  changed_when: false
+
+- name: Fetch the backup off the server (uploaded as a CI artifact by the workflow)
+  # The server is a single point of failure — a copy that only lives next to
+  # the database it backs up isn't much of a safety net if that disk dies.
+  # This pulls it onto the CI runner so deploy.yml can upload it to GitHub's
+  # artifact storage, which is independent infrastructure.
+  ansible.builtin.fetch:
+    src: "{{ latest_backup.stdout }}"
+    dest: "{{ playbook_dir }}/../../backup-artifact/"
+    flat: yes
+  when: mysql_container_check.stdout != "" and latest_backup.stdout != ""
+
 - name: Create backend directory
   ansible.builtin.file:
     path: "{{ backend_dir }}"
@@ -55,3 +100,17 @@
   retries: 15
   delay: 8
   until: mysql_health.rc == 0
+
+- name: Health-check the API before calling this deploy successful
+  # Without this, a container that migrates/crashes and keeps restarting
+  # (like tonight) deploys "successfully" from Ansible's point of view —
+  # nothing here notices unless someone happens to hit the site. Fail the
+  # whole workflow loudly (red X in GitHub) instead.
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ backend_port }}/api/health"
+    status_code: 200
+    timeout: 5
+  register: api_health
+  retries: 24
+  delay: 5
+  until: api_health.status is defined and api_health.status == 200
