@@ -197,7 +197,10 @@ function Flow({ salon }: { salon: PublicSalon }) {
   const canNext =
     (step === 0 && serviceIds.length > 0) ||
     (step === 1 && !!date && !!time) ||
-    (step === 2 && client.name.trim().length > 1 && /\S+@\S+\.\S+/.test(client.email)) ||
+    (step === 2 &&
+      client.name.trim().length > 1 &&
+      client.phone.trim().length >= 5 &&
+      (client.email.trim() === "" || /\S+@\S+\.\S+/.test(client.email))) ||
     (step === 3 && (salon.depositMode === "NONE" || !!receiptFile)) ||
     step === 4;
 
@@ -233,7 +236,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
               notes: client.notes || null,
               client: {
                 name: client.name,
-                email: client.email,
+                email: client.email.trim() || null,
                 phone: client.phone || null,
               },
             },
@@ -505,8 +508,8 @@ function Flow({ salon }: { salon: PublicSalon }) {
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs uppercase tracking-wider text-mauve-400">Email *</label>
-                    <input type="email" required value={client.email} onChange={(e) => setClient({ ...client, email: e.target.value })} className="input-soft mt-1.5" placeholder="tu@email.com" />
+                    <label className="text-xs uppercase tracking-wider text-mauve-400">Email (opcional)</label>
+                    <input type="email" value={client.email} onChange={(e) => setClient({ ...client, email: e.target.value })} className="input-soft mt-1.5" placeholder="tu@email.com" />
                   </div>
                   <div>
                     <label className="text-xs uppercase tracking-wider text-mauve-400">WhatsApp *</label>
@@ -514,7 +517,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
                   </div>
                 </div>
                 <p className="text-[11px] text-mauve-400 -mt-1">
-                  Usamos el email para mandarte la confirmación y el WhatsApp para recordarte la cita.
+                  Usamos el WhatsApp para recordarte la cita. Si nos dejas tu email también te mandamos la confirmación ahí.
                 </p>
                 <div>
                   <label className="text-xs uppercase tracking-wider text-mauve-400">Notas (opcional)</label>
@@ -611,7 +614,9 @@ function Flow({ salon }: { salon: PublicSalon }) {
               <p className="mt-2 text-mauve-600 max-w-md mx-auto">
                 {salon.depositMode !== "NONE"
                   ? `Recibimos tu comprobante. ${salon.name} lo validará y te enviaremos la confirmación.`
-                  : `Te enviamos los detalles a ${client.email}.`}
+                  : client.email.trim()
+                  ? `Te enviamos los detalles a ${client.email}.`
+                  : "Guarda la fecha — te recordaremos por WhatsApp antes de tu cita."}
               </p>
 
               <div className="mt-7 max-w-sm mx-auto card-surface p-5 text-left">
