@@ -121,7 +121,7 @@ export interface Appointment {
   depositCents: number;
   status: AppointmentStatus;
   notes: string | null;
-  service: { id: string; name: string; durationMin?: number; priceCents?: number };
+  services: { service: { id: string; name: string; durationMin?: number; priceCents?: number } }[];
   stylist: { id: string; name: string } | null;
   client: { id: string; name: string; email?: string | null; phone?: string | null };
   payments?: { id: string; status: PaymentStatus; amountCents: number; method: PaymentMethod }[];
@@ -141,7 +141,7 @@ export interface Payment {
   appointment: {
     id: string;
     client: { id: string; name: string };
-    service: { id: string; name: string };
+    services: { service: { id: string; name: string } }[];
   };
 }
 

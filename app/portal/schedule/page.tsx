@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useApi } from "../../_lib/useFetch";
 import { LoadingBlock, ErrorBlock } from "../../_components/dashboard/States";
-import { formatTime, initials } from "../../_lib/format";
+import { formatTime, initials, serviceNames } from "../../_lib/format";
 import type { AppointmentStatus } from "../../_lib/types";
 
 type PortalAppt = {
@@ -13,7 +13,7 @@ type PortalAppt = {
   endAt: string;
   durationMin: number;
   status: AppointmentStatus;
-  service: { name: string };
+  services: { service: { name: string } }[];
   client: { name: string; phone: string | null };
 };
 
@@ -133,14 +133,14 @@ export default function PortalSchedulePage() {
                           href="/portal"
                           className={`absolute left-1 right-1 rounded-lg border bg-gradient-to-br ${tone} p-1.5 shadow-sm hover:shadow-md transition ${a.status === "CANCELLED" ? "opacity-50 line-through" : ""}`}
                           style={{ top, height }}
-                          title={`${a.client.name} · ${a.service.name}`}
+                          title={`${a.client.name} · ${serviceNames(a)}`}
                         >
                           <div className="text-[10px] text-mauve-700 font-medium">{formatTime(start)}</div>
                           <div className="text-xs font-medium text-mauve-900 truncate flex items-center gap-1">
                             <span className="h-4 w-4 rounded-full bg-cream/70 text-[8px] grid place-items-center">{initials(a.client.name)}</span>
                             {a.client.name}
                           </div>
-                          <div className="text-[10px] text-mauve-600 truncate">{a.service.name}</div>
+                          <div className="text-[10px] text-mauve-600 truncate">{serviceNames(a)}</div>
                         </Link>
                       );
                     })}

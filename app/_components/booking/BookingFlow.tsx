@@ -87,7 +87,9 @@ function FlowShell({ children }: { children: React.ReactNode }) {
 function Flow({ salon }: { salon: PublicSalon }) {
   const [step, setStep] = useState(0);
   const [activeCat, setActiveCat] = useState("Todos");
-  const [serviceId, setServiceId] = useState<string | null>(null);
+  const [serviceIds, setServiceIds] = useState<string[]>([]);
+  const toggleService = (id: string) =>
+    setServiceIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
   const [stylistId, setStylistId] = useState<string>(""); // "" = cualquiera
   const [date, setDate] = useState<Date | null>(null);
   const [time, setTime] = useState<string | null>(null); // "HH:MM"
@@ -121,7 +123,12 @@ function Flow({ salon }: { salon: PublicSalon }) {
     );
   };
 
-  const service = useMemo(() => salon.services.find((s) => s.id === serviceId) ?? null, [salon.services, serviceId]);
+  const selectedServices = useMemo(
+    () => salon.services.filter((s) => serviceIds.includes(s.id)),
+    [salon.services, serviceIds]
+  );
+  const totalDurationMin = selectedServices.reduce((sum, s) => sum + s.durationMin, 0);
+  const totalPriceCents = selectedServices.reduce((sum, s) => sum + s.priceCents, 0);
 
   const stylist = useMemo(() => salon.stylists.find((s) => s.id === stylistId) ?? null, [salon.stylists, stylistId]);
 
@@ -147,7 +154,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
   const visibleServices = activeCat === "Todos" ? salon.services : salon.services.filter((s) => (s.category ?? "Otros") === activeCat);
 
   const slots = useMemo(() => {
-    if (!service || !date) return [] as string[];
+    if (selectedServices.length === 0 || !date) return [] as string[];
     const dow = date.getDay();
     const hours = (availabilityQ.data?.businessHours ?? salon.businessHours).find((h) => h.dayOfWeek === dow);
     if (!hours) return [];
@@ -156,9 +163,9 @@ function Flow({ salon }: { salon: PublicSalon }) {
     const dayStart = new Date(date);
     dayStart.setHours(0, 0, 0, 0);
     const slotStep = 30; // minutes
-    for (let m = hours.openMin; m + service.durationMin <= hours.closeMin; m += slotStep) {
+    for (let m = hours.openMin; m + totalDurationMin <= hours.closeMin; m += slotStep) {
       const slotStart = new Date(dayStart.getTime() + m * 60_000);
-      const slotEnd = new Date(slotStart.getTime() + service.durationMin * 60_000);
+      const slotEnd = new Date(slotStart.getTime() + totalDurationMin * 60_000);
       const isPast = slotStart.getTime() < Date.now() + 60_000;
 
       const busy = (availabilityQ.data?.busy ?? []).some((b) => {
@@ -176,19 +183,19 @@ function Flow({ salon }: { salon: PublicSalon }) {
       }
     }
     return result;
-  }, [service, date, availabilityQ.data, salon.businessHours, stylistId]);
+  }, [selectedServices, totalDurationMin, date, availabilityQ.data, salon.businessHours, stylistId]);
 
   const deposit =
-    !service
+    selectedServices.length === 0
       ? 0
       : salon.depositMode === "FULL"
-      ? service.priceCents
+      ? totalPriceCents
       : salon.depositMode === "PERCENTAGE"
-      ? Math.round((service.priceCents * salon.depositPercent) / 100)
+      ? Math.round((totalPriceCents * salon.depositPercent) / 100)
       : 0;
 
   const canNext =
-    (step === 0 && !!serviceId) ||
+    (step === 0 && serviceIds.length > 0) ||
     (step === 1 && !!date && !!time) ||
     (step === 2 && client.name.trim().length > 1 && /\S+@\S+\.\S+/.test(client.email)) ||
     (step === 3 && (salon.depositMode === "NONE" || !!receiptFile)) ||
@@ -206,7 +213,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
     }
     if (step === 3) {
       // Submit booking
-      if (!service || !date || !time) return;
+      if (selectedServices.length === 0 || !date || !time) return;
       setSubmitting(true);
       setSubmitError(null);
       try {
@@ -220,7 +227,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
             method: "POST",
             auth: false,
             body: {
-              serviceId: service.id,
+              serviceIds,
               stylistId: stylistId || null,
               startAt: start.toISOString(),
               notes: client.notes || null,
@@ -356,8 +363,8 @@ function Flow({ salon }: { salon: PublicSalon }) {
           {/* Step 0: services */}
           {step === 0 && (
             <>
-              <h2 className="font-serif text-2xl text-mauve-900">Elige tu servicio</h2>
-              <p className="text-sm text-mauve-600 mt-1">Cada cita es una experiencia.</p>
+              <h2 className="font-serif text-2xl text-mauve-900">Elige tus servicios</h2>
+              <p className="text-sm text-mauve-600 mt-1">Puedes elegir más de uno para la misma cita.</p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {categories.map((c) => (
                   <button
@@ -374,16 +381,22 @@ function Flow({ salon }: { salon: PublicSalon }) {
               ) : (
                 <div className="mt-5 grid sm:grid-cols-2 gap-3">
                   {visibleServices.map((s) => {
-                    const selected = s.id === serviceId;
+                    const selected = serviceIds.includes(s.id);
                     return (
                       <button
                         key={s.id}
-                        onClick={() => setServiceId(s.id)}
+                        onClick={() => toggleService(s.id)}
+                        aria-pressed={selected}
                         className={`text-left rounded-2xl border-2 p-4 transition-all ${selected ? "border-mauve-900 bg-cream-soft" : "border-line bg-ivory hover:border-line-strong"}`}
                       >
                         <div className="flex items-start gap-3">
-                          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blush-200 to-blush-300 grid place-items-center shrink-0">
-                            <svg viewBox="0 0 24 24" className="h-5 w-5 text-mauve-900" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z"/></svg>
+                          <div
+                            className={`h-6 w-6 rounded-md border-2 grid place-items-center shrink-0 mt-0.5 transition ${selected ? "bg-mauve-900 border-mauve-900" : "border-line-strong bg-ivory"}`}
+                            aria-hidden="true"
+                          >
+                            {selected && (
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-cream"><polyline points="20 6 9 17 4 12"/></svg>
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
@@ -603,7 +616,9 @@ function Flow({ salon }: { salon: PublicSalon }) {
 
               <div className="mt-7 max-w-sm mx-auto card-surface p-5 text-left">
                 <div className="text-[11px] uppercase tracking-wider text-mauve-400">Resumen</div>
-                <div className="mt-2 font-serif text-xl text-mauve-900">{service?.name}</div>
+                <div className="mt-2 font-serif text-xl text-mauve-900">
+                  {selectedServices.map((s) => s.name).join(", ")}
+                </div>
                 <div className="text-xs text-mauve-600 mt-1">
                   {stylist?.name ?? "Estilista por asignar"} · {date?.toLocaleDateString("es-EC", { day: "numeric", month: "short" })} · {time}
                 </div>
@@ -651,26 +666,29 @@ function Flow({ salon }: { salon: PublicSalon }) {
         <aside className="card-elevated p-6 h-fit lg:sticky lg:top-6">
           <div className="text-xs uppercase tracking-wider text-mauve-400">Tu reserva</div>
           <div className="mt-3 space-y-3 text-sm">
-            <Row label="Servicio" value={service?.name ?? "—"} />
+            <Row
+              label={selectedServices.length > 1 ? "Servicios" : "Servicio"}
+              value={selectedServices.length > 0 ? selectedServices.map((s) => s.name).join(", ") : "—"}
+            />
             {salon.stylists.length > 0 && (
               <Row label="Estilista" value={stylist?.name ?? "Cualquiera disponible"} />
             )}
             <Row label="Fecha" value={date ? date.toLocaleDateString("es-EC", { weekday: "short", day: "numeric", month: "short" }) : "—"} />
             <Row label="Hora" value={time ?? "—"} />
-            <Row label="Duración" value={service ? `${service.durationMin} min` : "—"} />
+            <Row label="Duración" value={selectedServices.length > 0 ? `${totalDurationMin} min` : "—"} />
           </div>
 
           <div className="mt-5 pt-5 border-t border-line space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-mauve-600">Total servicio</span>
-              <span className="text-mauve-900 font-medium">{service ? money(service.priceCents, salon.currency) : "—"}</span>
+              <span className="text-mauve-600">Total servicio{selectedServices.length > 1 ? "s" : ""}</span>
+              <span className="text-mauve-900 font-medium">{selectedServices.length > 0 ? money(totalPriceCents, salon.currency) : "—"}</span>
             </div>
             {salon.depositMode !== "NONE" && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-mauve-600">
                   {salon.depositMode === "FULL" ? "Pago total" : `Anticipo (${salon.depositPercent}%)`}
                 </span>
-                <span className="font-serif text-2xl text-gold-shimmer">{service ? money(deposit, salon.currency) : "—"}</span>
+                <span className="font-serif text-2xl text-gold-shimmer">{selectedServices.length > 0 ? money(deposit, salon.currency) : "—"}</span>
               </div>
             )}
           </div>

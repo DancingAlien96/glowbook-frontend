@@ -5,7 +5,7 @@ import { api, ApiError } from "../_lib/api";
 import { useApi } from "../_lib/useFetch";
 import { useAuth } from "../_lib/auth";
 import { LoadingBlock, ErrorBlock, EmptyBlock } from "../_components/dashboard/States";
-import { formatTime, initials } from "../_lib/format";
+import { formatTime, initials, serviceNames } from "../_lib/format";
 import { statusChip, translateStatus } from "../_lib/status";
 import type { AppointmentStatus } from "../_lib/types";
 
@@ -16,7 +16,7 @@ type PortalAppt = {
   durationMin: number;
   status: AppointmentStatus;
   notes: string | null;
-  service: { id: string; name: string; durationMin: number; category: string | null };
+  services: { service: { id: string; name: string; durationMin: number; category: string | null } }[];
   client: { id: string; name: string; phone: string | null };
 };
 
@@ -140,7 +140,7 @@ function ApptCard({
             <div className="font-serif text-lg text-mauve-900 leading-tight">{appt.client.name}</div>
             <span className={`chip ${statusChip(appt.status)} text-[10px]`}>{translateStatus(appt.status)}</span>
           </div>
-          <div className="text-sm text-mauve-600 mt-0.5">{appt.service.name}</div>
+          <div className="text-sm text-mauve-600 mt-0.5">{serviceNames(appt)}</div>
           {appt.client.phone && (
             <a
               href={`https://wa.me/${appt.client.phone.replace(/\D/g, "")}`}

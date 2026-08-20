@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { useApi } from "../_lib/useFetch";
 import { useAuth } from "../_lib/auth";
 import { LoadingBlock, ErrorBlock } from "../_components/dashboard/States";
-import { formatTime, initials, money } from "../_lib/format";
+import { formatTime, initials, money, serviceNames } from "../_lib/format";
 import { statusDot, translateStatus } from "../_lib/status";
 import {
   ClientMixChart,
@@ -133,7 +133,7 @@ export default function DashboardPage() {
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-mauve-900 truncate">{a.client.name}</div>
                             <div className="text-xs text-mauve-400 truncate">
-                              {a.service.name}
+                              {serviceNames(a)}
                               {a.stylist ? ` · ${a.stylist.name.split(" ")[0]}` : ""}
                             </div>
                           </div>

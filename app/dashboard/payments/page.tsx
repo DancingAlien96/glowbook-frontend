@@ -5,7 +5,7 @@ import { api, ApiError, apiUrl } from "../../_lib/api";
 import { useApi } from "../../_lib/useFetch";
 import { useAuth } from "../../_lib/auth";
 import { LoadingBlock, ErrorBlock, EmptyBlock } from "../../_components/dashboard/States";
-import { money, formatDate, formatTime } from "../../_lib/format";
+import { money, formatDate, formatTime, serviceNames } from "../../_lib/format";
 import { paymentChip, translatePayment } from "../../_lib/status";
 import type { Payment } from "../../_lib/types";
 
@@ -104,7 +104,7 @@ export default function PaymentsPage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="text-sm font-medium text-mauve-900">{p.appointment.client.name}</div>
-                      <div className="text-xs text-mauve-400 mt-0.5">{p.appointment.service.name}</div>
+                      <div className="text-xs text-mauve-400 mt-0.5">{serviceNames(p.appointment)}</div>
                     </div>
                     <span className="chip status-pending">Por revisar</span>
                   </div>
@@ -186,7 +186,7 @@ export default function PaymentsPage() {
               {history.map((p) => (
                 <tr key={p.id} className="hover:bg-cream/40 transition-colors">
                   <td className="px-5 py-3.5 text-mauve-900 font-medium max-w-[150px]"><div className="truncate">{p.appointment.client.name}</div></td>
-                  <td className="px-5 py-3.5 text-sm text-mauve-600 max-w-[150px]"><div className="truncate">{p.appointment.service.name}</div></td>
+                  <td className="px-5 py-3.5 text-sm text-mauve-600 max-w-[150px]"><div className="truncate">{serviceNames(p.appointment)}</div></td>
                   <td className="px-5 py-3.5 text-sm text-mauve-600 hidden md:table-cell">{p.method}</td>
                   <td className="px-5 py-3.5 font-serif text-lg text-mauve-900">{money(p.amountCents, currency)}</td>
                   <td className="px-5 py-3.5"><span className={`chip ${paymentChip(p.status)}`}>{translatePayment(p.status)}</span></td>

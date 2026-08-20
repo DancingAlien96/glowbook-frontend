@@ -6,7 +6,7 @@ import { useApi } from "../../_lib/useFetch";
 import { useAuth } from "../../_lib/auth";
 import { LoadingBlock, ErrorBlock } from "../../_components/dashboard/States";
 import BlocksManager from "../../_components/dashboard/BlocksManager";
-import { money, formatDate, formatTime, initials } from "../../_lib/format";
+import { money, formatDate, formatTime, initials, serviceNames } from "../../_lib/format";
 import { statusChip, statusDot, translateStatus } from "../../_lib/status";
 import type { Appointment, AppointmentStatus, BlockedSlot, Service, Stylist } from "../../_lib/types";
 
@@ -246,7 +246,7 @@ export default function AppointmentsPage() {
                         key={a.id}
                         onClick={() => setDayOpen(date)}
                         className={`w-full text-left rounded-md px-1.5 py-1 flex items-center gap-1 ${toneByStylist[a.stylist?.id ?? ""] ?? "bg-mauve-900/5 text-mauve-900"} hover:brightness-95 transition ${a.status === "CANCELLED" ? "opacity-50 line-through" : ""}`}
-                        title={`${formatTime(a.startAt)} · ${a.client.name} · ${a.service.name} · ${translateStatus(a.status)}`}
+                        title={`${formatTime(a.startAt)} · ${a.client.name} · ${serviceNames(a)} · ${translateStatus(a.status)}`}
                       >
                         <span className={`shrink-0 h-1.5 w-1.5 rounded-full ${statusDot(a.status)}`} />
                         <span className="text-[10px] font-medium tabular-nums shrink-0 hidden sm:inline">{formatTime(a.startAt)}</span>
@@ -413,8 +413,10 @@ function ApptModal({
 
         {/* Service hero */}
         <div className="mt-5 rounded-2xl bg-cream-soft border border-line p-4">
-          <div className="text-[11px] uppercase tracking-wider text-mauve-400">Servicio</div>
-          <div className="font-serif text-lg text-mauve-900 mt-0.5">{appt.service.name}</div>
+          <div className="text-[11px] uppercase tracking-wider text-mauve-400">
+            {appt.services.length > 1 ? "Servicios" : "Servicio"}
+          </div>
+          <div className="font-serif text-lg text-mauve-900 mt-0.5">{serviceNames(appt)}</div>
         </div>
 
         {/* Details grid */}
@@ -543,7 +545,7 @@ function NewAppointmentModal({
   const today = new Date();
   const defaultDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
-  const [serviceId, setServiceId] = useState<string>("");
+  const [serviceIds, setServiceIds] = useState<string[]>([]);
   const [stylistId, setStylistId] = useState<string>("");
   const [date, setDate] = useState<string>(defaultDate);
   const [time, setTime] = useState<string>("10:00");
@@ -554,21 +556,28 @@ function NewAppointmentModal({
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  const selectedService = services.find((s) => s.id === serviceId);
+  const toggleService = (id: string) =>
+    setServiceIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
 
-  // If the chosen service is restricted to specific stylists, only show those.
+  const selectedServices = services.filter((s) => serviceIds.includes(s.id));
+  const totalDurationMin = selectedServices.reduce((sum, s) => sum + s.durationMin, 0);
+
+  // If any chosen service is restricted to specific stylists, only show
+  // stylists eligible for ALL chosen services — she has to do the whole visit.
   const eligibleStylists = useMemo(() => {
-    if (!selectedService?.stylists?.length) return stylists;
-    const ids = new Set(selectedService.stylists.map((x) => x.stylistId));
-    return stylists.filter((s) => ids.has(s.id));
-  }, [selectedService, stylists]);
+    const restricted = selectedServices.filter((s) => s.stylists?.length);
+    if (restricted.length === 0) return stylists;
+    return stylists.filter((st) =>
+      restricted.every((s) => s.stylists!.some((x) => x.stylistId === st.id))
+    );
+  }, [selectedServices, stylists]);
 
   // The owner must give us at least one stable identifier (email or phone)
   // — otherwise we can't dedup the client across visits. Name alone leads
   // to "Maria García" / "Maria Garcia" duplicates.
   const hasIdentifier = email.trim().length > 0 || phone.trim().length >= 5;
   const canSubmit =
-    serviceId && date && /^\d{2}:\d{2}$/.test(time) &&
+    serviceIds.length > 0 && date && /^\d{2}:\d{2}$/.test(time) &&
     name.trim().length >= 2 && hasIdentifier && !submitting;
 
   const submit = async (e: React.FormEvent) => {
@@ -585,7 +594,7 @@ function NewAppointmentModal({
       await api("/appointments", {
         method: "POST",
         body: {
-          serviceId,
+          serviceIds,
           stylistId: stylistId || null,
           startAt: start.toISOString(),
           notes: notes.trim() || null,
@@ -623,22 +632,32 @@ function NewAppointmentModal({
 
         <div className="mt-5 space-y-3.5">
           <div>
-            <label className="text-[11px] uppercase tracking-wider text-mauve-400">Servicio *</label>
-            <select
-              required
-              value={serviceId}
-              onChange={(e) => setServiceId(e.target.value)}
-              className="mt-1 w-full h-11 rounded-xl border border-line bg-cream px-3 text-sm text-mauve-900"
-            >
-              <option value="">Selecciona un servicio</option>
-              {services.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} · {s.durationMin} min
-                </option>
-              ))}
-            </select>
+            <label className="text-[11px] uppercase tracking-wider text-mauve-400">Servicios * (puedes elegir varios)</label>
+            <div className="mt-1.5 space-y-1.5 max-h-48 overflow-y-auto rounded-xl border border-line p-2">
+              {services.map((s) => {
+                const checked = serviceIds.includes(s.id);
+                return (
+                  <label
+                    key={s.id}
+                    className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 cursor-pointer transition ${checked ? "bg-cream-soft" : "hover:bg-mauve-900/[0.03]"}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleService(s.id)}
+                      className="h-4 w-4 rounded accent-mauve-900"
+                    />
+                    <span className="text-sm text-mauve-900 flex-1">{s.name}</span>
+                    <span className="text-[11px] text-mauve-400">{s.durationMin} min</span>
+                  </label>
+                );
+              })}
+            </div>
             {services.length === 0 && (
               <p className="text-[11px] text-blush-500 mt-1">No hay servicios activos. Crea uno en la sección Servicios.</p>
+            )}
+            {selectedServices.length > 0 && (
+              <p className="text-[11px] text-mauve-500 mt-1.5">Duración total: {totalDurationMin} min</p>
             )}
           </div>
 
@@ -854,7 +873,7 @@ function AppointmentRow({
           <span className={`shrink-0 h-2 w-2 rounded-full ${statusDot(appt.status)}`} />
           <span className="text-sm font-medium text-mauve-900 truncate">{appt.client.name}</span>
         </div>
-        <div className="text-xs text-mauve-600 mt-0.5 truncate">{appt.service.name}</div>
+        <div className="text-xs text-mauve-600 mt-0.5 truncate">{serviceNames(appt)}</div>
         <div className="mt-1 flex items-center gap-2 flex-wrap">
           {appt.stylist && (
             <span className={`text-[10px] px-1.5 py-0.5 rounded ${tone ?? "bg-mauve-900/5 text-mauve-700"}`}>
@@ -893,7 +912,11 @@ function EditAppointmentModal({
   const defaultDate = `${original.getFullYear()}-${pad(original.getMonth() + 1)}-${pad(original.getDate())}`;
   const defaultTime = `${pad(original.getHours())}:${pad(original.getMinutes())}`;
 
-  const [serviceId, setServiceId] = useState<string>(appt.service.id);
+  const originalServiceIds = useMemo(
+    () => appt.services.map((s) => s.service.id).sort(),
+    [appt.services]
+  );
+  const [serviceIds, setServiceIds] = useState<string[]>(originalServiceIds);
   const [stylistId, setStylistId] = useState<string>(appt.stylist?.id ?? "");
   const [date, setDate] = useState<string>(defaultDate);
   const [time, setTime] = useState<string>(defaultTime);
@@ -901,23 +924,33 @@ function EditAppointmentModal({
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  const selectedService = services.find((s) => s.id === serviceId);
+  const toggleService = (id: string) =>
+    setServiceIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+
+  const selectedServices = services.filter((s) => serviceIds.includes(s.id));
+  const totalDurationMin = selectedServices.reduce((sum, s) => sum + s.durationMin, 0);
   const eligibleStylists = useMemo(() => {
-    if (!selectedService?.stylists?.length) return stylists;
-    const ids = new Set(selectedService.stylists.map((x) => x.stylistId));
-    return stylists.filter((s) => ids.has(s.id));
-  }, [selectedService, stylists]);
+    const restricted = selectedServices.filter((s) => s.stylists?.length);
+    if (restricted.length === 0) return stylists;
+    return stylists.filter((st) =>
+      restricted.every((s) => s.stylists!.some((x) => x.stylistId === st.id))
+    );
+  }, [selectedServices, stylists]);
+
+  const servicesChanged =
+    serviceIds.length !== originalServiceIds.length ||
+    [...serviceIds].sort().some((id, i) => id !== originalServiceIds[i]);
 
   // Only enable save when something actually changed — keeps the dueña from
   // hitting "Guardar" when she opened the modal by mistake.
   const dirty =
-    serviceId !== appt.service.id ||
+    servicesChanged ||
     stylistId !== (appt.stylist?.id ?? "") ||
     date !== defaultDate ||
     time !== defaultTime ||
     (notes ?? "") !== (appt.notes ?? "");
 
-  const canSubmit = dirty && serviceId && date && /^\d{2}:\d{2}$/.test(time) && !submitting;
+  const canSubmit = dirty && serviceIds.length > 0 && date && /^\d{2}:\d{2}$/.test(time) && !submitting;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -934,7 +967,7 @@ function EditAppointmentModal({
         startAt: start.toISOString(),
         notes: notes.trim() || null,
       };
-      if (serviceId !== appt.service.id) body.serviceId = serviceId;
+      if (servicesChanged) body.serviceIds = serviceIds;
       if (stylistId !== (appt.stylist?.id ?? "")) body.stylistId = stylistId || null;
 
       await api(`/appointments/${appt.id}`, { method: "PATCH", body });
@@ -957,7 +990,7 @@ function EditAppointmentModal({
             <div className="text-xs text-mauve-400">Reprogramar</div>
             <h2 className="font-serif text-2xl text-mauve-900 leading-tight">Editar cita</h2>
             <p className="text-xs text-mauve-500 mt-1">
-              {appt.client.name} · {appt.service.name}
+              {appt.client.name} · {serviceNames(appt)}
             </p>
           </div>
           <button type="button" onClick={onClose} className="h-9 w-9 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-700 hover:bg-mauve-900/10 shrink-0">
@@ -967,19 +1000,30 @@ function EditAppointmentModal({
 
         <div className="mt-5 space-y-3.5">
           <div>
-            <label className="text-[11px] uppercase tracking-wider text-mauve-400">Servicio</label>
-            <select
-              required
-              value={serviceId}
-              onChange={(e) => setServiceId(e.target.value)}
-              className="mt-1 w-full h-11 rounded-xl border border-line bg-cream px-3 text-sm text-mauve-900"
-            >
-              {services.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} · {s.durationMin} min
-                </option>
-              ))}
-            </select>
+            <label className="text-[11px] uppercase tracking-wider text-mauve-400">Servicios (puedes elegir varios)</label>
+            <div className="mt-1.5 space-y-1.5 max-h-48 overflow-y-auto rounded-xl border border-line p-2">
+              {services.map((s) => {
+                const checked = serviceIds.includes(s.id);
+                return (
+                  <label
+                    key={s.id}
+                    className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 cursor-pointer transition ${checked ? "bg-cream-soft" : "hover:bg-mauve-900/[0.03]"}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleService(s.id)}
+                      className="h-4 w-4 rounded accent-mauve-900"
+                    />
+                    <span className="text-sm text-mauve-900 flex-1">{s.name}</span>
+                    <span className="text-[11px] text-mauve-400">{s.durationMin} min</span>
+                  </label>
+                );
+              })}
+            </div>
+            {selectedServices.length > 0 && (
+              <p className="text-[11px] text-mauve-500 mt-1.5">Duración total: {totalDurationMin} min</p>
+            )}
           </div>
 
           <div>

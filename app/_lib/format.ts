@@ -49,3 +49,7 @@ export const formatDate = (iso: string | Date): string =>
 
 export const formatTime = (iso: string | Date): string =>
   timeOnly.format(typeof iso === "string" ? new Date(iso) : iso);
+
+/** "Corte, Color" — joins the service names of an appointment for display. */
+export const serviceNames = (appt: { services: { service: { name: string } }[] }): string =>
+  appt.services.map((s) => s.service.name).join(", ");
