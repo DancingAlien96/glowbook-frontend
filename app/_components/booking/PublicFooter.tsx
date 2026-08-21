@@ -15,10 +15,12 @@ export default function PublicFooter({
   const hasContact = !!(salon.address || salon.contactPhone || salon.contactEmail);
   const year = new Date().getFullYear();
 
+  const topServices = salon.services.slice(0, 5);
+
   return (
     <footer className="mt-16 md:mt-20 border-t border-line pt-10 md:pt-14 pb-8">
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-        <div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
+        <div className="sm:col-span-2 lg:col-span-1">
           <div className="flex items-center gap-2">
             <div
               className="h-9 w-9 rounded-full grid place-items-center text-cream font-serif text-sm"
@@ -63,6 +65,17 @@ export default function PublicFooter({
             </li>
           </ul>
         </div>
+
+        {topServices.length > 0 && (
+          <div>
+            <h4 className="text-xs uppercase tracking-wider text-mauve-400 mb-3">Servicios</h4>
+            <ul className="space-y-2">
+              {topServices.map((s) => (
+                <li key={s.id} className="text-sm text-mauve-600">{s.name}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {hasContact && (
           <div>

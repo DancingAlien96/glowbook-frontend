@@ -7,12 +7,14 @@ import { api, ApiError } from "../../_lib/api";
 import { useApi } from "../../_lib/useFetch";
 import { useUploadThing } from "../../_lib/uploadthing";
 import { optimizeImage, formatBytes } from "../../_lib/imageOptimize";
-import { money, initials } from "../../_lib/format";
+import { money } from "../../_lib/format";
 import { safeHttpUrl } from "../../_lib/safeUrl";
 import type { PublicSalon } from "../../_lib/publicSalon";
 import { LoadingBlock, ErrorBlock } from "../dashboard/States";
 import ShareSalonModal from "./ShareSalonModal";
 import PublicNavbar from "./PublicNavbar";
+import HeroSection from "./HeroSection";
+import ServicesSection from "./ServicesSection";
 import TeamSection from "./TeamSection";
 import TestimonialsSection from "./TestimonialsSection";
 import ContactSection from "./ContactSection";
@@ -266,6 +268,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
   const hasAbout = !!(salon.aboutText || instagramUrl || facebookUrl || salon.whatsappContact);
   const hasContact = !!(salon.address || salon.contactPhone || salon.contactEmail || instagramUrl || facebookUrl);
   const navSections = [
+    salon.services.length > 0 && { id: "servicios", label: "Servicios" },
     hasAbout && { id: "nosotros", label: "Nosotros" },
     salon.photos.length > 0 && { id: "galeria", label: "Galería" },
     salon.stylists.length > 0 && { id: "equipo", label: "Equipo" },
@@ -277,77 +280,11 @@ function Flow({ salon }: { salon: PublicSalon }) {
     <div className="min-h-screen bg-aurora-soft" style={brandVars}>
       <PublicNavbar salon={salon} sections={navSections} onShare={() => setShareOpen(true)} />
 
-      <div className="container-tight pt-24 pb-10">
-      {/* Salon hero */}
-      <div id="inicio" className="scroll-mt-24">
-      {salon.coverImageUrl ? (
-        <div className="relative max-w-5xl mx-auto mb-8 rounded-[2rem] overflow-hidden border border-line shadow-[var(--shadow-soft)]">
-          <div
-            className="aspect-[4/3] sm:aspect-[16/7] lg:aspect-[21/8] bg-mauve-900/10"
-            style={{ backgroundImage: `url(${salon.coverImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-mauve-900/85 via-mauve-900/30 to-transparent" />
+      <HeroSection salon={salon} onShare={() => setShareOpen(true)} />
 
-          {/* Floating share button — top-right of the hero */}
-          <button
-            type="button"
-            onClick={() => setShareOpen(true)}
-            aria-label="Compartir este salón"
-            className="absolute top-3 right-3 sm:top-4 sm:right-4 h-10 px-3 sm:px-4 rounded-full bg-cream/90 backdrop-blur text-mauve-900 text-xs font-medium inline-flex items-center gap-1.5 hover:bg-cream transition shadow-[var(--shadow-soft)]"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>
-            Compartir
-          </button>
+      <div className="container-tight pt-10 pb-10">
 
-          <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8 flex items-end gap-4">
-            <div
-              className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl grid place-items-center text-cream font-serif text-2xl ring-2 ring-cream/40 shrink-0"
-              style={{ backgroundColor: salon.brandColor }}
-            >
-              {initials(salon.name)}
-            </div>
-            <div className="text-cream min-w-0">
-              <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-cream/80">Reservar en</div>
-              <h1 className="font-serif text-2xl sm:text-4xl leading-tight break-words">{salon.name}</h1>
-              {salon.tagline && (
-                <p className="text-cream/90 text-sm sm:text-base mt-1 max-w-xl text-pretty">{salon.tagline}</p>
-              )}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="text-center max-w-2xl mx-auto mb-10 relative">
-          {/* Share button — top-right corner, same affordance as the cover hero */}
-          <button
-            type="button"
-            onClick={() => setShareOpen(true)}
-            aria-label="Compartir este salón"
-            className="absolute top-0 right-0 h-9 px-3 rounded-full bg-mauve-900/5 text-mauve-700 hover:bg-mauve-900/10 text-xs font-medium inline-flex items-center gap-1.5 transition"
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>
-            Compartir
-          </button>
-
-          <div className="inline-flex items-center gap-3">
-            <div
-              className="h-14 w-14 rounded-2xl grid place-items-center text-cream font-serif text-2xl"
-              style={{ backgroundColor: salon.brandColor }}
-            >
-              {initials(salon.name)}
-            </div>
-            <div className="text-left">
-              <div className="text-[11px] uppercase tracking-wider text-mauve-400">Reservar en</div>
-              <h1 className="font-serif text-2xl text-mauve-900 leading-tight break-words">{salon.name}</h1>
-              {salon.tagline && <p className="text-mauve-600 text-sm mt-0.5">{salon.tagline}</p>}
-            </div>
-          </div>
-          {salon.description && <p className="mt-4 text-mauve-600 text-pretty">{salon.description}</p>}
-        </div>
-      )}
-      {salon.coverImageUrl && salon.description && (
-        <p className="text-center max-w-2xl mx-auto mb-8 text-mauve-600 text-pretty">{salon.description}</p>
-      )}
-      </div>
+      <ServicesSection salon={salon} />
 
       {/* Landing content — gallery + "quiénes somos", each only rendered
           when the salon filled them in. */}
@@ -770,66 +707,101 @@ function SalonLanding({ salon }: { salon: PublicSalon }) {
 
   if (salon.photos.length === 0 && !salon.aboutText && !hasSocial) return null;
 
+  // The about portrait reuses the first gallery photo (distinct from the
+  // hero) when one exists; falls back to the cover image; omits the image
+  // column entirely rather than showing nothing next to nothing.
+  const aboutImage = salon.photos[0]?.url ?? salon.coverImageUrl ?? null;
+
   return (
     <div className="max-w-5xl mx-auto space-y-14">
+      {(salon.aboutText || hasSocial) && (
+        <div id="nosotros" className="scroll-mt-24">
+          <div className={`grid gap-10 lg:gap-16 items-center ${aboutImage ? "lg:grid-cols-2" : ""}`}>
+            {aboutImage && (
+              <div className="relative">
+                <div className="relative rounded-2xl overflow-hidden aspect-[4/5] border border-line">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={aboutImage} alt={salon.name} className="h-full w-full object-cover" />
+                </div>
+                <div className="absolute -bottom-5 -right-3 sm:right-6 bg-cream rounded-xl border border-line p-4 shadow-[var(--shadow-elevated)] max-w-[170px]">
+                  <div className="flex items-center gap-2">
+                    <div className="h-7 w-7 rounded-full grid place-items-center shrink-0" style={{ backgroundColor: "var(--brand)" }}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <p className="text-mauve-900 text-xs font-medium leading-snug">Reservas 100% en línea</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div>
+              <p className="text-xs font-medium tracking-[0.15em] uppercase mb-3" style={{ color: "var(--brand)" }}>Conócenos</p>
+              {salon.aboutText && (
+                <>
+                  <h2 className="font-serif text-3xl md:text-4xl text-mauve-900 mb-5">Quiénes somos</h2>
+                  <p className="text-mauve-600 leading-relaxed text-pretty whitespace-pre-wrap">{salon.aboutText}</p>
+                </>
+              )}
+              {hasSocial && (
+                <div className="flex flex-wrap gap-2 mt-6">
+                  {instagramUrl && (
+                    <a href={instagramUrl} target="_blank" rel="noreferrer" className="btn btn-ghost h-10 text-sm">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" stroke="none"/></svg>
+                      Instagram
+                    </a>
+                  )}
+                  {facebookUrl && (
+                    <a href={facebookUrl} target="_blank" rel="noreferrer" className="btn btn-ghost h-10 text-sm">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+                      Facebook
+                    </a>
+                  )}
+                  {salon.whatsappContact && (
+                    <a
+                      href={`https://wa.me/${salon.whatsappContact.replace(/\D/g, "")}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-ghost h-10 text-sm"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.2-.7.2s-.8 1-.9 1.2c-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.1-.2.1-.3 0-.5l-.7-1.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3.9 2.5c.1.2 1.7 2.6 4.1 3.6 2 .9 2 .6 2.4.6.4 0 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1z"/></svg>
+                      WhatsApp
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {salon.photos.length > 0 && (
         <div id="galeria" className="scroll-mt-24">
-          <h2 className="font-serif text-2xl text-mauve-900 text-center">Nuestro trabajo</h2>
-          <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="text-center max-w-xl mx-auto mb-8">
+            <p className="text-xs font-medium tracking-[0.2em] uppercase mb-2" style={{ color: "var(--brand)" }}>Portafolio</p>
+            <h2 className="font-serif text-3xl md:text-4xl text-mauve-900">Nuestro trabajo</h2>
+          </div>
+          <div className="columns-2 sm:columns-3 gap-3 space-y-3">
             {salon.photos.map((photo, i) => (
               <button
                 key={photo.id}
                 type="button"
                 onClick={() => setLightbox(i)}
-                className="aspect-square rounded-2xl overflow-hidden border border-line group"
+                className="break-inside-avoid w-full block relative rounded-2xl overflow-hidden border border-line group"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={photo.url}
                   alt={photo.caption ?? salon.name}
-                  className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
+                {photo.caption && (
+                  <div className="absolute inset-0 bg-gradient-to-t from-mauve-900/70 via-mauve-900/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+                    <span className="text-cream text-xs font-medium text-left">{photo.caption}</span>
+                  </div>
+                )}
               </button>
             ))}
           </div>
-        </div>
-      )}
-
-      {(salon.aboutText || hasSocial) && (
-        <div id="nosotros" className="scroll-mt-24 grid sm:grid-cols-[1fr_auto] gap-6 items-start">
-          {salon.aboutText && (
-            <div>
-              <h2 className="font-serif text-2xl text-mauve-900">Quiénes somos</h2>
-              <p className="mt-3 text-mauve-600 leading-relaxed text-pretty whitespace-pre-wrap">{salon.aboutText}</p>
-            </div>
-          )}
-          {hasSocial && (
-            <div className="flex sm:flex-col gap-2 sm:pt-11">
-              {instagramUrl && (
-                <a href={instagramUrl} target="_blank" rel="noreferrer" className="btn btn-ghost h-10 text-sm justify-start">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" stroke="none"/></svg>
-                  Instagram
-                </a>
-              )}
-              {facebookUrl && (
-                <a href={facebookUrl} target="_blank" rel="noreferrer" className="btn btn-ghost h-10 text-sm justify-start">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
-                  Facebook
-                </a>
-              )}
-              {salon.whatsappContact && (
-                <a
-                  href={`https://wa.me/${salon.whatsappContact.replace(/\D/g, "")}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn btn-ghost h-10 text-sm justify-start"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.2-.7.2s-.8 1-.9 1.2c-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.1-.2.1-.3 0-.5l-.7-1.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3.9 2.5c.1.2 1.7 2.6 4.1 3.6 2 .9 2 .6 2.4.6.4 0 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1z"/></svg>
-                  WhatsApp
-                </a>
-              )}
-            </div>
-          )}
         </div>
       )}
 
@@ -860,6 +832,8 @@ function SalonLanding({ salon }: { salon: PublicSalon }) {
 
 // Sits right above the booking widget — "when are you open" naturally
 // precedes "reserve now". Only renders when at least one day has a range.
+// Includes a live open-now/closed-now banner (minute-accurate, not just
+// "does today have any hours") plus a full weekly grid highlighting today.
 function HoursBlock({ salon }: { salon: PublicSalon }) {
   const hoursByDay = WEEKDAY_LABELS.map((d) => ({
     ...d,
@@ -869,20 +843,72 @@ function HoursBlock({ salon }: { salon: PublicSalon }) {
   }));
   if (!hoursByDay.some((d) => d.ranges.length > 0)) return null;
 
+  const now = new Date();
+  const nowDow = now.getDay();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const today = hoursByDay.find((d) => d.dow === nowDow)!;
+  const isOpenNow = today.ranges.some((r) => nowMin >= r.openMin && nowMin < r.closeMin);
+  const nextRangeToday = today.ranges.find((r) => nowMin < r.openMin);
+
   return (
-    <div className="max-w-sm mx-auto mb-10">
-      <h2 className="font-serif text-2xl text-mauve-900 text-center mb-5">Horario de atención</h2>
-      <div className="rounded-2xl border border-line bg-ivory divide-y divide-line">
-        {hoursByDay.map((d) => (
-          <div key={d.dow} className="flex items-center justify-between px-4 py-2.5 text-sm">
-            <span className="text-mauve-600">{d.label}</span>
-            <span className={d.ranges.length > 0 ? "text-mauve-900 font-medium" : "text-mauve-400"}>
-              {d.ranges.length > 0
-                ? d.ranges.map((r) => `${toTimeLabel(r.openMin)}–${toTimeLabel(r.closeMin)}`).join(", ")
-                : "Cerrado"}
-            </span>
+    <div className="max-w-4xl mx-auto mb-10">
+      {/* Open now / closed now banner */}
+      <div
+        className={`rounded-2xl border p-4 sm:p-5 mb-6 flex flex-col sm:flex-row items-center justify-between gap-3 ${
+          isOpenNow ? "bg-emerald-50 border-emerald-200/70" : "bg-blush-100/40 border-blush-300/30"
+        }`}
+      >
+        <div className="flex items-center gap-3">
+          <div className={`h-10 w-10 rounded-full grid place-items-center shrink-0 ${isOpenNow ? "bg-emerald-100" : "bg-blush-100"}`}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={isOpenNow ? "text-emerald-600" : "text-blush-500"}>
+              <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>
+            </svg>
           </div>
-        ))}
+          <div>
+            <p className={`text-sm font-semibold ${isOpenNow ? "text-emerald-700" : "text-blush-500"}`}>
+              {isOpenNow
+                ? `Hoy ${today.label} — abierto hasta ${toTimeLabel(today.ranges.find((r) => nowMin >= r.openMin && nowMin < r.closeMin)!.closeMin)}`
+                : nextRangeToday
+                ? `Hoy ${today.label} — abrimos a las ${toTimeLabel(nextRangeToday.openMin)}`
+                : `Hoy ${today.label} — cerrado`}
+            </p>
+            <p className="text-mauve-400 text-xs mt-0.5">Agenda tu cita para hoy o cualquier día de la semana</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className={`h-2.5 w-2.5 rounded-full ${isOpenNow ? "bg-emerald-500 animate-pulse" : "bg-blush-400"}`} />
+          <span className={`text-xs font-medium ${isOpenNow ? "text-emerald-700" : "text-blush-500"}`}>
+            {isOpenNow ? "Abierto ahora" : "Cerrado ahora"}
+          </span>
+        </div>
+      </div>
+
+      <h2 className="font-serif text-xl text-mauve-900 text-center mb-4">Horario de atención</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+        {hoursByDay.map((d) => {
+          const isToday = d.dow === nowDow;
+          const open = d.ranges.length > 0;
+          return (
+            <div
+              key={d.dow}
+              className={`rounded-xl border p-3 text-center transition-all ${
+                isToday
+                  ? "text-cream shadow-[var(--shadow-soft)] scale-[1.04]"
+                  : open
+                  ? "bg-ivory border-line"
+                  : "bg-mauve-900/[0.02] border-line/60 opacity-70"
+              }`}
+              style={isToday ? { backgroundColor: "var(--brand)", borderColor: "var(--brand)" } : undefined}
+            >
+              <p className={`text-[10px] font-semibold uppercase tracking-wider mb-1.5 ${isToday ? "text-cream/80" : open ? "text-mauve-400" : "text-mauve-400/60"}`}>
+                {isToday ? "Hoy" : d.label.slice(0, 3)}
+              </p>
+              <p className={`text-xs font-medium leading-snug ${isToday ? "text-cream" : open ? "text-mauve-800" : "text-mauve-400 italic"}`}>
+                {open ? d.ranges.map((r) => `${toTimeLabel(r.openMin)}–${toTimeLabel(r.closeMin)}`).join(", ") : "Cerrado"}
+              </p>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
