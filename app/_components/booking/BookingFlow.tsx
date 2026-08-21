@@ -746,6 +746,20 @@ const WEEKDAY_LABELS: { dow: number; label: string }[] = [
 ];
 const toTimeLabel = (min: number) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
 
+// The backend already restricts instagramUrl/facebookUrl to http(s), but an
+// <a href> shouldn't trust a string from an API response as a rendering
+// contract — a `javascript:` URI would execute on click if it ever slipped
+// through. Belt-and-suspenders: re-validate the scheme before rendering.
+const safeHttpUrl = (url: string | null): string | null => {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" || parsed.protocol === "http:" ? url : null;
+  } catch {
+    return null;
+  }
+};
+
 // Gallery, story, hours, contact — the "landing page" parts of the public
 // salon page. Each block only renders when the salon actually filled it in,
 // so a salon that skipped all of this looks exactly like it did before.
@@ -759,7 +773,9 @@ function SalonLanding({ salon }: { salon: PublicSalon }) {
       .sort((a, b) => a.openMin - b.openMin),
   }));
   const hasHours = hoursByDay.some((d) => d.ranges.length > 0);
-  const hasSocial = !!(salon.instagramUrl || salon.facebookUrl || salon.whatsappContact);
+  const instagramUrl = safeHttpUrl(salon.instagramUrl);
+  const facebookUrl = safeHttpUrl(salon.facebookUrl);
+  const hasSocial = !!(instagramUrl || facebookUrl || salon.whatsappContact);
 
   if (salon.photos.length === 0 && !salon.aboutText && !hasHours && !hasSocial) return null;
 
@@ -798,14 +814,14 @@ function SalonLanding({ salon }: { salon: PublicSalon }) {
           )}
           {hasSocial && (
             <div className="flex sm:flex-col gap-2 sm:pt-11">
-              {salon.instagramUrl && (
-                <a href={salon.instagramUrl} target="_blank" rel="noreferrer" className="btn btn-ghost h-10 text-sm justify-start">
+              {instagramUrl && (
+                <a href={instagramUrl} target="_blank" rel="noreferrer" className="btn btn-ghost h-10 text-sm justify-start">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" stroke="none"/></svg>
                   Instagram
                 </a>
               )}
-              {salon.facebookUrl && (
-                <a href={salon.facebookUrl} target="_blank" rel="noreferrer" className="btn btn-ghost h-10 text-sm justify-start">
+              {facebookUrl && (
+                <a href={facebookUrl} target="_blank" rel="noreferrer" className="btn btn-ghost h-10 text-sm justify-start">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
                   Facebook
                 </a>
