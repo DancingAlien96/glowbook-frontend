@@ -49,6 +49,20 @@ export const ourFileRouter = {
     })),
 
   /**
+   * Work-portfolio gallery on the public page. Multiple files per upload —
+   * same "URL only matters once saved via an authenticated endpoint" model
+   * as coverUploader, this time via POST /api/salon/me/photos.
+   */
+  galleryUploader: f({ image: { maxFileSize: "8MB", maxFileCount: 10 } })
+    .middleware(async () => ({}))
+    .onUploadComplete(async ({ file }) => ({
+      url: file.ufsUrl,
+      name: file.name,
+      size: file.size,
+      key: file.key,
+    })),
+
+  /**
    * Subscription receipts — salon owners pay the platform fee by transfer
    * and upload the comprobante here. The URL is then registered with the
    * authenticated POST /api/subscription/me/receipts endpoint.

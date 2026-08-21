@@ -23,6 +23,11 @@ type PublicSalon = {
   depositMode: "NONE" | "PERCENTAGE" | "FULL";
   depositPercent: number;
   bankDetails: string | null;
+  aboutText: string | null;
+  instagramUrl: string | null;
+  facebookUrl: string | null;
+  whatsappContact: string | null;
+  photos: { id: string; url: string; caption: string | null }[];
   services: {
     id: string;
     name: string;
@@ -347,6 +352,11 @@ function Flow({ salon }: { salon: PublicSalon }) {
       {salon.coverImageUrl && salon.description && (
         <p className="text-center max-w-2xl mx-auto mb-8 text-mauve-600 text-pretty">{salon.description}</p>
       )}
+
+      {/* Landing content — gallery, story, hours, contact. Sits between the
+          hero and the booking stepper so a first-time visitor gets sold on
+          the salon before being asked to commit to a slot. */}
+      <SalonLanding salon={salon} />
 
       <ol className="mx-auto max-w-3xl mb-8 grid grid-cols-5 gap-1.5">
         {STEPS.map((s, i) => {
@@ -722,6 +732,140 @@ function Flow({ salon }: { salon: PublicSalon }) {
         />
       )}
     </FlowShell>
+  );
+}
+
+const WEEKDAY_LABELS: { dow: number; label: string }[] = [
+  { dow: 1, label: "Lunes" },
+  { dow: 2, label: "Martes" },
+  { dow: 3, label: "Miércoles" },
+  { dow: 4, label: "Jueves" },
+  { dow: 5, label: "Viernes" },
+  { dow: 6, label: "Sábado" },
+  { dow: 0, label: "Domingo" },
+];
+const toTimeLabel = (min: number) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+
+// Gallery, story, hours, contact — the "landing page" parts of the public
+// salon page. Each block only renders when the salon actually filled it in,
+// so a salon that skipped all of this looks exactly like it did before.
+function SalonLanding({ salon }: { salon: PublicSalon }) {
+  const [lightbox, setLightbox] = useState<number | null>(null);
+
+  const hoursByDay = WEEKDAY_LABELS.map((d) => ({
+    ...d,
+    ranges: salon.businessHours
+      .filter((h) => h.dayOfWeek === d.dow)
+      .sort((a, b) => a.openMin - b.openMin),
+  }));
+  const hasHours = hoursByDay.some((d) => d.ranges.length > 0);
+  const hasSocial = !!(salon.instagramUrl || salon.facebookUrl || salon.whatsappContact);
+
+  if (salon.photos.length === 0 && !salon.aboutText && !hasHours && !hasSocial) return null;
+
+  return (
+    <div className="max-w-5xl mx-auto mb-10 space-y-10">
+      {salon.photos.length > 0 && (
+        <div>
+          <h2 className="font-serif text-2xl text-mauve-900 text-center">Nuestro trabajo</h2>
+          <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {salon.photos.map((photo, i) => (
+              <button
+                key={photo.id}
+                type="button"
+                onClick={() => setLightbox(i)}
+                className="aspect-square rounded-2xl overflow-hidden border border-line group"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photo.url}
+                  alt={photo.caption ?? salon.name}
+                  className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {(salon.aboutText || hasSocial) && (
+        <div className="grid sm:grid-cols-[1fr_auto] gap-6 items-start">
+          {salon.aboutText && (
+            <div>
+              <h2 className="font-serif text-2xl text-mauve-900">Quiénes somos</h2>
+              <p className="mt-3 text-mauve-600 leading-relaxed text-pretty whitespace-pre-wrap">{salon.aboutText}</p>
+            </div>
+          )}
+          {hasSocial && (
+            <div className="flex sm:flex-col gap-2 sm:pt-11">
+              {salon.instagramUrl && (
+                <a href={salon.instagramUrl} target="_blank" rel="noreferrer" className="btn btn-ghost h-10 text-sm justify-start">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" stroke="none"/></svg>
+                  Instagram
+                </a>
+              )}
+              {salon.facebookUrl && (
+                <a href={salon.facebookUrl} target="_blank" rel="noreferrer" className="btn btn-ghost h-10 text-sm justify-start">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+                  Facebook
+                </a>
+              )}
+              {salon.whatsappContact && (
+                <a
+                  href={`https://wa.me/${salon.whatsappContact.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-ghost h-10 text-sm justify-start"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.2-.7.2s-.8 1-.9 1.2c-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.1-.2.1-.3 0-.5l-.7-1.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.3.9 2.5c.1.2 1.7 2.6 4.1 3.6 2 .9 2 .6 2.4.6.4 0 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1z"/></svg>
+                  WhatsApp
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {hasHours && (
+        <div>
+          <h2 className="font-serif text-2xl text-mauve-900 text-center">Horario de atención</h2>
+          <div className="mt-5 max-w-sm mx-auto rounded-2xl border border-line bg-ivory divide-y divide-line">
+            {hoursByDay.map((d) => (
+              <div key={d.dow} className="flex items-center justify-between px-4 py-2.5 text-sm">
+                <span className="text-mauve-600">{d.label}</span>
+                <span className={d.ranges.length > 0 ? "text-mauve-900 font-medium" : "text-mauve-400"}>
+                  {d.ranges.length > 0
+                    ? d.ranges.map((r) => `${toTimeLabel(r.openMin)}–${toTimeLabel(r.closeMin)}`).join(", ")
+                    : "Cerrado"}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {lightbox !== null && salon.photos[lightbox] && (
+        <div
+          className="fixed inset-0 z-[70] bg-mauve-900/90 backdrop-blur-sm grid place-items-center p-4"
+          onClick={() => setLightbox(null)}
+        >
+          <button
+            onClick={() => setLightbox(null)}
+            className="absolute top-4 right-4 h-10 w-10 rounded-full bg-cream/10 text-cream grid place-items-center hover:bg-cream/20 transition"
+            aria-label="Cerrar"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={salon.photos[lightbox]!.url}
+            alt={salon.photos[lightbox]!.caption ?? salon.name}
+            className="max-h-[85vh] max-w-full rounded-xl object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+    </div>
   );
 }
 

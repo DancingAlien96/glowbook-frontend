@@ -54,7 +54,18 @@ export interface Salon {
   depositPercent: number;
   approvalMode: ApprovalMode;
   bankDetails: string | null;
+  aboutText: string | null;
+  instagramUrl: string | null;
+  facebookUrl: string | null;
+  whatsappContact: string | null;
   businessHours?: BusinessHour[];
+  photos?: SalonPhoto[];
+}
+
+export interface SalonPhoto {
+  id: string;
+  url: string;
+  caption: string | null;
 }
 
 export interface BusinessHour {

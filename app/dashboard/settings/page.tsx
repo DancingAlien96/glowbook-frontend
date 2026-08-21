@@ -14,7 +14,7 @@ import { startOnboarding } from "../../_lib/onboardingTour";
 import { SUPPORT_MESSAGES, SUPPORT_WHATSAPP_DISPLAY, whatsappHref } from "../../_lib/support";
 import { initials } from "../../_lib/format";
 import { withCurrency, withTimezone } from "../../_lib/locales";
-import type { DepositMode, Salon } from "../../_lib/types";
+import type { DepositMode, Salon, SalonPhoto } from "../../_lib/types";
 
 const COLOR_SWATCHES = [
   { name: "Coral", hex: "#E59078" },
@@ -95,6 +95,60 @@ export default function SettingsPage() {
     }
   };
 
+  // Portfolio gallery — same UploadThing-then-save pattern as the cover,
+  // but multiple files and each one persisted as its own SalonPhoto row.
+  const [galleryError, setGalleryError] = useState<string | null>(null);
+  const [optimizingGallery, setOptimizingGallery] = useState(false);
+  const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null);
+  const { startUpload: startGalleryUpload, isUploading: isUploadingGallery } = useUploadThing("galleryUploader", {
+    onUploadError: (e) => setGalleryError(e.message || "No pudimos subir las fotos."),
+  });
+
+  const onPickGalleryPhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (picked.length === 0) return;
+    setGalleryError(null);
+
+    const existing = data?.salon.photos?.length ?? 0;
+    const room = 24 - existing;
+    if (room <= 0) {
+      setGalleryError("Ya alcanzaste el máximo de 24 fotos en la galería.");
+      return;
+    }
+    const toUpload = picked.slice(0, room);
+
+    setOptimizingGallery(true);
+    const optimized = await Promise.all(
+      toUpload.map((f) => optimizeImage(f, { maxMB: 3, maxDim: 2000 }))
+    );
+    setOptimizingGallery(false);
+
+    const uploaded = await startGalleryUpload(optimized.map((o) => o.file));
+    if (!uploaded) return;
+    try {
+      for (const file of uploaded) {
+        await api("/salon/me/photos", { method: "POST", body: { url: file.ufsUrl } });
+      }
+      await refetch();
+    } catch (err) {
+      setGalleryError(err instanceof ApiError ? err.message : "Error al guardar las fotos.");
+    }
+  };
+
+  const onDeletePhoto = async (photo: SalonPhoto) => {
+    if (!confirm("¿Quitar esta foto de la galería?")) return;
+    setDeletingPhotoId(photo.id);
+    try {
+      await api(`/salon/me/photos/${photo.id}`, { method: "DELETE" });
+      await refetch();
+    } catch (err) {
+      setGalleryError(err instanceof ApiError ? err.message : "No pudimos quitar la foto.");
+    } finally {
+      setDeletingPhotoId(null);
+    }
+  };
+
   const onSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -113,6 +167,10 @@ export default function SettingsPage() {
           depositPercent: form.depositPercent,
           approvalMode: form.approvalMode,
           bankDetails: form.bankDetails,
+          aboutText: form.aboutText ?? null,
+          instagramUrl: form.instagramUrl || null,
+          facebookUrl: form.facebookUrl || null,
+          whatsappContact: form.whatsappContact || null,
         },
       });
       await refetch();
@@ -262,6 +320,126 @@ export default function SettingsPage() {
                 placeholder="#CE6850"
               />
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="card-surface p-6">
+        <div>
+          <h2 className="font-serif text-xl text-mauve-900">Galería de trabajos</h2>
+          <p className="text-sm text-mauve-600 mt-1">
+            Fotos que muestran tu trabajo en tu página pública — lo que más convence a una clienta nueva. Hasta 24 fotos.
+          </p>
+        </div>
+
+        {(data?.salon.photos?.length ?? 0) > 0 && (
+          <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {data!.salon.photos!.map((photo) => (
+              <div key={photo.id} className="relative aspect-square rounded-xl overflow-hidden border border-line bg-cream-soft group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photo.url} alt={photo.caption ?? ""} className="h-full w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => onDeletePhoto(photo)}
+                  disabled={deletingPhotoId === photo.id}
+                  className="absolute top-2 right-2 h-8 w-8 grid place-items-center rounded-full bg-mauve-900/60 text-cream backdrop-blur-sm opacity-0 group-hover:opacity-100 transition disabled:opacity-100"
+                  title="Quitar foto"
+                >
+                  {deletingPhotoId === photo.id ? (
+                    <span className="h-3 w-3 rounded-full border-2 border-cream/40 border-t-cream animate-spin" />
+                  ) : (
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <label className="btn btn-ghost h-10 text-sm cursor-pointer">
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={onPickGalleryPhotos}
+              disabled={isUploadingGallery || optimizingGallery}
+            />
+            {optimizingGallery ? (
+              <>
+                <span className="h-3 w-3 rounded-full border-2 border-mauve-900/30 border-t-mauve-900 animate-spin" />
+                Optimizando…
+              </>
+            ) : isUploadingGallery ? (
+              <>
+                <span className="h-3 w-3 rounded-full border-2 border-mauve-900/30 border-t-mauve-900 animate-spin" />
+                Subiendo…
+              </>
+            ) : (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                Agregar fotos
+              </>
+            )}
+          </label>
+          <span className="text-xs text-mauve-400">Puedes elegir varias a la vez · JPG o PNG</span>
+        </div>
+
+        {galleryError && (
+          <div className="mt-3 text-sm text-blush-500 bg-blush-100/60 border border-blush-300/30 rounded-xl px-3 py-2.5">
+            {galleryError}
+          </div>
+        )}
+      </section>
+
+      <section className="card-surface p-6">
+        <h2 className="font-serif text-xl text-mauve-900">Quiénes somos</h2>
+        <p className="text-sm text-mauve-600 mt-1">Cuenta la historia o filosofía de tu salón — aparece en tu página pública, debajo de la galería.</p>
+        <textarea
+          rows={5}
+          maxLength={4000}
+          value={form.aboutText ?? ""}
+          onChange={(e) => update("aboutText", e.target.value)}
+          placeholder="Ej. Somos un equipo apasionado por realzar tu belleza natural desde hace más de 10 años..."
+          className="input-soft mt-4 h-auto py-3 resize-none"
+        />
+      </section>
+
+      <section className="card-surface p-6">
+        <h2 className="font-serif text-xl text-mauve-900">Redes y contacto</h2>
+        <p className="text-sm text-mauve-600 mt-1">Se muestran como enlaces en tu página pública. Deja en blanco lo que no uses.</p>
+        <div className="mt-5 space-y-4">
+          <div>
+            <label className="text-xs uppercase tracking-wider text-mauve-400">Instagram</label>
+            <input
+              type="url"
+              value={form.instagramUrl ?? ""}
+              onChange={(e) => update("instagramUrl", e.target.value)}
+              placeholder="https://instagram.com/tu_salon"
+              className="input-soft mt-1.5"
+            />
+          </div>
+          <div>
+            <label className="text-xs uppercase tracking-wider text-mauve-400">Facebook</label>
+            <input
+              type="url"
+              value={form.facebookUrl ?? ""}
+              onChange={(e) => update("facebookUrl", e.target.value)}
+              placeholder="https://facebook.com/tu_salon"
+              className="input-soft mt-1.5"
+            />
+          </div>
+          <div>
+            <label className="text-xs uppercase tracking-wider text-mauve-400">WhatsApp de contacto</label>
+            <input
+              type="tel"
+              value={form.whatsappContact ?? ""}
+              onChange={(e) => update("whatsappContact", e.target.value)}
+              placeholder="+593 99 123 4567"
+              className="input-soft mt-1.5"
+            />
+            <p className="mt-1 text-[11px] text-mauve-400">Distinto al WhatsApp que dejan tus clientas al reservar — este es el tuyo, para que te escriban directo.</p>
           </div>
         </div>
       </section>
