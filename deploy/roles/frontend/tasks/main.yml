@@ -29,6 +29,37 @@
       - "--exclude=test-results/"
     delete: yes
 
+- name: Verify the synced source matches the commit CI meant to deploy
+  # Guards against a real incident: the deploy workflow clones this repo
+  # fresh from GitHub on every run, but only triggers on BACKEND pushes.
+  # If a frontend push lands within moments of the backend push that
+  # kicks off a run, the clone can race ahead of it and silently sync an
+  # older frontend commit — the rest of the pipeline (build, PM2 reload,
+  # health check) all "succeed" against that stale content because none
+  # of them check *which* commit actually got deployed. This turns that
+  # class of failure into a loud, red CI job instead of a silent one.
+  # Only runs when the caller passes expected_frontend_sha (CI does; a
+  # plain `ansible-playbook site.yml` run without it skips the check).
+  when: expected_frontend_sha is defined
+  block:
+    - name: Read the git commit synced to the server
+      ansible.builtin.command: git -C {{ frontend_dir }} rev-parse HEAD
+      register: synced_frontend_sha
+      changed_when: false
+
+    - name: Fail loudly if the server has a different commit than CI cloned
+      ansible.builtin.assert:
+        that: synced_frontend_sha.stdout == expected_frontend_sha
+        fail_msg: >-
+          Frontend source on the server ({{ synced_frontend_sha.stdout }})
+          does not match the commit this deploy was meant to ship
+          ({{ expected_frontend_sha }}). Most likely cause: a frontend
+          push landed right around the same time as the backend push
+          that triggered this run, and the repo clone raced ahead of it.
+          Re-run the deploy (workflow_dispatch) — the frontend repo has
+          since settled and the next clone will pick up the right commit.
+        success_msg: "Confirmed: server has the intended frontend commit."
+
 - name: Deploy frontend .env.local
   ansible.builtin.template:
     src: env.local.j2
