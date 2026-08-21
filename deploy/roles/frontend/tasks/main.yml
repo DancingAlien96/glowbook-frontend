@@ -43,7 +43,11 @@
   when: expected_frontend_sha is defined
   block:
     - name: Read the git commit synced to the server
-      ansible.builtin.command: git -C {{ frontend_dir }} rev-parse HEAD
+      # -c safe.directory=... scopes the "trust this repo" exception to just
+      # this one command, instead of a global git config change on the box.
+      # Needed because rsync preserves ownership from the source side, which
+      # doesn't necessarily match the SSH user running this command.
+      ansible.builtin.command: git -c safe.directory={{ frontend_dir }} -C {{ frontend_dir }} rev-parse HEAD
       register: synced_frontend_sha
       changed_when: false
 
