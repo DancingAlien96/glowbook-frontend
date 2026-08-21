@@ -1,26 +1,16 @@
 import BookingFlow from "../../_components/booking/BookingFlow";
 
-export async function generateStaticParams() {
-  try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
-    const res = await fetch(`${apiUrl}/salons`, {
-      next: { revalidate: 86400 } // Cache for 24 hours
-    });
-
-    if (!res.ok) {
-      console.warn(`Failed to fetch salons: ${res.status}`);
-      return [];
-    }
-
-    const salons = await res.json();
-    return salons.map((salon: { slug: string }) => ({
-      salon: salon.slug,
-    }));
-  } catch (error) {
-    console.warn("Error generating static params for /book/[salon]:", error);
-    return [];
-  }
-}
+// This page has no server-rendered content of its own — BookingFlow is a
+// "use client" component that fetches the salon's public data live, in the
+// browser, on every visit. Statically prerendering it (generateStaticParams
+// + ISR) bought nothing and actively hurt: Next cached the compiled page
+// shell per slug and kept serving that stale shell for up to
+// stale-time after every deploy, so a fresh redesign could sit invisible
+// behind the old cached HTML for minutes after a "successful" deploy —
+// exactly what happened here. force-dynamic renders fresh on every request
+// (still cheap: there's nothing to compute server-side) and removes this
+// whole class of staleness.
+export const dynamic = "force-dynamic";
 
 export default async function BookSalonPage({
   params,

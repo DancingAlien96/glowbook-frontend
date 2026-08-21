@@ -111,10 +111,15 @@
     daemon_reload: true
   failed_when: false
 
-- name: Reload frontend with PM2
+- name: Restart frontend with PM2
+  # restart (not reload): reload's graceful handoff has, in practice, left
+  # the old process still bound to the port while pm2 reported success —
+  # which reads as "deploy succeeded" while serving stale code. This is a
+  # low-traffic booking page; a clean kill+respawn's brief downtime is a
+  # fair trade for actually guaranteeing the new build is what's running.
   ansible.builtin.shell: |
     pm2 describe ecodama-frontend > /dev/null 2>&1 \
-      && pm2 reload ecodama-frontend \
+      && pm2 restart ecodama-frontend \
       || pm2 start /var/www/ecodama/server.js \
            --name ecodama-frontend \
            --env production \
