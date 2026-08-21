@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { api, ApiError } from "../../_lib/api";
 import { useApi } from "../../_lib/useFetch";
+import { useUploadThing } from "../../_lib/uploadthing";
+import { optimizeImage } from "../../_lib/imageOptimize";
 import { LoadingBlock, ErrorBlock, EmptyBlock } from "../../_components/dashboard/States";
 import WeeklyHoursEditor from "../../_components/dashboard/WeeklyHoursEditor";
 import { initials, formatDate } from "../../_lib/format";
@@ -19,6 +21,7 @@ type Member = {
     role: string | null;
     active: boolean;
     commissionPercent: number;
+    photoUrl: string | null;
     services: { serviceId: string }[];
     hours: WeekHour[];
   } | null;
@@ -33,6 +36,35 @@ export default function TeamPage() {
   const [hoursFor, setHoursFor] = useState<Member | null>(null);
 
   const members = data?.members ?? [];
+
+  // Photo shown in the public "Equipo" section. Click the avatar to upload —
+  // no separate modal, matches how quickly a dueña wants to do this per person.
+  const [uploadingPhotoFor, setUploadingPhotoFor] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const { startUpload: startPhotoUpload } = useUploadThing("stylistPhotoUploader", {
+    onUploadError: (e) => setPhotoError(e.message || "No pudimos subir la foto."),
+  });
+
+  const onPickPhoto = async (m: Member, e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = e.target.files?.[0];
+    e.target.value = "";
+    if (!picked || !m.stylist) return;
+    setPhotoError(null);
+    setUploadingPhotoFor(m.id);
+    try {
+      const { file } = await optimizeImage(picked, { maxMB: 2, maxDim: 1200 });
+      const uploaded = await startPhotoUpload([file]);
+      const url = uploaded?.[0]?.ufsUrl;
+      if (url) {
+        await api(`/staff/${m.id}`, { method: "PATCH", body: { photoUrl: url } });
+        await refetch();
+      }
+    } catch (e) {
+      setPhotoError(e instanceof ApiError ? e.message : "No pudimos guardar la foto.");
+    } finally {
+      setUploadingPhotoFor(null);
+    }
+  };
 
   const toggleActive = async (m: Member) => {
     if (!m.stylist) return;
@@ -88,6 +120,10 @@ export default function TeamPage() {
         </button>
       </div>
 
+      {photoError && (
+        <div className="text-sm text-blush-500 bg-blush-100/60 border border-blush-300/30 rounded-xl px-3 py-2.5">{photoError}</div>
+      )}
+
       {loading && !data ? (
         <LoadingBlock label="Cargando equipo" />
       ) : error ? (
@@ -107,9 +143,31 @@ export default function TeamPage() {
                 {/* Header: avatar + identity + (toggle for stylists / role chip for owners).
                     Toggle mirrors the one used in /dashboard/services for visual parity. */}
                 <div className="flex items-start gap-3">
-                  <div className={`h-14 w-14 rounded-2xl bg-gradient-to-br ${tones[i % tones.length]} grid place-items-center text-cream font-serif text-lg shrink-0 ${inactive ? "grayscale opacity-60" : ""}`}>
-                    {initials(m.name)}
-                  </div>
+                  {m.stylist ? (
+                    <label
+                      className={`relative h-14 w-14 rounded-2xl bg-gradient-to-br ${tones[i % tones.length]} grid place-items-center text-cream font-serif text-lg shrink-0 cursor-pointer group overflow-hidden ${inactive ? "grayscale opacity-60" : ""}`}
+                      title="Cambiar foto"
+                    >
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => onPickPhoto(m, e)} disabled={uploadingPhotoFor === m.id} />
+                      {m.stylist.photoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={m.stylist.photoUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        initials(m.name)
+                      )}
+                      <div className="absolute inset-0 bg-mauve-900/0 group-hover:bg-mauve-900/40 transition-colors grid place-items-center">
+                        {uploadingPhotoFor === m.id ? (
+                          <span className="h-4 w-4 rounded-full border-2 border-cream/40 border-t-cream animate-spin" />
+                        ) : (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-cream opacity-0 group-hover:opacity-100 transition-opacity"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                        )}
+                      </div>
+                    </label>
+                  ) : (
+                    <div className={`h-14 w-14 rounded-2xl bg-gradient-to-br ${tones[i % tones.length]} grid place-items-center text-cream font-serif text-lg shrink-0`}>
+                      {initials(m.name)}
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="font-serif text-lg text-mauve-900 leading-tight truncate">{m.name}</div>
                     <div className="text-xs text-mauve-400 truncate font-mono">{m.email}</div>

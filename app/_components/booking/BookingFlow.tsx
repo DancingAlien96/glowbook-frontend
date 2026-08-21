@@ -8,37 +8,15 @@ import { useApi } from "../../_lib/useFetch";
 import { useUploadThing } from "../../_lib/uploadthing";
 import { optimizeImage, formatBytes } from "../../_lib/imageOptimize";
 import { money, initials } from "../../_lib/format";
+import { safeHttpUrl } from "../../_lib/safeUrl";
+import type { PublicSalon } from "../../_lib/publicSalon";
 import { LoadingBlock, ErrorBlock } from "../dashboard/States";
 import ShareSalonModal from "./ShareSalonModal";
-
-type PublicSalon = {
-  id: string;
-  name: string;
-  slug: string;
-  tagline: string | null;
-  description: string | null;
-  coverImageUrl: string | null;
-  brandColor: string;
-  currency: string;
-  depositMode: "NONE" | "PERCENTAGE" | "FULL";
-  depositPercent: number;
-  bankDetails: string | null;
-  aboutText: string | null;
-  instagramUrl: string | null;
-  facebookUrl: string | null;
-  whatsappContact: string | null;
-  photos: { id: string; url: string; caption: string | null }[];
-  services: {
-    id: string;
-    name: string;
-    description: string | null;
-    category: string | null;
-    durationMin: number;
-    priceCents: number;
-  }[];
-  stylists: { id: string; name: string; role: string | null }[];
-  businessHours: { dayOfWeek: number; openMin: number; closeMin: number }[];
-};
+import PublicNavbar from "./PublicNavbar";
+import TeamSection from "./TeamSection";
+import TestimonialsSection from "./TestimonialsSection";
+import ContactSection from "./ContactSection";
+import PublicFooter from "./PublicFooter";
 
 type Availability = {
   businessHours: { dayOfWeek: number; openMin: number; closeMin: number }[];
@@ -281,10 +259,27 @@ function Flow({ salon }: { salon: PublicSalon }) {
   // Expose the salon's brand color as a CSS variable so we can tint accents.
   const brandVars = { "--brand": salon.brandColor } as React.CSSProperties;
 
+  // Nav/footer anchors — only for sections that actually have content, so a
+  // salon that hasn't filled anything in still gets an honest, short nav.
+  const instagramUrl = safeHttpUrl(salon.instagramUrl);
+  const facebookUrl = safeHttpUrl(salon.facebookUrl);
+  const hasAbout = !!(salon.aboutText || instagramUrl || facebookUrl || salon.whatsappContact);
+  const hasContact = !!(salon.address || salon.contactPhone || salon.contactEmail || instagramUrl || facebookUrl);
+  const navSections = [
+    hasAbout && { id: "nosotros", label: "Nosotros" },
+    salon.photos.length > 0 && { id: "galeria", label: "Galería" },
+    salon.stylists.length > 0 && { id: "equipo", label: "Equipo" },
+    salon.testimonials.length > 0 && { id: "testimonios", label: "Testimonios" },
+    hasContact && { id: "contacto", label: "Contacto" },
+  ].filter(Boolean) as { id: string; label: string }[];
+
   return (
-    <FlowShell>
-      <div style={brandVars}>
+    <div className="min-h-screen bg-aurora-soft" style={brandVars}>
+      <PublicNavbar salon={salon} sections={navSections} onShare={() => setShareOpen(true)} />
+
+      <div className="container-tight pt-24 pb-10">
       {/* Salon hero */}
+      <div id="inicio" className="scroll-mt-24">
       {salon.coverImageUrl ? (
         <div className="relative max-w-5xl mx-auto mb-8 rounded-[2rem] overflow-hidden border border-line shadow-[var(--shadow-soft)]">
           <div
@@ -352,11 +347,22 @@ function Flow({ salon }: { salon: PublicSalon }) {
       {salon.coverImageUrl && salon.description && (
         <p className="text-center max-w-2xl mx-auto mb-8 text-mauve-600 text-pretty">{salon.description}</p>
       )}
+      </div>
 
-      {/* Landing content — gallery, story, hours, contact. Sits between the
-          hero and the booking stepper so a first-time visitor gets sold on
-          the salon before being asked to commit to a slot. */}
+      {/* Landing content — gallery + "quiénes somos", each only rendered
+          when the salon filled them in. */}
       <SalonLanding salon={salon} />
+      <TeamSection salon={salon} />
+      <TestimonialsSection salon={salon} />
+
+      <div id="reservar" className="scroll-mt-24 pt-14 md:pt-20">
+      <div className="text-center max-w-xl mx-auto mb-10">
+        <p className="text-xs uppercase tracking-[0.2em] mb-2" style={{ color: "var(--brand)" }}>Reservación</p>
+        <h2 className="font-serif text-3xl md:text-4xl text-mauve-900">Reserva tu cita</h2>
+        <p className="mt-2 text-mauve-600">Elige el servicio, fecha y hora que prefieras.</p>
+      </div>
+
+      <HoursBlock salon={salon} />
 
       <ol className="mx-auto max-w-3xl mb-8 grid grid-cols-5 gap-1.5">
         {STEPS.map((s, i) => {
@@ -724,6 +730,10 @@ function Flow({ salon }: { salon: PublicSalon }) {
       </div>
       </div>
 
+      <ContactSection salon={salon} />
+      <PublicFooter salon={salon} sections={navSections} />
+      </div>
+
       {shareOpen && (
         <ShareSalonModal
           url={typeof window !== "undefined" ? `${window.location.origin}/book/${salon.slug}` : ""}
@@ -731,7 +741,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
           onClose={() => setShareOpen(false)}
         />
       )}
-    </FlowShell>
+    </div>
   );
 }
 
@@ -746,43 +756,24 @@ const WEEKDAY_LABELS: { dow: number; label: string }[] = [
 ];
 const toTimeLabel = (min: number) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
 
-// The backend already restricts instagramUrl/facebookUrl to http(s), but an
-// <a href> shouldn't trust a string from an API response as a rendering
-// contract — a `javascript:` URI would execute on click if it ever slipped
-// through. Belt-and-suspenders: re-validate the scheme before rendering.
-const safeHttpUrl = (url: string | null): string | null => {
-  if (!url) return null;
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === "https:" || parsed.protocol === "http:" ? url : null;
-  } catch {
-    return null;
-  }
-};
-
-// Gallery, story, hours, contact — the "landing page" parts of the public
-// salon page. Each block only renders when the salon actually filled it in,
-// so a salon that skipped all of this looks exactly like it did before.
+// Gallery + "quiénes somos" + social — the parts of the landing page that
+// sit between the hero and the team/testimonials/booking sections. Each
+// block only renders when the salon actually filled it in, so a salon that
+// skipped all of this looks exactly like it did before. (Hours moved to
+// its own block right before the booking widget — see Flow's render.)
 function SalonLanding({ salon }: { salon: PublicSalon }) {
   const [lightbox, setLightbox] = useState<number | null>(null);
 
-  const hoursByDay = WEEKDAY_LABELS.map((d) => ({
-    ...d,
-    ranges: salon.businessHours
-      .filter((h) => h.dayOfWeek === d.dow)
-      .sort((a, b) => a.openMin - b.openMin),
-  }));
-  const hasHours = hoursByDay.some((d) => d.ranges.length > 0);
   const instagramUrl = safeHttpUrl(salon.instagramUrl);
   const facebookUrl = safeHttpUrl(salon.facebookUrl);
   const hasSocial = !!(instagramUrl || facebookUrl || salon.whatsappContact);
 
-  if (salon.photos.length === 0 && !salon.aboutText && !hasHours && !hasSocial) return null;
+  if (salon.photos.length === 0 && !salon.aboutText && !hasSocial) return null;
 
   return (
-    <div className="max-w-5xl mx-auto mb-10 space-y-10">
+    <div className="max-w-5xl mx-auto space-y-14">
       {salon.photos.length > 0 && (
-        <div>
+        <div id="galeria" className="scroll-mt-24">
           <h2 className="font-serif text-2xl text-mauve-900 text-center">Nuestro trabajo</h2>
           <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
             {salon.photos.map((photo, i) => (
@@ -805,7 +796,7 @@ function SalonLanding({ salon }: { salon: PublicSalon }) {
       )}
 
       {(salon.aboutText || hasSocial) && (
-        <div className="grid sm:grid-cols-[1fr_auto] gap-6 items-start">
+        <div id="nosotros" className="scroll-mt-24 grid sm:grid-cols-[1fr_auto] gap-6 items-start">
           {salon.aboutText && (
             <div>
               <h2 className="font-serif text-2xl text-mauve-900">Quiénes somos</h2>
@@ -842,24 +833,6 @@ function SalonLanding({ salon }: { salon: PublicSalon }) {
         </div>
       )}
 
-      {hasHours && (
-        <div>
-          <h2 className="font-serif text-2xl text-mauve-900 text-center">Horario de atención</h2>
-          <div className="mt-5 max-w-sm mx-auto rounded-2xl border border-line bg-ivory divide-y divide-line">
-            {hoursByDay.map((d) => (
-              <div key={d.dow} className="flex items-center justify-between px-4 py-2.5 text-sm">
-                <span className="text-mauve-600">{d.label}</span>
-                <span className={d.ranges.length > 0 ? "text-mauve-900 font-medium" : "text-mauve-400"}>
-                  {d.ranges.length > 0
-                    ? d.ranges.map((r) => `${toTimeLabel(r.openMin)}–${toTimeLabel(r.closeMin)}`).join(", ")
-                    : "Cerrado"}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {lightbox !== null && salon.photos[lightbox] && (
         <div
           className="fixed inset-0 z-[70] bg-mauve-900/90 backdrop-blur-sm grid place-items-center p-4"
@@ -881,6 +854,36 @@ function SalonLanding({ salon }: { salon: PublicSalon }) {
           />
         </div>
       )}
+    </div>
+  );
+}
+
+// Sits right above the booking widget — "when are you open" naturally
+// precedes "reserve now". Only renders when at least one day has a range.
+function HoursBlock({ salon }: { salon: PublicSalon }) {
+  const hoursByDay = WEEKDAY_LABELS.map((d) => ({
+    ...d,
+    ranges: salon.businessHours
+      .filter((h) => h.dayOfWeek === d.dow)
+      .sort((a, b) => a.openMin - b.openMin),
+  }));
+  if (!hoursByDay.some((d) => d.ranges.length > 0)) return null;
+
+  return (
+    <div className="max-w-sm mx-auto mb-10">
+      <h2 className="font-serif text-2xl text-mauve-900 text-center mb-5">Horario de atención</h2>
+      <div className="rounded-2xl border border-line bg-ivory divide-y divide-line">
+        {hoursByDay.map((d) => (
+          <div key={d.dow} className="flex items-center justify-between px-4 py-2.5 text-sm">
+            <span className="text-mauve-600">{d.label}</span>
+            <span className={d.ranges.length > 0 ? "text-mauve-900 font-medium" : "text-mauve-400"}>
+              {d.ranges.length > 0
+                ? d.ranges.map((r) => `${toTimeLabel(r.openMin)}–${toTimeLabel(r.closeMin)}`).join(", ")
+                : "Cerrado"}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

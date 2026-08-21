@@ -58,14 +58,26 @@ export interface Salon {
   instagramUrl: string | null;
   facebookUrl: string | null;
   whatsappContact: string | null;
+  address: string | null;
+  contactEmail: string | null;
+  contactPhone: string | null;
   businessHours?: BusinessHour[];
   photos?: SalonPhoto[];
+  testimonials?: Testimonial[];
 }
 
 export interface SalonPhoto {
   id: string;
   url: string;
   caption: string | null;
+}
+
+export interface Testimonial {
+  id: string;
+  clientName: string;
+  text: string;
+  rating: number;
+  serviceName: string | null;
 }
 
 export interface BusinessHour {
@@ -98,6 +110,7 @@ export interface Service {
   durationMin: number;
   priceCents: number;
   active: boolean;
+  imageUrl?: string | null;
   stylists?: { stylistId: string }[];
 }
 
@@ -106,6 +119,7 @@ export interface Stylist {
   name: string;
   role: string | null;
   active: boolean;
+  photoUrl?: string | null;
   /** % of priceCents the stylist earns on COMPLETED appointments. 0-100. */
   commissionPercent?: number;
   services?: { serviceId: string }[];

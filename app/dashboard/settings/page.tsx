@@ -14,7 +14,7 @@ import { startOnboarding } from "../../_lib/onboardingTour";
 import { SUPPORT_MESSAGES, SUPPORT_WHATSAPP_DISPLAY, whatsappHref } from "../../_lib/support";
 import { initials } from "../../_lib/format";
 import { withCurrency, withTimezone } from "../../_lib/locales";
-import type { DepositMode, Salon, SalonPhoto } from "../../_lib/types";
+import type { DepositMode, Salon, SalonPhoto, Testimonial } from "../../_lib/types";
 
 const COLOR_SWATCHES = [
   { name: "Coral", hex: "#E59078" },
@@ -171,6 +171,9 @@ export default function SettingsPage() {
           instagramUrl: form.instagramUrl || null,
           facebookUrl: form.facebookUrl || null,
           whatsappContact: form.whatsappContact || null,
+          address: form.address ?? null,
+          contactEmail: form.contactEmail || null,
+          contactPhone: form.contactPhone || null,
         },
       });
       await refetch();
@@ -441,8 +444,41 @@ export default function SettingsPage() {
             />
             <p className="mt-1 text-[11px] text-mauve-400">Distinto al WhatsApp que dejan tus clientas al reservar — este es el tuyo, para que te escriban directo.</p>
           </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs uppercase tracking-wider text-mauve-400">Teléfono de contacto</label>
+              <input
+                type="tel"
+                value={form.contactPhone ?? ""}
+                onChange={(e) => update("contactPhone", e.target.value)}
+                placeholder="+593 2 123 4567"
+                className="input-soft mt-1.5"
+              />
+            </div>
+            <div>
+              <label className="text-xs uppercase tracking-wider text-mauve-400">Email de contacto</label>
+              <input
+                type="email"
+                value={form.contactEmail ?? ""}
+                onChange={(e) => update("contactEmail", e.target.value)}
+                placeholder="hola@tusalon.com"
+                className="input-soft mt-1.5"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs uppercase tracking-wider text-mauve-400">Dirección</label>
+            <input
+              value={form.address ?? ""}
+              onChange={(e) => update("address", e.target.value)}
+              placeholder="Av. República E7-12 y Diego de Almagro, Quito"
+              className="input-soft mt-1.5"
+            />
+          </div>
         </div>
       </section>
+
+      <TestimonialsEditor testimonials={data?.salon.testimonials ?? []} onChanged={refetch} />
 
       <section className="card-surface p-6">
         <h2 className="font-serif text-xl text-mauve-900">Datos del salón</h2>
@@ -599,5 +635,159 @@ export default function SettingsPage() {
         </button>
       </div>
     </form>
+  );
+}
+
+// ─── Testimonials ───────────────────────────────────────────────────────
+// A plain <div>, not nested inside the outer <form> tag's own submission —
+// each testimonial saves/deletes immediately via its own button, HTML
+// doesn't allow nested <form> elements so this stays independent of the
+// "Guardar cambios" button above.
+function TestimonialsEditor({
+  testimonials,
+  onChanged,
+}: {
+  testimonials: Testimonial[];
+  onChanged: () => Promise<void>;
+}) {
+  const [adding, setAdding] = useState(false);
+  const [clientName, setClientName] = useState("");
+  const [text, setText] = useState("");
+  const [rating, setRating] = useState(5);
+  const [serviceName, setServiceName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const reset = () => {
+    setClientName("");
+    setText("");
+    setRating(5);
+    setServiceName("");
+  };
+
+  const onAdd = async () => {
+    if (clientName.trim().length < 2 || text.trim().length === 0) return;
+    setSaving(true);
+    setErr(null);
+    try {
+      await api("/salon/me/testimonials", {
+        method: "POST",
+        body: { clientName, text, rating, serviceName: serviceName || null },
+      });
+      reset();
+      setAdding(false);
+      await onChanged();
+    } catch (e) {
+      setErr(e instanceof ApiError ? e.message : "Error al guardar el testimonio");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const onDelete = async (t: Testimonial) => {
+    if (!confirm(`¿Quitar el testimonio de ${t.clientName}?`)) return;
+    setDeletingId(t.id);
+    try {
+      await api(`/salon/me/testimonials/${t.id}`, { method: "DELETE" });
+      await onChanged();
+    } catch (e) {
+      setErr(e instanceof ApiError ? e.message : "No pudimos quitar el testimonio.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  return (
+    <section className="card-surface p-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="font-serif text-xl text-mauve-900">Testimonios</h2>
+          <p className="text-sm text-mauve-600 mt-1">
+            Escribe o pega comentarios reales de tus clientas — aparecen en tu página pública.
+          </p>
+        </div>
+        {!adding && (
+          <button type="button" onClick={() => setAdding(true)} className="btn btn-ghost h-9 text-xs shrink-0">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M12 5v14M5 12h14"/></svg>
+            Agregar testimonio
+          </button>
+        )}
+      </div>
+
+      {testimonials.length > 0 && (
+        <div className="mt-5 space-y-3">
+          {testimonials.map((t) => (
+            <div key={t.id} className="rounded-2xl border border-line bg-ivory p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <svg key={i} width="12" height="12" viewBox="0 0 24 24" fill={i < t.rating ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" className={i < t.rating ? "text-gold-500" : "text-mauve-300"}>
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-sm text-mauve-700 italic leading-relaxed">&ldquo;{t.text}&rdquo;</p>
+                  <div className="mt-1.5 text-xs text-mauve-500">
+                    {t.clientName}{t.serviceName ? ` · ${t.serviceName}` : ""}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onDelete(t)}
+                  disabled={deletingId === t.id}
+                  className="h-8 w-8 rounded-full bg-mauve-900/5 grid place-items-center text-mauve-500 hover:bg-blush-100 hover:text-blush-500 transition shrink-0"
+                >
+                  {deletingId === t.id ? (
+                    <span className="h-3 w-3 rounded-full border-2 border-mauve-900/30 border-t-mauve-900 animate-spin" />
+                  ) : (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                  )}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {adding && (
+        <div className="mt-5 rounded-2xl border border-line-strong bg-cream-soft p-4 space-y-3">
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs uppercase tracking-wider text-mauve-400">Nombre de la clienta</label>
+              <input value={clientName} onChange={(e) => setClientName(e.target.value)} className="input-soft mt-1.5" placeholder="Ej. María José" />
+            </div>
+            <div>
+              <label className="text-xs uppercase tracking-wider text-mauve-400">Servicio (opcional)</label>
+              <input value={serviceName} onChange={(e) => setServiceName(e.target.value)} className="input-soft mt-1.5" placeholder="Ej. Coloración" />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs uppercase tracking-wider text-mauve-400">Testimonio</label>
+            <textarea rows={3} value={text} onChange={(e) => setText(e.target.value)} maxLength={1000} className="input-soft mt-1.5 h-auto py-3 resize-none" placeholder="Lo que dijo tu clienta..." />
+          </div>
+          <div>
+            <label className="text-xs uppercase tracking-wider text-mauve-400">Calificación</label>
+            <div className="mt-1.5 flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button key={n} type="button" onClick={() => setRating(n)} className="p-0.5">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill={n <= rating ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" className={n <= rating ? "text-gold-500" : "text-mauve-300"}>
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                </button>
+              ))}
+            </div>
+          </div>
+          {err && <div className="text-sm text-blush-500 bg-blush-100/60 border border-blush-300/30 rounded-xl px-3 py-2.5">{err}</div>}
+          <div className="flex justify-end gap-2 pt-1">
+            <button type="button" onClick={() => { setAdding(false); reset(); }} className="btn btn-ghost h-9 text-xs">Cancelar</button>
+            <button type="button" onClick={onAdd} disabled={saving} className="btn btn-primary h-9 text-xs disabled:opacity-60">
+              {saving ? "Guardando…" : "Guardar testimonio"}
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

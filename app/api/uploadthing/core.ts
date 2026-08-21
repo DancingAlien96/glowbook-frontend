@@ -62,6 +62,26 @@ export const ourFileRouter = {
       key: file.key,
     })),
 
+  /** Per-service photo shown on the public page's services grid. */
+  serviceImageUploader: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
+    .middleware(async () => ({}))
+    .onUploadComplete(async ({ file }) => ({
+      url: file.ufsUrl,
+      name: file.name,
+      size: file.size,
+      key: file.key,
+    })),
+
+  /** Per-stylist photo shown on the public page's "Equipo" section. */
+  stylistPhotoUploader: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
+    .middleware(async () => ({}))
+    .onUploadComplete(async ({ file }) => ({
+      url: file.ufsUrl,
+      name: file.name,
+      size: file.size,
+      key: file.key,
+    })),
+
   /**
    * Subscription receipts — salon owners pay the platform fee by transfer
    * and upload the comprobante here. The URL is then registered with the

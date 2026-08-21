@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { api, ApiError } from "../../_lib/api";
 import { useApi } from "../../_lib/useFetch";
 import { useAuth } from "../../_lib/auth";
+import { useUploadThing } from "../../_lib/uploadthing";
+import { optimizeImage } from "../../_lib/imageOptimize";
 import { LoadingBlock, ErrorBlock, EmptyBlock } from "../../_components/dashboard/States";
 import { money } from "../../_lib/format";
 import type { Service } from "../../_lib/types";
@@ -98,9 +100,14 @@ export default function ServicesPage() {
             {visible.map((s, i) => (
               <article key={s.id} className="card-surface p-5 group hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] transition-all">
                 <div className="flex items-start justify-between">
-                  <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${tones[i % tones.length]} grid place-items-center`}>
-                    <svg viewBox="0 0 24 24" className="h-5 w-5 text-mauve-900" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z"/></svg>
-                  </div>
+                  {s.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={s.imageUrl} alt="" className="h-12 w-12 rounded-2xl object-cover" />
+                  ) : (
+                    <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${tones[i % tones.length]} grid place-items-center`}>
+                      <svg viewBox="0 0 24 24" className="h-5 w-5 text-mauve-900" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z"/></svg>
+                    </div>
+                  )}
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -160,8 +167,27 @@ function ServiceModal({ service, onClose, onSaved }: { service?: Service; onClos
     price: String((service?.priceCents ?? 0) / 100),
     description: service?.description ?? "",
   });
+  const [imageUrl, setImageUrl] = useState<string | null>(service?.imageUrl ?? null);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [optimizingImage, setOptimizingImage] = useState(false);
+  const { startUpload, isUploading: isUploadingImage } = useUploadThing("serviceImageUploader", {
+    onUploadError: (e) => setImageError(e.message || "No pudimos subir la foto."),
+  });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  const onPickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = e.target.files?.[0];
+    e.target.value = "";
+    if (!picked) return;
+    setImageError(null);
+    setOptimizingImage(true);
+    const { file } = await optimizeImage(picked, { maxMB: 2, maxDim: 1600 });
+    setOptimizingImage(false);
+    const uploaded = await startUpload([file]);
+    const url = uploaded?.[0]?.ufsUrl;
+    if (url) setImageUrl(url);
+  };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -174,6 +200,7 @@ function ServiceModal({ service, onClose, onSaved }: { service?: Service; onClos
         durationMin: parseInt(form.durationMin, 10) || 0,
         priceCents: Math.round((parseFloat(form.price) || 0) * 100),
         description: form.description || null,
+        imageUrl,
       };
 
       if (isEditing) {
@@ -195,6 +222,29 @@ function ServiceModal({ service, onClose, onSaved }: { service?: Service; onClos
       <form onSubmit={onSubmit} className="card-elevated p-6 sm:p-7 w-full max-w-md rounded-3xl max-h-[90vh] overflow-y-auto">
         <h3 className="font-serif text-2xl text-mauve-900">{isEditing ? "Editar servicio" : "Nuevo servicio"}</h3>
         <div className="mt-5 space-y-4">
+          <div>
+            <label className="text-xs uppercase tracking-wider text-mauve-400">Foto (opcional)</label>
+            <div className="mt-1.5 flex items-center gap-3">
+              <div className="h-16 w-16 rounded-xl overflow-hidden border border-line bg-cream-soft shrink-0 grid place-items-center">
+                {imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="text-mauve-400"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                )}
+              </div>
+              <label className="btn btn-ghost h-9 text-xs cursor-pointer">
+                <input type="file" accept="image/*" className="hidden" onChange={onPickImage} disabled={isUploadingImage || optimizingImage} />
+                {optimizingImage ? "Optimizando…" : isUploadingImage ? "Subiendo…" : imageUrl ? "Cambiar foto" : "Subir foto"}
+              </label>
+              {imageUrl && (
+                <button type="button" onClick={() => setImageUrl(null)} className="text-xs text-mauve-400 hover:text-blush-500">
+                  Quitar
+                </button>
+              )}
+            </div>
+            {imageError && <p className="mt-1.5 text-[11px] text-blush-500">{imageError}</p>}
+          </div>
           <div>
             <label className="text-xs uppercase tracking-wider text-mauve-400">Nombre</label>
             <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input-soft mt-1.5" />
