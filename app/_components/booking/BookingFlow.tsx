@@ -362,7 +362,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
                               <img src={s.imageUrl} alt={s.name} className="h-full w-full object-cover" />
                             ) : (
                               <div className="h-full w-full grid place-items-center">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-mauve-400/60"><path d="M12 2a5 5 0 015 5c0 3-2 5-5 8-3-3-5-5-5-8a5 5 0 015-5z"/><circle cx="12" cy="7" r="1.5"/></svg>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-mauve-400/60"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                               </div>
                             )}
                             <div
