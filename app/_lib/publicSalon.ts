@@ -17,6 +17,8 @@ export type PublicSalon = {
   facebookUrl: string | null;
   whatsappContact: string | null;
   address: string | null;
+  latitude: number | null;
+  longitude: number | null;
   contactEmail: string | null;
   contactPhone: string | null;
   photos: { id: string; url: string; caption: string | null }[];

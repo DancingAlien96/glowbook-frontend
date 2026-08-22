@@ -8,6 +8,7 @@ import { useUploadThing } from "../../_lib/uploadthing";
 import { optimizeImage, formatBytes } from "../../_lib/imageOptimize";
 import { LoadingBlock, ErrorBlock } from "../../_components/dashboard/States";
 import BusinessHoursEditor from "../../_components/dashboard/BusinessHoursEditor";
+import LocationPicker from "../../_components/dashboard/LocationPicker";
 import AppSettings from "../../_components/dashboard/AppSettings";
 import ChangePasswordCard from "../../_components/auth/ChangePasswordCard";
 import { startOnboarding } from "../../_lib/onboardingTour";
@@ -172,6 +173,8 @@ export default function SettingsPage() {
           facebookUrl: form.facebookUrl || null,
           whatsappContact: form.whatsappContact || null,
           address: form.address ?? null,
+          latitude: form.latitude ?? null,
+          longitude: form.longitude ?? null,
           contactEmail: form.contactEmail || null,
           contactPhone: form.contactPhone || null,
         },
@@ -467,12 +470,10 @@ export default function SettingsPage() {
             </div>
           </div>
           <div>
-            <label className="text-xs uppercase tracking-wider text-mauve-400">Dirección</label>
-            <input
-              value={form.address ?? ""}
-              onChange={(e) => update("address", e.target.value)}
-              placeholder="Av. República E7-12 y Diego de Almagro, Quito"
-              className="input-soft mt-1.5"
+            <label className="text-xs uppercase tracking-wider text-mauve-400 mb-1.5 block">Ubicación</label>
+            <LocationPicker
+              value={{ address: form.address ?? null, latitude: form.latitude ?? null, longitude: form.longitude ?? null }}
+              onChange={(v) => setForm((f) => ({ ...f, ...v }))}
             />
           </div>
         </div>

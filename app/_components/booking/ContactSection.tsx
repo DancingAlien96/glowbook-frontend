@@ -6,6 +6,8 @@ export default function ContactSection({ salon }: { salon: PublicSalon }) {
   const facebookUrl = safeHttpUrl(salon.facebookUrl);
   const phoneDigits = salon.contactPhone?.replace(/\D/g, "");
   const whatsappDigits = salon.whatsappContact?.replace(/\D/g, "");
+  const hasPin = salon.latitude != null && salon.longitude != null;
+  const directionsUrl = hasPin ? `https://www.google.com/maps/dir/?api=1&destination=${salon.latitude},${salon.longitude}` : null;
 
   const cards = [
     salon.contactPhone && {
@@ -24,7 +26,7 @@ export default function ContactSection({ salon }: { salon: PublicSalon }) {
       icon: <><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></>,
       label: "Dirección",
       value: salon.address,
-      href: null,
+      href: directionsUrl,
     },
     (instagramUrl || facebookUrl || salon.whatsappContact) && {
       icon: null,
@@ -125,6 +127,28 @@ export default function ContactSection({ salon }: { salon: PublicSalon }) {
             })}
           </div>
         </div>
+
+        {hasPin && (
+          <div className="mt-8">
+            <div className="rounded-2xl overflow-hidden border border-cream/20">
+              <iframe
+                title={`Ubicación de ${salon.name}`}
+                className="w-full h-56 sm:h-72 block"
+                loading="lazy"
+                src={`https://www.openstreetmap.org/export/embed.html?bbox=${salon.longitude! - 0.006}%2C${salon.latitude! - 0.004}%2C${salon.longitude! + 0.006}%2C${salon.latitude! + 0.004}&layer=mapnik&marker=${salon.latitude}%2C${salon.longitude}`}
+              />
+            </div>
+            <a
+              href={directionsUrl!}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 inline-flex items-center gap-1.5 text-cream text-sm font-medium hover:underline"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+              Cómo llegar
+            </a>
+          </div>
+        )}
       </div>
     </section>
   );
