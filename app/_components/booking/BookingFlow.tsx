@@ -349,21 +349,27 @@ function Flow({ salon }: { salon: PublicSalon }) {
                         key={s.id}
                         onClick={() => toggleService(s.id)}
                         aria-pressed={selected}
-                        className={`w-full text-left rounded-xl border-2 px-3 py-2.5 transition-all flex items-center gap-3 ${selected ? "border-mauve-900 bg-cream-soft" : "border-line bg-ivory hover:border-line-strong"}`}
+                        className={`w-full text-left rounded-xl border-2 px-3 py-2.5 transition-all flex items-start gap-2.5 ${selected ? "border-mauve-900 bg-cream-soft" : "border-line bg-ivory hover:border-line-strong"}`}
                       >
                         <div
-                          className={`h-5 w-5 rounded-md border-2 grid place-items-center shrink-0 transition ${selected ? "bg-mauve-900 border-mauve-900" : "border-line-strong bg-ivory"}`}
+                          className={`h-5 w-5 rounded-md border-2 grid place-items-center shrink-0 mt-0.5 transition ${selected ? "bg-mauve-900 border-mauve-900" : "border-line-strong bg-ivory"}`}
                           aria-hidden="true"
                         >
                           {selected && (
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-cream"><polyline points="20 6 9 17 4 12"/></svg>
                           )}
                         </div>
+                        {/* min-w-0 lets this shrink below its content width so
+                            the price (shrink-0 + nowrap) always has room next
+                            to it, no matter how narrow the screen or how long
+                            the formatted currency string is. */}
                         <div className="flex-1 min-w-0">
-                          <div className="font-serif text-sm text-mauve-900 leading-snug truncate">{s.name}</div>
-                          <div className="text-[11px] text-mauve-400 mt-0.5">{s.durationMin} min · {s.category ?? "Servicio"}</div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-serif text-sm text-mauve-900 leading-snug truncate">{s.name}</span>
+                            <span className="font-serif text-sm text-gold-600 shrink-0 whitespace-nowrap">{money(s.priceCents, salon.currency)}</span>
+                          </div>
+                          <div className="text-[11px] text-mauve-400 mt-0.5 truncate">{s.durationMin} min · {s.category ?? "Servicio"}</div>
                         </div>
-                        <span className="font-serif text-sm text-gold-600 shrink-0">{money(s.priceCents, salon.currency)}</span>
                       </button>
                     );
                   })}
