@@ -341,7 +341,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
               {visibleServices.length === 0 ? (
                 <div className="mt-8 text-sm text-mauve-500 text-center">Este salón aún no tiene servicios activos.</div>
               ) : (
-                <div className="mt-5 grid sm:grid-cols-2 gap-3">
+                <div className="mt-5 max-h-[380px] overflow-y-auto pr-1 space-y-2">
                   {visibleServices.map((s) => {
                     const selected = serviceIds.includes(s.id);
                     return (
@@ -349,26 +349,21 @@ function Flow({ salon }: { salon: PublicSalon }) {
                         key={s.id}
                         onClick={() => toggleService(s.id)}
                         aria-pressed={selected}
-                        className={`text-left rounded-2xl border-2 p-4 transition-all ${selected ? "border-mauve-900 bg-cream-soft" : "border-line bg-ivory hover:border-line-strong"}`}
+                        className={`w-full text-left rounded-xl border-2 px-3 py-2.5 transition-all flex items-center gap-3 ${selected ? "border-mauve-900 bg-cream-soft" : "border-line bg-ivory hover:border-line-strong"}`}
                       >
-                        <div className="flex items-start gap-3">
-                          <div
-                            className={`h-6 w-6 rounded-md border-2 grid place-items-center shrink-0 mt-0.5 transition ${selected ? "bg-mauve-900 border-mauve-900" : "border-line-strong bg-ivory"}`}
-                            aria-hidden="true"
-                          >
-                            {selected && (
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-cream"><polyline points="20 6 9 17 4 12"/></svg>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="font-serif text-lg text-mauve-900 leading-snug">{s.name}</div>
-                              <span className="font-serif text-base text-gold-600 shrink-0">{money(s.priceCents, salon.currency)}</span>
-                            </div>
-                            {s.description && <p className="text-xs text-mauve-600 mt-1 line-clamp-2">{s.description}</p>}
-                            <div className="mt-2 text-[11px] text-mauve-400">{s.durationMin} min · {s.category ?? "Servicio"}</div>
-                          </div>
+                        <div
+                          className={`h-5 w-5 rounded-md border-2 grid place-items-center shrink-0 transition ${selected ? "bg-mauve-900 border-mauve-900" : "border-line-strong bg-ivory"}`}
+                          aria-hidden="true"
+                        >
+                          {selected && (
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-cream"><polyline points="20 6 9 17 4 12"/></svg>
+                          )}
                         </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-serif text-sm text-mauve-900 leading-snug truncate">{s.name}</div>
+                          <div className="text-[11px] text-mauve-400 mt-0.5">{s.durationMin} min · {s.category ?? "Servicio"}</div>
+                        </div>
+                        <span className="font-serif text-sm text-gold-600 shrink-0">{money(s.priceCents, salon.currency)}</span>
                       </button>
                     );
                   })}
