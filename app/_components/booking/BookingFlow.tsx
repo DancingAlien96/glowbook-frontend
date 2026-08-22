@@ -375,7 +375,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
                             </div>
                           </div>
                           <div className={`p-2.5 transition-colors ${selected ? "bg-cream-soft" : "bg-ivory"}`}>
-                            <div className="font-serif text-sm text-mauve-900 leading-snug truncate">{s.name}</div>
+                            <div className="font-serif text-sm text-mauve-900 leading-snug line-clamp-2 min-h-[2.25rem]">{s.name}</div>
                             <div className="mt-1 flex items-center justify-between gap-1.5">
                               <span className="text-[11px] text-mauve-400 truncate">{s.durationMin} min</span>
                               <span className="font-serif text-sm text-gold-600 shrink-0 whitespace-nowrap">{money(s.priceCents, salon.currency)}</span>
