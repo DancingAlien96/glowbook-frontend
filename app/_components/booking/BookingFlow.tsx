@@ -365,7 +365,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
                             the formatted currency string is. */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
-                            <span className="font-serif text-sm text-mauve-900 leading-snug truncate">{s.name}</span>
+                            <span className="min-w-0 font-serif text-sm text-mauve-900 leading-snug truncate">{s.name}</span>
                             <span className="font-serif text-sm text-gold-600 shrink-0 whitespace-nowrap">{money(s.priceCents, salon.currency)}</span>
                           </div>
                           <div className="text-[11px] text-mauve-400 mt-0.5 truncate">{s.durationMin} min · {s.category ?? "Servicio"}</div>
