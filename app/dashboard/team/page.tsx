@@ -155,11 +155,11 @@ export default function TeamPage() {
                       ) : (
                         initials(m.name)
                       )}
-                      <div className="absolute inset-0 bg-mauve-900/0 group-hover:bg-mauve-900/40 transition-colors grid place-items-center">
+                      <div className="absolute inset-0 bg-mauve-900/25 sm:bg-mauve-900/0 sm:group-hover:bg-mauve-900/40 transition-colors grid place-items-center">
                         {uploadingPhotoFor === m.id ? (
                           <span className="h-4 w-4 rounded-full border-2 border-cream/40 border-t-cream animate-spin" />
                         ) : (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-cream opacity-0 group-hover:opacity-100 transition-opacity"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-cream opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
                         )}
                       </div>
                     </label>

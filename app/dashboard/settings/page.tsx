@@ -348,7 +348,7 @@ export default function SettingsPage() {
                   type="button"
                   onClick={() => onDeletePhoto(photo)}
                   disabled={deletingPhotoId === photo.id}
-                  className="absolute top-2 right-2 h-8 w-8 grid place-items-center rounded-full bg-mauve-900/60 text-cream backdrop-blur-sm opacity-0 group-hover:opacity-100 transition disabled:opacity-100"
+                  className="absolute top-2 right-2 h-8 w-8 grid place-items-center rounded-full bg-mauve-900/60 text-cream backdrop-blur-sm opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition disabled:opacity-100"
                   title="Quitar foto"
                 >
                   {deletingPhotoId === photo.id ? (
