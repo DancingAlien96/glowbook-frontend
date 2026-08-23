@@ -346,7 +346,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
                 // size — the category chips above help narrow a big list
                 // down before scrolling through it.
                 <div className="mt-5 max-h-[440px] overflow-y-auto pr-1">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid sm:grid-cols-2 gap-3">
                     {visibleServices.map((s) => {
                       const selected = serviceIds.includes(s.id);
                       return (
@@ -354,31 +354,28 @@ function Flow({ salon }: { salon: PublicSalon }) {
                           key={s.id}
                           onClick={() => toggleService(s.id)}
                           aria-pressed={selected}
-                          className={`text-left rounded-xl border-2 overflow-hidden transition-all ${selected ? "border-mauve-900" : "border-line hover:border-line-strong"}`}
+                          className={`text-left rounded-2xl border-2 p-4 transition-all ${selected ? "border-mauve-900 bg-cream-soft" : "border-line bg-ivory hover:border-line-strong"}`}
                         >
-                          <div className="relative h-24 sm:h-28 bg-mauve-900/5">
-                            {s.imageUrl ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={s.imageUrl} alt={s.name} className="h-full w-full object-cover" />
-                            ) : (
-                              <div className="h-full w-full grid place-items-center">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-mauve-400/60"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                              </div>
-                            )}
+                          <div className="flex items-start gap-3">
                             <div
-                              className={`absolute top-1.5 right-1.5 h-5 w-5 rounded-full border-2 grid place-items-center transition ${selected ? "bg-mauve-900 border-mauve-900" : "border-cream/80 bg-cream/60 backdrop-blur-sm"}`}
+                              className={`h-6 w-6 rounded-md border-2 grid place-items-center shrink-0 mt-0.5 transition ${selected ? "bg-mauve-900 border-mauve-900" : "border-line-strong bg-ivory"}`}
                               aria-hidden="true"
                             >
                               {selected && (
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-cream"><polyline points="20 6 9 17 4 12"/></svg>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-cream"><polyline points="20 6 9 17 4 12"/></svg>
                               )}
                             </div>
-                          </div>
-                          <div className={`p-2.5 transition-colors ${selected ? "bg-cream-soft" : "bg-ivory"}`}>
-                            <div className="font-serif text-sm text-mauve-900 leading-snug line-clamp-2 min-h-[2.25rem]">{s.name}</div>
-                            <div className="mt-1 flex items-center justify-between gap-1.5">
-                              <span className="text-[11px] text-mauve-400 truncate">{s.durationMin} min</span>
-                              <span className="font-serif text-sm text-gold-600 shrink-0 whitespace-nowrap">{money(s.priceCents, salon.currency)}</span>
+                            {/* min-w-0 lets this shrink below its content
+                                width so the price (shrink-0 + nowrap) always
+                                has room, no matter the screen size or how
+                                long the formatted currency string is. */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="min-w-0 font-serif text-lg text-mauve-900 leading-snug">{s.name}</span>
+                                <span className="font-serif text-base text-gold-600 shrink-0 whitespace-nowrap">{money(s.priceCents, salon.currency)}</span>
+                              </div>
+                              {s.description && <p className="text-xs text-mauve-600 mt-1 line-clamp-2">{s.description}</p>}
+                              <div className="mt-2 text-[11px] text-mauve-400 truncate">{s.durationMin} min · {s.category ?? "Servicio"}</div>
                             </div>
                           </div>
                         </button>
