@@ -9,6 +9,7 @@ export type PublicSalon = {
   coverImageUrl: string | null;
   brandColor: string;
   currency: string;
+  timezone: string;
   depositMode: "NONE" | "PERCENTAGE" | "FULL";
   depositPercent: number;
   bankDetails: string | null;

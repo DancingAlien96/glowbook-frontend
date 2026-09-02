@@ -26,6 +26,32 @@ type Availability = {
   blocked: { startAt: string; endAt: string; stylistId: string | null }[];
 };
 
+// Resolve a wall-clock time (minutes past midnight) on the calendar day of
+// `date` to an absolute instant in the SALON's timezone — never the viewer's
+// browser timezone. Business hours (openMin/closeMin) and appointment times are
+// anchored to the salon's own timezone; generating the slot grid in the
+// device's timezone made already-booked slots look free for anyone not
+// physically in that timezone.
+function zonedTimeMs(date: Date, minutes: number, timeZone: string): number {
+  const hh = Math.floor(minutes / 60);
+  const mm = minutes % 60;
+  const guessUtc = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), hh, mm, 0);
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hour12: false,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(new Date(guessUtc));
+  const p: Record<string, number> = {};
+  for (const part of parts) if (part.type !== "literal") p[part.type] = Number(part.value);
+  const shownUtc = Date.UTC(p.year!, p.month! - 1, p.day!, p.hour === 24 ? 0 : p.hour!, p.minute!, p.second!);
+  return guessUtc - (shownUtc - guessUtc);
+}
+
 const STEPS = ["Servicio", "Fecha & hora", "Tus datos", "Pago", "Listo"];
 const STYLIST_TONES = ["from-blush-300 to-blush-500", "from-lavender-200 to-lavender-400", "from-gold-300 to-gold-500", "from-nude-200 to-nude-300"];
 
@@ -120,13 +146,15 @@ function Flow({ salon }: { salon: PublicSalon }) {
   // Availability for the picked week (load when service + date selected)
   const availabilityPath = useMemo(() => {
     if (!date) return null;
-    const from = new Date(date);
-    from.setHours(0, 0, 0, 0);
-    const to = new Date(from.getTime() + 86_400_000);
-    const params = new URLSearchParams({ from: from.toISOString(), to: to.toISOString() });
+    const fromMs = zonedTimeMs(date, 0, salon.timezone);
+    const toMs = fromMs + 86_400_000;
+    const params = new URLSearchParams({
+      from: new Date(fromMs).toISOString(),
+      to: new Date(toMs).toISOString(),
+    });
     if (stylistId) params.set("stylistId", stylistId);
     return `/public/salons/${salon.slug}/availability?${params.toString()}`;
-  }, [date, stylistId, salon.slug]);
+  }, [date, stylistId, salon.slug, salon.timezone]);
 
   const availabilityQ = useApi<Availability>(availabilityPath, [availabilityPath ?? ""]);
 
@@ -148,13 +176,12 @@ function Flow({ salon }: { salon: PublicSalon }) {
     if (dayRanges.length === 0) return [];
 
     const result: string[] = [];
-    const dayStart = new Date(date);
-    dayStart.setHours(0, 0, 0, 0);
     const slotStep = 30; // minutes
     for (const hours of dayRanges) {
       for (let m = hours.openMin; m + totalDurationMin <= hours.closeMin; m += slotStep) {
-        const slotStart = new Date(dayStart.getTime() + m * 60_000);
-        const slotEnd = new Date(slotStart.getTime() + totalDurationMin * 60_000);
+        const slotStartMs = zonedTimeMs(date, m, salon.timezone);
+        const slotStart = new Date(slotStartMs);
+        const slotEnd = new Date(slotStartMs + totalDurationMin * 60_000);
         const isPast = slotStart.getTime() < Date.now() + 60_000;
 
         const busy = (availabilityQ.data?.busy ?? []).some((b) => {
@@ -174,7 +201,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
     }
     result.sort();
     return result;
-  }, [selectedServices, totalDurationMin, date, availabilityQ.data, salon.businessHours, stylistId]);
+  }, [selectedServices, totalDurationMin, date, availabilityQ.data, salon.businessHours, salon.timezone, stylistId]);
 
   const deposit =
     selectedServices.length === 0
@@ -212,8 +239,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
       setSubmitError(null);
       try {
         const [hh, mm] = time.split(":").map(Number);
-        const start = new Date(date);
-        start.setHours(hh!, mm!, 0, 0);
+        const startAtIso = new Date(zonedTimeMs(date, hh! * 60 + mm!, salon.timezone)).toISOString();
 
         const { appointment } = await api<{ appointment: { id: string } }>(
           `/public/salons/${salon.slug}/bookings`,
@@ -223,7 +249,7 @@ function Flow({ salon }: { salon: PublicSalon }) {
             body: {
               serviceIds,
               stylistId: stylistId || null,
-              startAt: start.toISOString(),
+              startAt: startAtIso,
               notes: client.notes || null,
               client: {
                 name: client.name,
