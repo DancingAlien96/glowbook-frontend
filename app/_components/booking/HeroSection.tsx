@@ -22,7 +22,7 @@ export default function HeroSection({
     : null;
 
   return (
-    <section id="inicio" className="relative min-h-[92vh] md:min-h-screen flex items-center justify-center overflow-hidden scroll-mt-16">
+    <section id="inicio" className="relative min-h-[65vh] md:min-h-screen flex items-center justify-center overflow-hidden scroll-mt-16">
       <div className="absolute inset-0">
         {salon.coverImageUrl ? (
           <>
@@ -51,34 +51,34 @@ export default function HeroSection({
       </button>
 
       <div className="relative z-[1] text-center px-4 max-w-3xl mx-auto">
-        <div className="mb-6 flex justify-center">
-          <div className="h-16 w-16 md:h-20 md:w-20 rounded-full border-2 border-cream/50 backdrop-blur-sm bg-cream/10 grid place-items-center text-cream font-serif text-2xl md:text-3xl">
+        <div className="mb-4 md:mb-6 flex justify-center">
+          <div className="h-12 w-12 md:h-20 md:w-20 rounded-full border-2 border-cream/50 backdrop-blur-sm bg-cream/10 grid place-items-center text-cream font-serif text-lg md:text-3xl">
             {initials(salon.name)}
           </div>
         </div>
 
-        <p className="text-cream/80 text-xs md:text-sm font-medium tracking-[0.2em] uppercase mb-4">
+        <p className="text-cream/80 text-[10px] md:text-sm font-medium tracking-[0.2em] uppercase mb-2 md:mb-4">
           Reservar en {salon.name}
         </p>
 
-        <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl text-cream font-semibold mb-4 leading-[1.1] text-balance break-words">
+        <h1 className="font-serif text-3xl md:text-6xl lg:text-7xl text-cream font-semibold mb-2 md:mb-4 leading-[1.1] text-balance break-words">
           {salon.name}
         </h1>
 
         {salon.tagline && (
-          <p className="font-serif text-lg md:text-2xl text-cream/90 italic mb-3 text-pretty">{salon.tagline}</p>
+          <p className="font-serif text-base md:text-2xl text-cream/90 italic mb-2 md:mb-3 text-pretty">{salon.tagline}</p>
         )}
         {salon.address && (
-          <p className="text-cream/70 text-xs md:text-sm tracking-wide uppercase mb-8">{salon.address}</p>
+          <p className="text-cream/70 text-[10px] md:text-sm tracking-wide uppercase mb-3 md:mb-8">{salon.address}</p>
         )}
         {salon.description && (
-          <p className="text-cream/85 text-sm md:text-base mb-8 max-w-xl mx-auto text-pretty">{salon.description}</p>
+          <p className="text-cream/85 text-xs md:text-base mb-4 md:mb-8 max-w-xl mx-auto text-pretty">{salon.description}</p>
         )}
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-2">
           <a
             href="#reservar"
-            className="btn h-12 px-8 text-sm md:text-base rounded-full"
+            className="btn h-11 md:h-12 px-6 md:px-8 text-sm md:text-base rounded-full"
             style={{ backgroundColor: "var(--brand)", color: "#fff" }}
           >
             Reservar cita
@@ -86,17 +86,12 @@ export default function HeroSection({
           {secondCta && (
             <a
               href={secondCta.href}
-              className="h-12 px-8 inline-flex items-center justify-center rounded-full border border-cream/50 text-cream text-sm md:text-base font-medium hover:bg-cream/10 transition"
+              className="h-11 md:h-12 px-6 md:px-8 inline-flex items-center justify-center rounded-full border border-cream/50 text-cream text-sm md:text-base font-medium hover:bg-cream/10 transition"
             >
               {secondCta.label}
             </a>
           )}
         </div>
-      </div>
-
-      <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 text-cream/60 animate-bounce">
-        <span className="text-[10px] uppercase tracking-wider">Desplazar</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
       </div>
     </section>
   );
