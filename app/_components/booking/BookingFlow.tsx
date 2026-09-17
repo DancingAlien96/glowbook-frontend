@@ -445,7 +445,14 @@ function Flow({ salon }: { salon: PublicSalon }) {
                           onClick={() => setStylistId(s.id)}
                           className={`text-center rounded-2xl border-2 p-3 transition ${sel ? "border-mauve-900 bg-cream-soft" : "border-line bg-ivory hover:border-line-strong"}`}
                         >
-                          <div className={`h-12 w-12 mx-auto rounded-full bg-gradient-to-br ${STYLIST_TONES[i % STYLIST_TONES.length]} grid place-items-center text-cream font-serif`}>{s.name[0]}</div>
+                          <div className={`h-12 w-12 mx-auto rounded-full overflow-hidden bg-gradient-to-br ${STYLIST_TONES[i % STYLIST_TONES.length]} grid place-items-center text-cream font-serif`}>
+                            {s.photoUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={s.photoUrl} alt={s.name} className="h-full w-full object-cover" />
+                            ) : (
+                              s.name[0]
+                            )}
+                          </div>
                           <div className="mt-2 text-xs font-medium text-mauve-900 leading-tight truncate">{s.name.split(" ")[0]}</div>
                           {s.role && <div className="text-[10px] text-mauve-400 mt-0.5 line-clamp-1">{s.role}</div>}
                         </button>
