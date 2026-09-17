@@ -22,21 +22,12 @@ export default function HeroSection({
     : null;
 
   return (
-    <section id="inicio" className="relative min-h-[92vh] md:min-h-screen flex flex-col items-center justify-center pt-16 pb-8 md:pt-0 md:pb-0 overflow-hidden scroll-mt-16">
+    <section id="inicio" className="relative min-h-[65vh] md:min-h-screen flex items-center justify-center overflow-hidden scroll-mt-16">
       <div className="absolute inset-0">
         {salon.coverImageUrl ? (
           <>
-            {/* On phones this is only a blurred filler behind the real photo
-                below — the hero box is portrait there, so object-cover was
-                throwing away more than half the width of a landscape cover.
-                From md up the blur lifts and this IS the cover, unchanged. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={salon.coverImageUrl}
-              alt=""
-              aria-hidden="true"
-              className="h-full w-full object-cover scale-110 blur-2xl md:scale-100 md:blur-none"
-            />
+            <img src={salon.coverImageUrl} alt={salon.name} className="h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-b from-mauve-900/55 via-mauve-900/35 to-mauve-900/70" />
           </>
         ) : (
@@ -53,25 +44,11 @@ export default function HeroSection({
         type="button"
         onClick={onShare}
         aria-label="Compartir este salón"
-        className="absolute top-20 right-4 sm:top-24 sm:right-6 z-10 h-10 px-3 sm:px-4 rounded-full bg-cream/15 backdrop-blur-md text-cream text-xs font-medium hidden md:inline-flex items-center gap-1.5 hover:bg-cream/25 transition border border-cream/20"
+        className="absolute top-20 right-4 sm:top-24 sm:right-6 z-10 h-10 px-3 sm:px-4 rounded-full bg-cream/15 backdrop-blur-md text-cream text-xs font-medium inline-flex items-center gap-1.5 hover:bg-cream/25 transition border border-cream/20"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>
         Compartir
       </button>
-
-      {/* Phone-only: the cover at full width, object-contain so the whole
-          photo survives whatever aspect ratio the salon uploaded. Hidden from
-          md up, where the background image above already shows it in full. */}
-      {salon.coverImageUrl && (
-        <div className="relative z-[1] w-full mb-5 md:hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={salon.coverImageUrl}
-            alt={salon.name}
-            className="w-full aspect-[3/2] object-contain"
-          />
-        </div>
-      )}
 
       <div className="relative z-[1] text-center px-4 max-w-3xl mx-auto">
         <div className="mb-4 md:mb-6 flex justify-center">
@@ -95,7 +72,7 @@ export default function HeroSection({
           <p className="text-cream/70 text-[10px] md:text-sm tracking-wide uppercase mb-3 md:mb-8">{salon.address}</p>
         )}
         {salon.description && (
-          <p className="text-cream/85 text-xs md:text-base mb-5 md:mb-8 max-w-xl mx-auto text-pretty">{salon.description}</p>
+          <p className="text-cream/85 text-xs md:text-base mb-4 md:mb-8 max-w-xl mx-auto text-pretty">{salon.description}</p>
         )}
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-2">
