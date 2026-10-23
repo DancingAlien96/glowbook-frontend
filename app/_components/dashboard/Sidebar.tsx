@@ -30,6 +30,7 @@ const nav: { section: string; items: NavItem[] }[] = [
     items: [
       { href: "/dashboard/payments", label: "Pagos", icon: <IconWallet /> },
       { href: "/dashboard/commissions", label: "Comisiones", icon: <IconCommissions /> },
+      { href: "/dashboard/reports", label: "Reportes", icon: <IconReports /> },
       { href: "/dashboard/billing", label: "Plan & factura", icon: <IconBilling /> },
       { href: "/dashboard/settings", label: "Ajustes", icon: <IconCog />, tour: "settings" },
     ],
@@ -160,7 +161,7 @@ export default function Sidebar({
     <>
       {/* Desktop: fixed sidebar (collapsible) */}
       <aside
-        className={`hidden lg:flex fixed inset-y-0 left-0 flex-col border-r border-line bg-ivory/70 backdrop-blur-xl transition-all duration-300 ${
+        className={`no-print hidden lg:flex fixed inset-y-0 left-0 flex-col border-r border-line bg-ivory/70 backdrop-blur-xl transition-all duration-300 ${
           collapsed ? "w-20" : "w-64"
         }`}
       >
@@ -168,7 +169,7 @@ export default function Sidebar({
       </aside>
 
       {/* Mobile: slide-in drawer (always full width) */}
-      <div className={`lg:hidden fixed inset-0 z-50 ${open ? "" : "pointer-events-none"}`}>
+      <div className={`no-print lg:hidden fixed inset-0 z-50 ${open ? "" : "pointer-events-none"}`}>
         <div
           onClick={onClose}
           className={`absolute inset-0 bg-mauve-900/40 backdrop-blur-sm transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0"}`}
@@ -210,6 +211,10 @@ function IconCog() {
 function IconCommissions() {
   // Two-coin stack — reads as "% / pago" for the commissions report
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="7" rx="8" ry="3"/><path d="M4 7v5c0 1.7 3.6 3 8 3s8-1.3 8-3V7"/><path d="M4 12v5c0 1.7 3.6 3 8 3s8-1.3 8-3v-5"/></svg>;
+}
+function IconReports() {
+  // Clipboard with a small bar chart — "informe" at a glance
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="17" rx="2"/><path d="M9 2.5h6v3H9z"/><path d="M8.5 17v-3M12 17v-6M15.5 17v-4"/></svg>;
 }
 function IconLogout() {
   return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>;

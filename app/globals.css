@@ -477,3 +477,53 @@
     box-shadow: 0 0 0 4px rgba(203, 146, 61, 0.22);
   }
 }
+
+/* ─── Print — "Descargar PDF" en /dashboard/reports ───────────────────
+   The report page is its own printable document: the app chrome goes
+   away, the cream canvas turns white, and cards never split across
+   pages. `.print-only` blocks (report header) appear only on paper. */
+.print-only {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  html,
+  body,
+  .print-root {
+    background: #fff !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .print-main {
+    padding-left: 0 !important;
+  }
+  .print-main > main {
+    padding: 0 !important;
+  }
+  .card-surface {
+    box-shadow: none !important;
+    border: 1px solid rgba(31, 15, 21, 0.12) !important;
+    break-inside: avoid;
+  }
+  .print-avoid-break {
+    break-inside: avoid;
+  }
+  .print-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+  .animate-pulse {
+    animation: none !important;
+  }
+}

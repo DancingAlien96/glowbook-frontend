@@ -71,12 +71,20 @@ function EmptyChart({ msg }: { msg: string }) {
 
 // ─── 1. Ingresos · últimos 6 meses (área con gradiente) ─────────────────
 
+// Also reused by /dashboard/reports with per-day buckets: `month` is then
+// any bucket key and `formatLabel` / `labelEvery` control the x-axis.
 export function MonthlyRevenueChart({
   data,
   currency,
+  title = "Ingresos · 6 meses",
+  formatLabel,
+  labelEvery = 1,
 }: {
   data: { month: string; cents: number }[];
   currency: string;
+  title?: string;
+  formatLabel?: (key: string, index: number) => string;
+  labelEvery?: number;
 }) {
   const max = Math.max(1, ...data.map((d) => d.cents));
   const total = data.reduce((a, d) => a + d.cents, 0);
@@ -99,9 +107,10 @@ export function MonthlyRevenueChart({
     const [, mm] = m.split("-").map(Number) as [number, number];
     return ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"][mm - 1] ?? "";
   };
+  const label = (key: string, i: number) => (formatLabel ? formatLabel(key, i) : monthShort(key));
 
   return (
-    <ChartCard title="Ingresos · 6 meses" subtitle={money(total, currency)}>
+    <ChartCard title={title} subtitle={money(total, currency)}>
       {total === 0 ? (
         <EmptyChart msg="Sin pagos aprobados en este periodo." />
       ) : (
@@ -116,14 +125,16 @@ export function MonthlyRevenueChart({
           <path d={path} fill="none" stroke={PALETTE.blushDeep} strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" />
           {points.map((p, i) => (
             <circle key={i} cx={p.x} cy={p.y} r={3} fill={PALETTE.cream} stroke={PALETTE.blushDeep} strokeWidth="1.6">
-              <title>{`${monthShort(data[i]!.month)} · ${money(data[i]!.cents, currency)}`}</title>
+              <title>{`${label(data[i]!.month, i)} · ${money(data[i]!.cents, currency)}`}</title>
             </circle>
           ))}
-          {data.map((d, i) => (
-            <text key={d.month} x={pad.l + i * stepX} y={h - 6} textAnchor="middle" fontSize="9" fill={PALETTE.mauveMid} className="font-sans">
-              {monthShort(d.month)}
-            </text>
-          ))}
+          {data.map((d, i) =>
+            i % labelEvery === 0 || i === data.length - 1 ? (
+              <text key={d.month} x={pad.l + i * stepX} y={h - 6} textAnchor="middle" fontSize="9" fill={PALETTE.mauveMid} className="font-sans">
+                {label(d.month, i)}
+              </text>
+            ) : null
+          )}
         </svg>
       )}
     </ChartCard>
@@ -135,18 +146,22 @@ export function MonthlyRevenueChart({
 export function StylistRevenueChart({
   data,
   currency,
+  subtitle = "Este mes",
+  emptyMsg = "Sin citas completadas este mes.",
 }: {
   data: { name: string; cents: number }[];
   currency: string;
+  subtitle?: string;
+  emptyMsg?: string;
 }) {
   const max = Math.max(1, ...data.map((d) => d.cents));
   const TONES = [PALETTE.blush, PALETTE.lavenderDeep, PALETTE.gold, PALETTE.sage, PALETTE.mauveMid];
   const showing = data.slice(0, 6);
 
   return (
-    <ChartCard title="Ingresos por estilista" subtitle="Este mes">
+    <ChartCard title="Ingresos por estilista" subtitle={subtitle}>
       {showing.length === 0 ? (
-        <EmptyChart msg="Sin citas completadas este mes." />
+        <EmptyChart msg={emptyMsg} />
       ) : (
         <ul className="space-y-2.5">
           {showing.map((d, i) => {
@@ -177,16 +192,20 @@ export function StylistRevenueChart({
 export function TopServicesChart({
   data,
   currency,
+  subtitle = "Este mes",
+  emptyMsg = "Sin servicios completados este mes.",
 }: {
   data: { name: string; count: number; cents: number }[];
   currency: string;
+  subtitle?: string;
+  emptyMsg?: string;
 }) {
   const max = Math.max(1, ...data.map((d) => d.count));
 
   return (
-    <ChartCard title="Top servicios" subtitle="Este mes">
+    <ChartCard title="Top servicios" subtitle={subtitle}>
       {data.length === 0 ? (
-        <EmptyChart msg="Sin servicios completados este mes." />
+        <EmptyChart msg={emptyMsg} />
       ) : (
         <ul className="space-y-2.5">
           {data.map((d, i) => {
@@ -223,8 +242,12 @@ export function TopServicesChart({
 
 export function StatusDonutChart({
   data,
+  subtitle = "30 días",
+  emptyMsg = "Sin citas registradas en los últimos 30 días.",
 }: {
   data: { status: string; count: number }[];
+  subtitle?: string;
+  emptyMsg?: string;
 }) {
   const total = data.reduce((a, d) => a + d.count, 0);
   const radius = 38;
@@ -238,9 +261,9 @@ export function StatusDonutChart({
   let offsetSoFar = 0;
 
   return (
-    <ChartCard title="Estados de citas" subtitle="30 días">
+    <ChartCard title="Estados de citas" subtitle={subtitle}>
       {total === 0 ? (
-        <EmptyChart msg="Sin citas registradas en los últimos 30 días." />
+        <EmptyChart msg={emptyMsg} />
       ) : (
         <div className="flex items-center gap-4">
           {/* Group rotation instead of rotating the whole SVG so the text
@@ -303,14 +326,22 @@ export function StatusDonutChart({
 
 // ─── 5. Ocupación por día de la semana ─────────────────────────────────
 
-export function WeekdayChart({ data }: { data: number[] }) {
+export function WeekdayChart({
+  data,
+  subtitle = "30 días",
+  emptyMsg = "Sin citas en los últimos 30 días.",
+}: {
+  data: number[];
+  subtitle?: string;
+  emptyMsg?: string;
+}) {
   const max = Math.max(1, ...data);
   const total = data.reduce((a, n) => a + n, 0);
 
   return (
-    <ChartCard title="Día más fuerte" subtitle="30 días">
+    <ChartCard title="Día más fuerte" subtitle={subtitle}>
       {total === 0 ? (
-        <EmptyChart msg="Sin citas en los últimos 30 días." />
+        <EmptyChart msg={emptyMsg} />
       ) : (
         <div className="flex items-end gap-2 h-32 mt-2">
           {data.map((v, i) => {
@@ -346,17 +377,21 @@ export function WeekdayChart({ data }: { data: number[] }) {
 
 export function ClientMixChart({
   data,
+  title = "Clientas del mes",
+  emptyMsg = "Sin clientas atendidas este mes.",
 }: {
   data: { newCount: number; returningCount: number };
+  title?: string;
+  emptyMsg?: string;
 }) {
   const total = data.newCount + data.returningCount;
   const newPct = total > 0 ? (data.newCount / total) * 100 : 0;
   const retPct = total > 0 ? (data.returningCount / total) * 100 : 0;
 
   return (
-    <ChartCard title="Clientas del mes" subtitle="Nuevas vs recurrentes">
+    <ChartCard title={title} subtitle="Nuevas vs recurrentes">
       {total === 0 ? (
-        <EmptyChart msg="Sin clientas atendidas este mes." />
+        <EmptyChart msg={emptyMsg} />
       ) : (
         <div>
           <div className="flex h-9 rounded-xl overflow-hidden">
