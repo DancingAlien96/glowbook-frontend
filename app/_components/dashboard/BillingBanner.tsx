@@ -41,7 +41,7 @@ export default function BillingBanner() {
       : `Tu suscripción vence en ${daysUntilDue} días. Renueva con un click.`;
 
   return (
-    <div className={`mx-4 sm:mx-8 mt-4 rounded-2xl border px-4 py-3 flex flex-wrap items-center justify-between gap-3 ${tone}`}>
+    <div className={`no-print mx-4 sm:mx-8 mt-4 rounded-2xl border px-4 py-3 flex flex-wrap items-center justify-between gap-3 ${tone}`}>
       <div className="flex items-center gap-3 min-w-0">
         <span className="text-xl shrink-0">{sub.status === "SUSPENDED" ? "⚠️" : "✦"}</span>
         <span className="text-sm font-medium">{message}</span>

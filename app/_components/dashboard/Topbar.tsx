@@ -8,7 +8,7 @@ export default function Topbar({ onMenu }: { onMenu?: () => void }) {
   const slug = user?.salon?.slug;
 
   return (
-    <header className="sticky top-0 z-40 h-16 border-b border-line bg-cream/80 backdrop-blur-xl">
+    <header className="no-print sticky top-0 z-40 h-16 border-b border-line bg-cream/80 backdrop-blur-xl">
       <div className="h-full px-4 sm:px-8 flex items-center gap-4">
         <button
           type="button"
